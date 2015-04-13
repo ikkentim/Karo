@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Tile.h"
+#include "Player.h"
 
 using namespace System;
 
@@ -17,6 +18,7 @@ namespace Karo {
             }
             property bool IsFaceUp;
             property Tile^ Tile;
+            property Player Player;
         };
     }
 }
