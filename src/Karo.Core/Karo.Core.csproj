@@ -44,7 +44,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Karo.Common\Karo.Common.csproj">
+    <ProjectReference Include="..\..\Karo.Common\Karo.Common\Karo.Common.csproj">
       <Project>{9729a46d-e5f8-4e52-ae6c-ebbf8479d7df}</Project>
       <Name>Karo.Common</Name>
     </ProjectReference>

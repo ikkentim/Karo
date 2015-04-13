@@ -1,0 +1,3 @@
+[submodule "Karo.Common"]
+	path = Karo.Common
+	url = git://github.com/ikkentim/Karo.Common.git
