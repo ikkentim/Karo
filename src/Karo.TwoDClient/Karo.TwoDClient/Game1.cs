@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Karo.TwoDClient.Drawable;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -9,31 +8,21 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using CKaro = Karo.Core.Karo;
 
 namespace Karo.TwoDClient
 {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class Game : Microsoft.Xna.Framework.Game
+    public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        List<Tile> tiles = new List<Tile>();
-        CKaro karo = new CKaro();
 
-        bool _canPlacePiece = true;
-
-        private Texture2D tileTexture;
-        private Texture2D pieceTexture;
-
-        public Game()
+        public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
-            IsFixedTimeStep = false;
         }
 
         /// <summary>
@@ -58,21 +47,6 @@ namespace Karo.TwoDClient
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Core.Karo core = new Core.Karo();
-
-            Core.Tile[] tiles = core.GetTiles();
-            
-            tileTexture = Content.Load<Texture2D>("tile");
-            pieceTexture = Content.Load<Texture2D>("piece");
-
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    for (int j = 0; j < 4; j++)
-            //    {
-            //        tiles.Add(new Tile(i, j, tileTexture, pieceTexture));
-            //    }
-            //}
-
             // TODO: use this.Content to load your game content here
         }
 
@@ -96,27 +70,6 @@ namespace Karo.TwoDClient
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            MouseState ms = Mouse.GetState();
-
-
-            if (_canPlacePiece && ms.LeftButton == ButtonState.Pressed)
-            {
-                int x = (int)Math.Floor(ms.X / 50.0);
-                int y = (int)Math.Floor(ms.Y / 50.0);
-
-                foreach (Core.Tile tile in karo.GetTiles())
-                {
-                    if (tile.X == x && tile.Y == y)
-                        tile.HasPiece = true;
-                }
-
-                _canPlacePiece = true;
-            }
-            else if (ms.LeftButton == ButtonState.Released)
-            {
-                _canPlacePiece = true;
-            }
-
             // TODO: Add your update logic here
 
             base.Update(gameTime);
@@ -129,22 +82,6 @@ namespace Karo.TwoDClient
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            spriteBatch.Begin();
-
-            foreach (Core.Tile tile in karo.GetTiles())
-            {
-                Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
-
-                spriteBatch.Draw(tileTexture, coor, Color.White);
-
-                if (tile.HasPiece)
-                {
-                    spriteBatch.Draw(pieceTexture, coor, Color.White);
-                }
-            }
-
-            spriteBatch.End();
 
             // TODO: Add your drawing code here
 

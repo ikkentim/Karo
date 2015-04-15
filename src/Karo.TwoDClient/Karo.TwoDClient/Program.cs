@@ -1,9 +1,8 @@
 using System;
-using System.Windows.Forms;
 
 namespace Karo.TwoDClient
 {
-#if WINDOWS
+#if WINDOWS || XBOX
     static class Program
     {
         /// <summary>
@@ -11,14 +10,7 @@ namespace Karo.TwoDClient
         /// </summary>
         static void Main(string[] args)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            
-            Menu menu = new Menu();
-
-            menu.ShowDialog();
-
-            using (Game game = new Game())
+            using (Game1 game = new Game1())
             {
                 game.Run();
             }
