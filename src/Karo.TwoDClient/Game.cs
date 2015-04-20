@@ -24,8 +24,9 @@ namespace Karo.TwoDClient
 
         bool _canPlacePiece = true;
 
-        public Game()
+        public Game(int player1ai, int player2ai)
         {
+
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
