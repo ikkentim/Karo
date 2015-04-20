@@ -22,9 +22,10 @@ namespace Karo {
             property bool IsFinished {
                 bool get();
             };
-            IEnumerable<Move^>^ GetAvailableMoves();
+            IEnumerable<Move^>^ GetAvailableMoves(Player player);
             bool IsValidMove(Move^ move);
             Karo^ WithMoveApplied(Move^ move);
+			int PieceCount();
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;

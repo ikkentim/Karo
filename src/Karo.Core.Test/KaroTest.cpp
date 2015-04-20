@@ -4,6 +4,8 @@ using namespace System;
 using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
+using namespace Karo;
+
 
 namespace KaroCoreTest
 {
@@ -53,15 +55,21 @@ namespace KaroCoreTest
 #pragma endregion 
 
 		[TestMethod]
-		void TestMethod()
+		void FirstGetAvailableMovesReturns20Options()
 		{
-			auto karo = gcnew Karo::Core::Karo();
+			auto karo = gcnew Core::Karo();
 
-			//karo->GetAvailableMoves();
+			auto moves = karo->GetAvailableMoves(Core::Player::Player1);
 
-			//
-			// TODO: Add test logic here
-			//
+			int i = 0;
+
+			for each (Common::Move^ move in moves)
+			{
+				if (move != nullptr)
+					i++;
+			}
+
+			Assert::AreEqual(20, i);
 		};
 	};
 }
