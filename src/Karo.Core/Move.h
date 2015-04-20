@@ -2,7 +2,8 @@
 
 #pragma once
 
-namespace Karo {
+//unused
+/*namespace Karo {
     namespace Core {
         public ref class Move {
         public:
@@ -10,4 +11,4 @@ namespace Karo {
 
         };
     }
-}
+}*/
