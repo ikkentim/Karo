@@ -21,6 +21,10 @@ namespace Karo.TwoDClient
         SpriteBatch spriteBatch;
         List<Tile> tiles = new List<Tile>();
         CKaro karo = new CKaro();
+		Vector2 zeropoint = new Vector2(0, 0);
+		Vector2 mousePos;
+		Core.Player turn = Core.Player.Player1;
+		Vector2 oldMousePos = new Vector2(0, 0);
 
         bool _canPlacePiece = true;
 
@@ -81,27 +85,27 @@ namespace Karo.TwoDClient
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
-
+			if (Keyboard.GetState().IsKeyDown(Keys.Escape)) 
+			{
+				this.Exit();
+			}
+				
             MouseState ms = Mouse.GetState();
 
+			int x = (int)Math.Floor((ms.X / 50.0) - (int)Math.Floor(zeropoint.X/50));
+			int y = (int)Math.Floor((ms.Y / 50.0) - (int)Math.Floor(zeropoint.Y/50));
+			mousePos = new Vector2(x, y);
 
-            if (_canPlacePiece && ms.LeftButton == ButtonState.Pressed)
-            {
-                int x = (int)Math.Floor(ms.X / 50.0);
-                int y = (int)Math.Floor(ms.Y / 50.0);
+			Vector2 move = oldMousePos - new Vector2(ms.X, ms.Y);
+			if (ms.RightButton == ButtonState.Pressed)
+			{
+				zeropoint -= move;
+			}
+			oldMousePos = new Vector2(ms.X, ms.Y);
 
-                foreach (Core.Tile tile in karo.Tiles)
-                {
-                    if (tile.X == x && tile.Y == y)
-                        tile.HasPiece = true;
-                }
 
-                _canPlacePiece = true;
-            }
-            else if (ms.LeftButton == ButtonState.Released)
-            {
-                _canPlacePiece = true;
-            }
+			
+
 
             // TODO: Add your update logic here
 
@@ -118,17 +122,53 @@ namespace Karo.TwoDClient
 
             spriteBatch.Begin();
 
+			
             foreach (Core.Tile tile in karo.Tiles)
             {
-                Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
-
-                spriteBatch.Draw(Textures.tileTexture, coor, Color.White);
-
-                if (tile.HasPiece)
-                {
-                    spriteBatch.Draw(Textures.pieceTexture, coor, Color.White);
-                }
+				Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
+				coor += zeropoint ;
+                spriteBatch.Draw(Textures.tileTex, coor, Color.White);
             }
+			
+			int counter = 0;
+			if(karo.Pieces != null)
+			foreach(Core.Piece piece in karo.Pieces ) {
+				if(piece.Tile != null){
+					Vector2 coord = new Vector2(piece.Tile.X, piece.Tile.Y);
+					if(piece.Player == Core.Player.Player1)
+						if(piece.IsFaceUp){
+							spriteBatch.Draw(Textures.redTex,coord, Color.White);
+						} else {
+							spriteBatch.Draw(Textures.redMarkTex, coord, Color.White);
+						}
+					if(piece.Player == Core.Player.Player2) {
+						if(piece.IsFaceUp){
+							spriteBatch.Draw(Textures.whiteTex,coord, Color.White);
+						} else {
+							spriteBatch.Draw(Textures.whiteMarkTex, coord, Color.White);
+						}
+					}
+				} else {
+					spriteBatch.Draw(Textures.whiteTex, new Vector2(50, 50 + (counter*10)), Color.White);
+				}
+				counter++;
+			}
+			else
+			{
+				spriteBatch.Draw(Textures.redTex, new Vector2(50, 50), Color.White);
+			}
+
+			Vector2 marker = new Vector2(mousePos.X * (50 + 1) + zeropoint.X, mousePos.Y * (50 + 1) + zeropoint.Y);
+			spriteBatch.Draw(Textures.selectedMarkerTex, marker, Color.White);
+			
+			spriteBatch.Draw(Textures.redTex, new Vector2(200, 25), Color.White);
+			spriteBatch.Draw(Textures.whiteTex, new Vector2(250, 25), Color.White);
+			if(turn == Core.Player.Player1){
+				spriteBatch.Draw(Textures.turnIndicator, new Vector2(200, 75), Color.White);
+			} else if (turn == Core.Player.Player2) {
+				spriteBatch.Draw(Textures.turnIndicator, new Vector2(250, 75), Color.White);
+			}
+			
 
             spriteBatch.End();
 
