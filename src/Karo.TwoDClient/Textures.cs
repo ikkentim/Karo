@@ -10,13 +10,24 @@ namespace Karo.TwoDClient
 {
     class Textures
     {
-        public static Texture2D tileTexture;
-        public static Texture2D pieceTexture;
+        public static Texture2D tileTex;
+		public static Texture2D redTex;
+		public static Texture2D whiteTex;
+		public static Texture2D redMarkTex;
+		public static Texture2D whiteMarkTex;
+		public static Texture2D selectedMarkerTex;
+		public static Texture2D turnIndicator;
+
 
         public static void Load(ContentManager content)
         {
-            tileTexture = content.Load<Texture2D>("tile");
-            pieceTexture = content.Load<Texture2D>("piece");
+            tileTex = content.Load<Texture2D>("tile");
+            redTex = content.Load<Texture2D>("redpiece");
+			whiteTex = content.Load<Texture2D>("whitepiece");
+			redMarkTex = content.Load<Texture2D>("redpiecemark");
+			whiteMarkTex = content.Load<Texture2D>("whitepiecemark");
+			selectedMarkerTex = content.Load<Texture2D>("selected");
+			turnIndicator = content.Load<Texture2D>("turn_indicator");
         }
     }
 }
