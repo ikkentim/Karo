@@ -145,6 +145,13 @@ namespace Karo {
 
                                 for each(Tile^ cornerTile in cornerTiles)
                                 {
+                                    Tile^ top = GetTileAt(newx, newy - 1);
+                                    Tile^ bottom = GetTileAt(newx, newy + 1);
+                                    Tile^ left = GetTileAt(newx - 1, newy);
+                                    Tile^ right = GetTileAt(newx + 1, newy);
+
+                                    if (top == nullptr && bottom == nullptr && left == nullptr && right == nullptr) continue;
+
                                     moves->Add(gcnew Move(newx, newy, piece->Tile->X, piece->Tile->Y, cornerTile->X, cornerTile->Y));
                                 }
                             }

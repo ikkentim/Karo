@@ -219,11 +219,6 @@ namespace KaroCoreTest
              * _ _ _ _ X
              * 7 6 6 6 12 == 37
              */
-
-            /* @todo: fix bug
-             * GetAvailableMoves returns 34 moves, because it allows the 'I' pieces at
-             * (1,1) and (3,1) to jump diagonally  out of the board, resulting in an invalid board state.
-             */
             Assert::AreEqual(37, System::Linq::Enumerable::Count(moves));
         };
 
