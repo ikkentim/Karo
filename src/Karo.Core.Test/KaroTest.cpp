@@ -63,5 +63,133 @@ namespace KaroCoreTest
 			// TODO: Add test logic here
 			//
 		};
+
+        [TestMethod]
+        void IsFinishedTestFreshBoard()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(false, karo->IsFinished);
+        };
+
+        [TestMethod]
+        void IsFinishedTestHorizontalLine4()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 1], Karo::Core::Player::Player1, true);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(true, karo->IsFinished);
+        };
+
+        [TestMethod]
+        void IsFinishedTestHorizontalLine3()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[2 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[3 * 5 + 1], Karo::Core::Player::Player1, true);
+            //pieces[3] = gcnew Karo::Core::Piece(tiles[5 * 5 + 1], Karo::Core::Player::Player1, true);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(false, karo->IsFinished);
+        };
+
+        [TestMethod]
+        void IsFinishedTestHorizontalLine3AndEnemy()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 1], Karo::Core::Player::Player2, true);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(false, karo->IsFinished);
+        };
+
+        [TestMethod]
+        void IsFinishedTestHorizontalLine3AndUpsideDown()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 1], Karo::Core::Player::Player1, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(false, karo->IsFinished);
+        };
+        [TestMethod]
+        void IsFinishedTestDiagonalRightLine4()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[1 * 5 + 2], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2 * 5 + 3], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 4], Karo::Core::Player::Player1, true);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(true, karo->IsFinished);
+        };
+
+        [TestMethod]
+        void IsFinishedTestDiagonalLeftLine4()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[3 * 5 + 0], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[2 * 5 + 1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[1 * 5 + 2], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[0 * 5 + 3], Karo::Core::Player::Player1, true);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(true, karo->IsFinished);
+        };
 	};
 }

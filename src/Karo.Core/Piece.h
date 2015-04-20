@@ -13,8 +13,11 @@ namespace Karo {
         public ref class Piece
         {
         public:
-            Piece()
+            Piece(Tile^ tile, Player player, bool isFaceUp) 
             {
+                Tile = tile;
+                Player = player;
+                IsFaceUp = isFaceUp;
             }
             property bool IsFaceUp;
             property Tile^ Tile;
