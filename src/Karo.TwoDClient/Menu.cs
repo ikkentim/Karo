@@ -11,6 +11,8 @@ namespace Karo.TwoDClient
 {
     public partial class Menu : Form
     {
+		public int ai1;
+		public int ai2;
         public Menu()
         {
             InitializeComponent();
@@ -21,6 +23,8 @@ namespace Karo.TwoDClient
 
         private void play_Click(object sender, EventArgs e)
         {
+			ai1 = player1AI.SelectedIndex;
+			ai2 = player2AI.SelectedIndex;
             Close();
         }
 

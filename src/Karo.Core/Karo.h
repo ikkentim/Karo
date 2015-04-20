@@ -1,6 +1,6 @@
 
 #include "Tile.h"
-
+#include "Piece.h"
 using namespace System;
 
 namespace Karo {

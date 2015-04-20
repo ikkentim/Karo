@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.Common", "..\Karo.Common\Karo.Common\Karo.Common.vcxproj", "{3576E071-2688-4338-93EA-B087876CECB4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.Core", "Karo.Core\Karo.Core.vcxproj", "{31BC028B-13CD-434F-BC01-2229701C5E8B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karo.TwoDClient", "Karo.TwoDClient\Karo.TwoDClient.csproj", "{4F9707D9-417C-40FE-9300-0B1EB9516FD8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.AI", "Karo.AI\Karo.AI.vcxproj", "{E186744D-B03E-4FDE-9D64-ADCE106421F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,20 @@ Global
 		{4F9707D9-417C-40FE-9300-0B1EB9516FD8}.Release|Win32.Build.0 = Release|x86
 		{4F9707D9-417C-40FE-9300-0B1EB9516FD8}.Release|x86.ActiveCfg = Release|x86
 		{4F9707D9-417C-40FE-9300-0B1EB9516FD8}.Release|x86.Build.0 = Release|x86
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|Win32.Build.0 = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|x86.ActiveCfg = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Debug|x86.Build.0 = Debug|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|Any CPU.ActiveCfg = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|Win32.ActiveCfg = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|Win32.Build.0 = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|x86.ActiveCfg = Release|Win32
+		{E186744D-B03E-4FDE-9D64-ADCE106421F7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
