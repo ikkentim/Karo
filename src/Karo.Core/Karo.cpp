@@ -55,10 +55,8 @@ namespace Karo {
 			int i = 0;
 
 			for each (Piece^ piece in Pieces)
-			{
 				if (piece != nullptr)
 					i++;
-			}
 
 			return i;
 		}
