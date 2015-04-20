@@ -55,9 +55,9 @@ namespace Karo.TwoDClient
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Core.Karo core = new Core.Karo();
+            var core = new CKaro();
 
-            Core.Tile[] tiles = core.GetTiles();
+            var tiles = core.Tiles;
 
             Textures.Load(Content);
         }
@@ -90,7 +90,7 @@ namespace Karo.TwoDClient
                 int x = (int)Math.Floor(ms.X / 50.0);
                 int y = (int)Math.Floor(ms.Y / 50.0);
 
-                foreach (Core.Tile tile in karo.GetTiles())
+                foreach (Core.Tile tile in karo.Tiles)
                 {
                     if (tile.X == x && tile.Y == y)
                         tile.HasPiece = true;
