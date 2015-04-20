@@ -6,7 +6,6 @@ using namespace System::Collections::Generic;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace Karo;
 
-
 namespace KaroCoreTest
 {
 	[TestClass]
@@ -71,6 +70,162 @@ namespace KaroCoreTest
 
 			Assert::AreEqual(20, i);
 		};
+
+        [TestMethod]
+        void GetCornerTilesTest0CornersAvailable()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[3 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[0 * 5 + 4], Karo::Core::Player::Player1, false);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 4], Karo::Core::Player::Player1, false);
+            auto karo = gcnew Core::Karo(tiles, pieces);
+
+            auto corners = karo->GetCornerTiles();
+
+            Assert::AreEqual(0, System::Linq::Enumerable::Count(corners));
+        };
+
+        [TestMethod]
+        void GetCornerTilesTest2CornersAvailable()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            tiles[2]->X = 5;
+            tiles[2]->Y = 0;
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[3 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2], Karo::Core::Player::Player1, false);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 4], Karo::Core::Player::Player1, false);
+            auto karo = gcnew Core::Karo(tiles, pieces);
+
+            auto corners = karo->GetCornerTiles();
+
+            for each(auto c in corners) {
+                Console::WriteLine(c);
+            }
+            Assert::AreEqual(2, System::Linq::Enumerable::Count(corners));
+        };
+
+        [TestMethod]
+        void GetCornerTilesTest1CornerAvailable()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[3 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[0 * 5 + 4], Karo::Core::Player::Player1, false);
+            auto karo = gcnew Core::Karo(tiles, pieces);
+
+            auto corners = karo->GetCornerTiles();
+
+            Assert::AreEqual(1, System::Linq::Enumerable::Count(corners));
+        };
+
+        [TestMethod]
+        void GetAvailableMovesTestCornersAreFilled()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            // Player1 fills the corners
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[0 * 5 + 4], Karo::Core::Player::Player1, false);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[3 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 4], Karo::Core::Player::Player1, false);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[0 * 5 + 2], Karo::Core::Player::Player1, false);
+
+            // It's Player2's turn
+            pieces[6] = gcnew Karo::Core::Piece(tiles[1 * 5 + 0], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[1 * 5 + 2], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[1 * 5 + 3], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[1 * 5 + 4], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[2 * 5 + 4], Karo::Core::Player::Player2, false);
+            auto karo = gcnew Core::Karo(tiles, pieces);
+
+            auto moves = karo->GetAvailableMoves(Karo::Core::Player::Player2);
+
+            /* Board setup:
+             * P1: X P2:I
+             * X X X _ X
+             * I I I I I
+             * _ _ _ _ I
+             * X _ _ _ X
+             * 2 3 4 3 4 == 16
+             */
+            Assert::AreEqual(16, System::Linq::Enumerable::Count(moves));
+        };
+
+        [TestMethod]
+        void GetAvailableMovesTestOneCornerAvailable()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+
+            // Player1 fills the corners
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0 * 5 + 0], Karo::Core::Player::Player1, false);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[0 * 5 + 4], Karo::Core::Player::Player1, false);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[0 * 5 + 3], Karo::Core::Player::Player1, false);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3 * 5 + 4], Karo::Core::Player::Player1, false);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[0 * 5 + 1], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[0 * 5 + 2], Karo::Core::Player::Player1, false);
+
+            // It's Player2's turn
+            pieces[6] = gcnew Karo::Core::Piece(tiles[1 * 5 + 0], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[1 * 5 + 1], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[1 * 5 + 2], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[1 * 5 + 3], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[1 * 5 + 4], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[2 * 5 + 4], Karo::Core::Player::Player2, false);
+            auto karo = gcnew Core::Karo(tiles, pieces);
+
+            auto moves = karo->GetAvailableMoves(Karo::Core::Player::Player2);
+
+            for each(auto move in moves) {
+                Console::WriteLine(move);
+            }
+            /* Board setup:
+             * P1: X P2:I
+             * X X X X X
+             * I I I I I
+             * _ _ _ _ I
+             * _ _ _ _ X
+             * 7 6 6 6 12 == 37
+             */
+
+            /* @todo: fix bug
+             * GetAvailableMoves returns 34 moves, because it allows the 'I' pieces at
+             * (1,1) and (3,1) to jump diagonally  out of the board, resulting in an invalid board state.
+             */
+            Assert::AreEqual(37, System::Linq::Enumerable::Count(moves));
+        };
 
         [TestMethod]
         void IsFinishedTestFreshBoard()
