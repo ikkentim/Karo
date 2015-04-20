@@ -117,7 +117,7 @@ namespace Karo.TwoDClient
 
             spriteBatch.Begin();
 
-            foreach (Core.Tile tile in karo.GetTiles())
+            foreach (Core.Tile tile in karo.Tiles)
             {
                 Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
 
