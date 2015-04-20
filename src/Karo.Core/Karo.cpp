@@ -85,9 +85,38 @@ namespace Karo {
 					}
 				}
 			}
+			else // we're in the tile moving phase
+			{
+				for each (Piece^ piece in Pieces)
+				{
+					// loop surrounding tiles for positions
+					for (int x = -1; x++; x <= 1)
+					{
+						for (int y = -1; y++; y <= 1)
+						{
+							Tile^ surroundingTile = GetTileAt(x, y);
+						}
+					}
+				}
+			}
 
 			return moves;
         }
+
+		Tile^ Karo::GetTileAt(int x, int y)
+		{
+			if (Tiles == nullptr)
+				return nullptr;
+
+			for each (Tile^ tile in Tiles)
+			{
+				if (tile != nullptr)
+					if (tile->X == x && tile->y == y)
+						return tile;
+			}
+
+			return nullptr;
+		}
 
         bool Karo::IsValidMove(Move^ move) {
             //todo: Implement
