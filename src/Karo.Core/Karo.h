@@ -13,6 +13,7 @@ namespace Karo {
         {
         public:
             Karo();
+            Karo(array<Tile^>^ tiles, array<Piece^>^ pieces);
             property IEnumerable<Tile^>^ Tiles {
                 IEnumerable<Tile^>^ get();
             }
@@ -29,6 +30,8 @@ namespace Karo {
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;
+            Piece^ GetPiece(int x, int y);
+            int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
         };
     }
 }
