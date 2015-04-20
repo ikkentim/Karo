@@ -54,7 +54,7 @@ namespace KaroCoreTest
 #pragma endregion 
 
 		[TestMethod]
-		void FirstGetAvailableMovesReturns20Options()
+		void GetAvailableMovesTestFreshBoard()
 		{
 			auto karo = gcnew Core::Karo();
 
@@ -140,7 +140,7 @@ namespace KaroCoreTest
         };
 
         [TestMethod]
-        void GetAvailableMovesTestCornersAreFilled()
+        void GetAvailableMovesTestCornersUnavailable()
         {
             auto tiles = gcnew array<Karo::Core::Tile^>(20);
             for (int i = 0; i < 20; i++) {
@@ -180,7 +180,7 @@ namespace KaroCoreTest
         };
 
         [TestMethod]
-        void GetAvailableMovesTestOneCornerAvailable()
+        void GetAvailableMovesTest1CornerAvailable()
         {
             auto tiles = gcnew array<Karo::Core::Tile^>(20);
             for (int i = 0; i < 20; i++) {
@@ -276,7 +276,7 @@ namespace KaroCoreTest
         };
 
         [TestMethod]
-        void IsFinishedTestHorizontalLine3AndEnemy()
+        void IsFinishedTestHorizontalLine3WithOppenent()
         {
             auto tiles = gcnew array<Karo::Core::Tile^>(20);
             for (int i = 0; i < 20; i++) {
@@ -295,7 +295,7 @@ namespace KaroCoreTest
         };
 
         [TestMethod]
-        void IsFinishedTestHorizontalLine3AndUpsideDown()
+        void IsFinishedTestHorizontalLine3WithUpsideDown()
         {
             auto tiles = gcnew array<Karo::Core::Tile^>(20);
             for (int i = 0; i < 20; i++) {
