@@ -27,7 +27,8 @@ namespace Karo {
             bool IsValidMove(Move^ move);
             Karo^ WithMoveApplied(Move^ move);
 			int PieceCount();
-			Tile^ GetTileAt(int, int);
+            Tile^ GetTileAt(int, int);
+            IEnumerable<Tile^>^ GetCornerTiles();
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;

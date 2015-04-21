@@ -70,10 +70,28 @@ namespace Karo {
         IEnumerable<Tile^>^ Karo::Tiles::get() {
             return _tiles;
         }
-        IEnumerable<Move^>^ Karo::GetAvailableMoves(Player player) {
-			array<Move^>^ moves = gcnew array<Move^>(48); // 6 pieces * 8 directions
 
-			int i = 0;
+        IEnumerable<Tile^>^ Karo::GetCornerTiles() {
+            List<Tile ^>^ tiles = gcnew List<Tile^>();
+
+            for each(Tile^ tile in Tiles) {
+                Tile^ top = GetTileAt(tile->X, tile->Y - 1);
+                Tile^ bottom = GetTileAt(tile->X, tile->Y + 1);
+                Tile^ left = GetTileAt(tile->X - 1, tile->Y);
+                Tile^ right = GetTileAt(tile->X + 1, tile->Y);
+
+                if (((top == nullptr && left == nullptr) ||
+                    (top == nullptr && right == nullptr) ||
+                    (bottom == nullptr && left == nullptr) ||
+                    (bottom == nullptr && right == nullptr)) &&
+                    GetPiece(tile->X, tile->Y) == nullptr)
+                    tiles->Add(tile);
+            }
+
+            return tiles;
+        }
+        IEnumerable<Move^>^ Karo::GetAvailableMoves(Player player) {
+			List<Move^>^ moves = gcnew List<Move^>(48); // 6 pieces * 8 directions
 
 			if (PieceCount() < 12) // we're still in the first phase
 			{
@@ -81,21 +99,70 @@ namespace Karo {
 				{
 					if (!tile->HasPiece)
 					{
-						moves[i++] = gcnew Move(tile->X, tile->Y, 0, 0, 0, 0);
+						moves->Add(gcnew Move(tile->X, tile->Y, 0, 0, 0, 0));
 					}
 				}
 			}
 			else // we're in the tile moving phase
 			{
+                IEnumerable<Tile^>^cornerTiles;
+
 				for each (Piece^ piece in Pieces)
 				{
+                    if (piece->Player != player) continue;
+
 					// loop surrounding tiles for positions
-					for (int x = -1; x++; x <= 1)
+                    for (int x = -1; x <= 1; x++)
 					{
-						for (int y = -1; y++; y <= 1)
-						{
-							Tile^ surroundingTile = GetTileAt(x, y);
-						}
+                        for (int y = -1; y <= 1; y++)
+                        {
+                            if (x == 0 && y == 0) continue;
+
+                            int newx = piece->Tile->X + x;
+                            int newy = piece->Tile->Y + y;
+
+                            // todo: check is filled, jump over
+                            Piece^ pieceOnTile = GetPiece(newx, newy);
+
+                            if (pieceOnTile != nullptr) {
+                                newx += x;
+                                newy += y;
+
+                                pieceOnTile = GetPiece(newx, newy);
+
+                                if (pieceOnTile != nullptr) {
+                                    continue;
+                                }
+                            }
+
+                            Tile^ surroundingTile = GetTileAt(newx, newy);
+
+                            if (surroundingTile == nullptr)
+                            {
+                                if (cornerTiles == nullptr) {
+                                    cornerTiles = GetCornerTiles();
+                                }
+
+                                for each(Tile^ cornerTile in cornerTiles)
+                                {
+                                    Tile^ top = GetTileAt(newx, newy - 1);
+                                    Tile^ bottom = GetTileAt(newx, newy + 1);
+                                    Tile^ left = GetTileAt(newx - 1, newy);
+                                    Tile^ right = GetTileAt(newx + 1, newy);
+
+                                    if (top == nullptr && bottom == nullptr && left == nullptr && right == nullptr) continue;
+
+                                    moves->Add(gcnew Move(newx, newy, piece->Tile->X, piece->Tile->Y, cornerTile->X, cornerTile->Y));
+                                }
+                            }
+                            else
+                            {
+                                if (pieceOnTile == nullptr) {
+                                    moves->Add(gcnew Move(newx, newy, piece->Tile->X, piece->Tile->Y, 0, 0));
+                                }
+                            }
+
+                        }
 					}
 				}
 			}
