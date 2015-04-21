@@ -119,20 +119,33 @@ namespace Karo {
 		}
 
         bool Karo::IsValidMove(Move^ move) {
-            //todo: Implement
 			//Check if new location != old location
 			if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
 				return false;
 
 			//Check if there is a piece on the tile you want to move to
 			for each (Tile^ tile in Tiles){
-				//There is a piece already
 				if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY && tile->HasPiece)
 					return false;
 
-				//If there is no piece, check if the distance is 1 square (move)
-				//Or 2 squares (jump over other piece)
-				//Todo: implement check for jumping/moving distance
+				//Check if the new location is into 'move-range'.
+				//Don't let pieces move 5 tiles..
+				//Keep in mind the possibilty of jumping over other pieces!!
+				int distanceX, distanceY,totalDistance;
+				distanceX = move->NewPieceX - move->OldPieceX;
+				distanceY = move->NewPieceY - move->OldPieceY;
+				if (distanceX < 0)
+					distanceX = Math::Abs(-distanceX);
+				if (distanceY < 0)
+					distanceY = Math::Abs(-distanceY);
+
+				totalDistance = distanceX + distanceY;
+				if (totalDistance < 0)
+					totalDistance = Math::Abs(-totalDistance);
+
+				//No does not allow jumping yet!
+				if (totalDistance > 3)
+					return false;
 
 				//If there is not, check if there is a tile on that position
 				//There is a tile, without piece
@@ -140,6 +153,7 @@ namespace Karo {
 					return true;
 			}
 			//If there is no tile, check if you can move a tile to this position
+			//todo:: tile moving
 
             return true;
         }

@@ -216,10 +216,13 @@ namespace KaroCoreTest
 			pieces[3] = gcnew Karo::Core::Piece(tiles[3], Karo::Core::Player::Player2, true);
 
 			auto karo = gcnew Karo::Core::Karo(tiles, pieces);
-			//Move from (1,1) to (1,1)
+			//Move from (1,1) to (1,1) [false]
 			auto move = gcnew Karo::Common::Move(1, 1, 1, 1, 1, 1);
-
 			Assert::AreEqual(false, karo->IsValidMove(move));
+
+			//Move from (1,1) to (1,2) [true]
+			move = gcnew Karo::Common::Move(1, 2, 1, 1, 1, 1);
+			Assert::AreEqual(true, karo->IsValidMove(move));
 		}
 
 		[TestMethod]
@@ -245,18 +248,47 @@ namespace KaroCoreTest
 			tiles[6]->HasPiece = true;
 
 			auto karo = gcnew Karo::Core::Karo(tiles, pieces);
-			//Move to location without piece
+			//Move to location without piece [true]
 			auto move = gcnew Karo::Common::Move(0, 1, 0, 0, 0, 0);
-
 			Assert::AreEqual(true, karo->IsValidMove(move));
+			//Move to location with piece [false]
+			move = gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0);
+			Assert::AreEqual(false, karo->IsValidMove(move));
 		}
 
 		[TestMethod]
-		void IsValidMoveTestValidJump()
+		void IsValidMoveTestValidMoveDistance()
 		{
 			//A piece can only move 1 square, unless it 'jumps' over another piece.
-
 			//Todo:: Implement tests and code
+			auto tiles = gcnew array<Karo::Core::Tile^>(20);
+			for (int i = 0; i < 20; i++) {
+				tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+			}
+
+			auto pieces = gcnew array<Karo::Core::Piece^>(12);
+			pieces[0] = gcnew Karo::Core::Piece(tiles[0], Karo::Core::Player::Player1, true);
+			pieces[1] = gcnew Karo::Core::Piece(tiles[1], Karo::Core::Player::Player2, true);
+			pieces[2] = gcnew Karo::Core::Piece(tiles[2], Karo::Core::Player::Player1, true);
+			pieces[3] = gcnew Karo::Core::Piece(tiles[3], Karo::Core::Player::Player2, true);
+			pieces[4] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, true);
+
+			auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+			//Test moving 5squares [false]
+			auto move = gcnew Karo::Common::Move(3, 2, 0, 0, 0, 0);
+			Assert::AreEqual(false, karo->IsValidMove(move));
+
+			//Test moving 2squares [true]
+			move = gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0);
+			Assert::AreEqual(true, karo->IsValidMove(move));
+
+			//Test moving to negative y [true]
+			move = gcnew Karo::Common::Move(0, -1, 0, 0, 0, 0);
+			Assert::AreEqual(true, karo->IsValidMove(move));
+
+			//Test moving 4 squares [false] :: Should be [true] with jump!!
+			move = gcnew Karo::Common::Move(2, 2, 0, 0, 0, 0);
+			Assert::AreEqual(false, karo->IsValidMove(move));
 		}
 	};
 }
