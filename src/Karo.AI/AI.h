@@ -9,7 +9,7 @@ namespace Karo {
 		public:
 			AI();
 
-			Karo::Common::Move^ ChooseBestMove(Karo::Core::Karo, int, Karo::Core::Player);
+			Karo::Common::Move^ ChooseBestMove(Karo::Core::Karo^, int, Karo::Core::Player);
 			void DoMove(Karo::Common::Move^ previousMove, int timeLimit, Func<Karo::Common::Move^>^ done) override;
 
 		private:
