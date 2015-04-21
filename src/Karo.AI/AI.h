@@ -15,7 +15,7 @@ namespace Karo {
 			void DoMove(Karo::Common::Move^ previousMove, int timeLimit, Func<Karo::Common::Move^>^ done) override;
 
 		private:
-			Karo::Core::Karo BoardState;
+			Karo::Core::Karo^ BoardState;
 		};
 	}
 }
