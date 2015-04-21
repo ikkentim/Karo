@@ -111,7 +111,7 @@ namespace Karo {
 			for each (Tile^ tile in Tiles)
 			{
 				if (tile != nullptr)
-					if (tile->X == x && tile->y == y)
+					if (tile->X == x && tile->Y == y)
 						return tile;
 			}
 
@@ -120,6 +120,27 @@ namespace Karo {
 
         bool Karo::IsValidMove(Move^ move) {
             //todo: Implement
+			//Check if new location != old location
+			if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
+				return false;
+
+			//Check if there is a piece on the tile you want to move to
+			for each (Tile^ tile in Tiles){
+				//There is a piece already
+				if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY && tile->HasPiece)
+					return false;
+
+				//If there is no piece, check if the distance is 1 square (move)
+				//Or 2 squares (jump over other piece)
+				//Todo: implement check for jumping/moving distance
+
+				//If there is not, check if there is a tile on that position
+				//There is a tile, without piece
+				else if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY)
+					return true;
+			}
+			//If there is no tile, check if you can move a tile to this position
+
             return true;
         }
         Karo^ Karo::WithMoveApplied(Move^ move) {
