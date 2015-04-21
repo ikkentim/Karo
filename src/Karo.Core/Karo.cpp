@@ -8,6 +8,7 @@ namespace Karo {
             for (int i = 0; i < 20; i++) {
                 _tiles[i] = gcnew Tile(i % 5, i / 5);
             }
+            _pieces = gcnew array<Piece^>(12);
         }
 
         Karo::Karo(array<Tile^>^ tiles, array<Piece^>^ pieces) {
@@ -224,9 +225,79 @@ namespace Karo {
 
             return true;
         }
-        Karo^ Karo::WithMoveApplied(Move^ move) {
-            //todo: Implement
-            return nullptr;
+        Karo^ Karo::WithMoveApplied(Move^ move, Player player) {
+            if (move == nullptr) {
+                throw gcnew ArgumentNullException("move");
+            }
+
+            array<Tile^>^ tiles = gcnew array<Tile^> (20);
+            array<Piece^>^ pieces = gcnew array<Piece^>(12);
+            int tidx = 0, pidx = 0;
+
+            Tile^ movingTile = nullptr, ^targetTile = nullptr;
+            Piece^ movingPiece = nullptr;
+            
+            for each(Tile^ tile in Tiles) {
+                Tile^ newTile = tiles[tidx++] = gcnew Tile(tile->X, tile->Y);
+
+                if (newTile->X == move->OldTileX && newTile->Y == move->OldTileY) {
+                    movingTile = newTile;
+                }
+                if (newTile->X == move->NewPieceX && newTile->Y == move->NewPieceY) {
+                    targetTile = newTile;
+                }
+            }
+
+                for each(Piece^ piece in Pieces) {
+                if (piece == nullptr) continue;
+                Tile^ tile = nullptr;
+
+                for each(Tile^ t in tiles) {
+                    if (t->X == piece->Tile->X && t->Y == piece->Tile->Y) {
+                        tile = t;
+                        continue;
+                    }
+                }
+
+                if (tile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+
+                pieces[pidx++] = gcnew Piece(tile, piece->Player, piece->IsFaceUp);
+
+                if (pieces[pidx - 1]->Tile->X == move->OldPieceX && pieces[pidx - 1]->Tile->Y == move->OldPieceY)
+                    movingPiece = pieces[pidx - 1];
+            }
+
+            int pieceCount = PieceCount();
+            if (pieceCount < 12) {
+                if (targetTile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+                pieces[pieceCount] = gcnew Piece(targetTile, player, false);
+                return gcnew Karo(tiles, pieces);;
+            }
+            if (movingPiece == nullptr) {
+                throw gcnew Exception("Invalid board state");
+            }
+
+            if (targetTile == nullptr) {
+                if (movingTile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+
+                targetTile = movingTile;
+                targetTile->X = move->NewPieceX;
+                targetTile->Y = move->NewPieceY;
+            }
+
+            movingPiece->Tile = targetTile;
+
+            if (Math::Abs(move->NewPieceX - move->OldPieceX) > 1 || Math::Abs(move->NewPieceY - move->OldPieceY) > 1) {
+                movingPiece->IsFaceUp = !movingPiece->IsFaceUp;
+            }
+
+            return gcnew Karo(tiles, pieces);
         }
 		int Karo::PieceCount()
 		{
