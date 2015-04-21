@@ -208,9 +208,6 @@ namespace KaroCoreTest
 
             auto moves = karo->GetAvailableMoves(Karo::Core::Player::Player2);
 
-            for each(auto move in moves) {
-                Console::WriteLine(move);
-            }
             /* Board setup:
              * P1: X P2:I
              * X X X X X
@@ -440,5 +437,44 @@ namespace KaroCoreTest
 			move = gcnew Karo::Common::Move(2, 2, 0, 0, 0, 0);
 			Assert::AreEqual(false, karo->IsValidMove(move));
 		}
+
+        [TestMethod]
+        void WithMoveAppliedFirstPhase()
+        {
+            Karo::Core::Karo^ karo = gcnew Karo::Core::Karo();
+
+            Karo::Core::Karo^ newKaro = karo->WithMoveApplied(gcnew Karo::Common::Move(2, 3, 0, 0, 0, 0), Karo::Core::Player::Player1);
+
+            Karo::Core::Piece^ p = System::Linq::Enumerable::ElementAt(newKaro->Pieces, 0);
+
+            Assert::AreEqual(2, p->Tile->X);
+            Assert::AreEqual(3, p->Tile->Y);
+
+        }
+        [TestMethod]
+        void WithMoveAppliedSecondPhase()
+        {
+            Karo::Core::Karo^ karo = gcnew Karo::Core::Karo();
+
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(0, 0, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(1, 0, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(2, 0, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(3, 0, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(4, 0, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(0, 2, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(0, 1, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(2, 1, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(3, 1, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(4, 1, 0, 0, 0, 0), Karo::Core::Player::Player1);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(1, 2, 0, 0, 0, 0), Karo::Core::Player::Player2);
+            karo = karo->WithMoveApplied(gcnew Karo::Common::Move(4, 2, 4, 0, 0, 0), Karo::Core::Player::Player1);
+            
+            Karo::Core::Piece^ p = System::Linq::Enumerable::ElementAt(karo->Pieces, 4);
+
+            Assert::AreEqual(4, p->Tile->X);
+            Assert::AreEqual(2, p->Tile->Y);
+
+        }
 	};
 }
