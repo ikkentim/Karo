@@ -7,11 +7,6 @@ namespace Karo {
 
 		}
 
-		AI::~AI()
-		{
-
-		}
-
 		Karo::Common::Move^ AI::ChooseBestMove(Karo::Core::Karo, int, Karo::Core::Player)
 		{
 
