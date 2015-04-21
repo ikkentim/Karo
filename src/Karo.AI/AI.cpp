@@ -12,6 +12,13 @@ namespace Karo {
 			return gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0);
 		}
 
+		int AI::Evaluate(Karo::Core::Karo^ board, Karo::Core::Player player)
+		{
+			Random^ rand = gcnew Random();
+
+			return rand->Next(0, 100);
+		}
+
 		void AI::DoMove(Karo::Common::Move^ previousMove, int timeLimit, Action<Karo::Common::Move^>^ done)
 		{
 			// add previous move
@@ -23,8 +30,6 @@ namespace Karo {
 			BoardState = BoardState->WithMoveApplied(newMove);
 
 			array<Karo::Common::Move^>^ moves = gcnew array< Karo::Common::Move^ > {newMove };
-
-
 
 			done->Invoke(newMove);
 		}
