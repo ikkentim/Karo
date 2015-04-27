@@ -8,6 +8,7 @@ namespace Karo {
             for (int i = 0; i < 20; i++) {
                 _tiles[i] = gcnew Tile(i % 5, i / 5);
             }
+            _pieces = gcnew array<Piece^>(12);
         }
 
         Karo::Karo(array<Tile^>^ tiles, array<Piece^>^ pieces) {
@@ -70,10 +71,28 @@ namespace Karo {
         IEnumerable<Tile^>^ Karo::Tiles::get() {
             return _tiles;
         }
-        IEnumerable<Move^>^ Karo::GetAvailableMoves(Player player) {
-			array<Move^>^ moves = gcnew array<Move^>(48); // 6 pieces * 8 directions
 
-			int i = 0;
+        IEnumerable<Tile^>^ Karo::GetCornerTiles() {
+            List<Tile ^>^ tiles = gcnew List<Tile^>();
+
+            for each(Tile^ tile in Tiles) {
+                Tile^ top = GetTileAt(tile->X, tile->Y - 1);
+                Tile^ bottom = GetTileAt(tile->X, tile->Y + 1);
+                Tile^ left = GetTileAt(tile->X - 1, tile->Y);
+                Tile^ right = GetTileAt(tile->X + 1, tile->Y);
+
+                if (((top == nullptr && left == nullptr) ||
+                    (top == nullptr && right == nullptr) ||
+                    (bottom == nullptr && left == nullptr) ||
+                    (bottom == nullptr && right == nullptr)) &&
+                    GetPiece(tile->X, tile->Y) == nullptr)
+                    tiles->Add(tile);
+            }
+
+            return tiles;
+        }
+        IEnumerable<Move^>^ Karo::GetAvailableMoves(Player player) {
+			List<Move^>^ moves = gcnew List<Move^>(48); // 6 pieces * 8 directions
 
 			if (PieceCount() < 12) // we're still in the first phase
 			{
@@ -81,21 +100,70 @@ namespace Karo {
 				{
 					if (!tile->HasPiece)
 					{
-						moves[i++] = gcnew Move(tile->X, tile->Y, 0, 0, 0, 0);
+						moves->Add(gcnew Move(tile->X, tile->Y, 0, 0, 0, 0));
 					}
 				}
 			}
 			else // we're in the tile moving phase
 			{
+                IEnumerable<Tile^>^cornerTiles;
+
 				for each (Piece^ piece in Pieces)
 				{
+                    if (piece->Player != player) continue;
+
 					// loop surrounding tiles for positions
-					for (int x = -1; x++; x <= 1)
+                    for (int x = -1; x <= 1; x++)
 					{
-						for (int y = -1; y++; y <= 1)
-						{
-							Tile^ surroundingTile = GetTileAt(x, y);
-						}
+                        for (int y = -1; y <= 1; y++)
+                        {
+                            if (x == 0 && y == 0) continue;
+
+                            int newx = piece->Tile->X + x;
+                            int newy = piece->Tile->Y + y;
+
+                            // todo: check is filled, jump over
+                            Piece^ pieceOnTile = GetPiece(newx, newy);
+
+                            if (pieceOnTile != nullptr) {
+                                newx += x;
+                                newy += y;
+
+                                pieceOnTile = GetPiece(newx, newy);
+
+                                if (pieceOnTile != nullptr) {
+                                    continue;
+                                }
+                            }
+
+                            Tile^ surroundingTile = GetTileAt(newx, newy);
+
+                            if (surroundingTile == nullptr)
+                            {
+                                if (cornerTiles == nullptr) {
+                                    cornerTiles = GetCornerTiles();
+                                }
+
+                                for each(Tile^ cornerTile in cornerTiles)
+                                {
+                                    Tile^ top = GetTileAt(newx, newy - 1);
+                                    Tile^ bottom = GetTileAt(newx, newy + 1);
+                                    Tile^ left = GetTileAt(newx - 1, newy);
+                                    Tile^ right = GetTileAt(newx + 1, newy);
+
+                                    if (top == nullptr && bottom == nullptr && left == nullptr && right == nullptr) continue;
+
+                                    moves->Add(gcnew Move(newx, newy, piece->Tile->X, piece->Tile->Y, cornerTile->X, cornerTile->Y));
+                                }
+                            }
+                            else
+                            {
+                                if (pieceOnTile == nullptr) {
+                                    moves->Add(gcnew Move(newx, newy, piece->Tile->X, piece->Tile->Y, 0, 0));
+                                }
+                            }
+
+                        }
 					}
 				}
 			}
@@ -119,12 +187,117 @@ namespace Karo {
 		}
 
         bool Karo::IsValidMove(Move^ move) {
-            //todo: Implement
+			//Check if new location != old location
+			if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
+				return false;
+
+			//Check if there is a piece on the tile you want to move to
+			for each (Tile^ tile in Tiles){
+				if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY && tile->HasPiece)
+					return false;
+
+				//Check if the new location is into 'move-range'.
+				//Don't let pieces move 5 tiles..
+				//Keep in mind the possibilty of jumping over other pieces!!
+				int distanceX, distanceY,totalDistance;
+				distanceX = move->NewPieceX - move->OldPieceX;
+				distanceY = move->NewPieceY - move->OldPieceY;
+				if (distanceX < 0)
+					distanceX = Math::Abs(-distanceX);
+				if (distanceY < 0)
+					distanceY = Math::Abs(-distanceY);
+
+				totalDistance = distanceX + distanceY;
+				if (totalDistance < 0)
+					totalDistance = Math::Abs(-totalDistance);
+
+				//No does not allow jumping yet!
+				if (totalDistance > 3)
+					return false;
+
+				//If there is not, check if there is a tile on that position
+				//There is a tile, without piece
+				else if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY)
+					return true;
+			}
+			//If there is no tile, check if you can move a tile to this position
+			//todo:: tile moving
+
             return true;
         }
-        Karo^ Karo::WithMoveApplied(Move^ move) {
-            //todo: Implement
-            return nullptr;
+        Karo^ Karo::WithMoveApplied(Move^ move, Player player) {
+            if (move == nullptr) {
+                throw gcnew ArgumentNullException("move");
+            }
+
+            array<Tile^>^ tiles = gcnew array<Tile^> (20);
+            array<Piece^>^ pieces = gcnew array<Piece^>(12);
+            int tidx = 0, pidx = 0;
+
+            Tile^ movingTile = nullptr, ^targetTile = nullptr;
+            Piece^ movingPiece = nullptr;
+            
+            for each(Tile^ tile in Tiles) {
+                Tile^ newTile = tiles[tidx++] = gcnew Tile(tile->X, tile->Y);
+
+                if (newTile->X == move->OldTileX && newTile->Y == move->OldTileY) {
+                    movingTile = newTile;
+                }
+                if (newTile->X == move->NewPieceX && newTile->Y == move->NewPieceY) {
+                    targetTile = newTile;
+                }
+            }
+
+                for each(Piece^ piece in Pieces) {
+                if (piece == nullptr) continue;
+                Tile^ tile = nullptr;
+
+                for each(Tile^ t in tiles) {
+                    if (t->X == piece->Tile->X && t->Y == piece->Tile->Y) {
+                        tile = t;
+                        continue;
+                    }
+                }
+
+                if (tile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+
+                pieces[pidx++] = gcnew Piece(tile, piece->Player, piece->IsFaceUp);
+
+                if (pieces[pidx - 1]->Tile->X == move->OldPieceX && pieces[pidx - 1]->Tile->Y == move->OldPieceY)
+                    movingPiece = pieces[pidx - 1];
+            }
+
+            int pieceCount = PieceCount();
+            if (pieceCount < 12) {
+                if (targetTile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+                pieces[pieceCount] = gcnew Piece(targetTile, player, false);
+                return gcnew Karo(tiles, pieces);;
+            }
+            if (movingPiece == nullptr) {
+                throw gcnew Exception("Invalid board state");
+            }
+
+            if (targetTile == nullptr) {
+                if (movingTile == nullptr) {
+                    throw gcnew Exception("Invalid board state");
+                }
+
+                targetTile = movingTile;
+                targetTile->X = move->NewPieceX;
+                targetTile->Y = move->NewPieceY;
+            }
+
+            movingPiece->Tile = targetTile;
+
+            if (Math::Abs(move->NewPieceX - move->OldPieceX) > 1 || Math::Abs(move->NewPieceY - move->OldPieceY) > 1) {
+                movingPiece->IsFaceUp = !movingPiece->IsFaceUp;
+            }
+
+            return gcnew Karo(tiles, pieces);
         }
 		int Karo::PieceCount()
 		{

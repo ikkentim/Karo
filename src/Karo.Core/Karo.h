@@ -25,9 +25,10 @@ namespace Karo {
             };
             IEnumerable<Move^>^ GetAvailableMoves(Player player);
             bool IsValidMove(Move^ move);
-            Karo^ WithMoveApplied(Move^ move);
+            Karo^ WithMoveApplied(Move^ move, Player player);
 			int PieceCount();
-			Tile^ GetTileAt(int, int);
+            Tile^ GetTileAt(int, int);
+            IEnumerable<Tile^>^ GetCornerTiles();
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;
