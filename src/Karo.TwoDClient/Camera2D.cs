@@ -12,11 +12,11 @@ namespace Karo.TwoDClient
 		public Vector2 position {get;set;}
 		public float rotation;
 
-		public Camera2D()
+		public Camera2D(int x, int y)
 		{
 			zoom = 1.0f;
 			rotation = 0.0f;
-			position = Vector2.Zero;
+			position = new Vector2(x, y);
 		}
 
 		public void Move(Vector2 movement)
