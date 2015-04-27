@@ -111,7 +111,7 @@ namespace Karo {
 			for each (Tile^ tile in Tiles)
 			{
 				if (tile != nullptr)
-					if (tile->X == x && tile->y == y)
+					if (tile->X == x && tile->Y == y)
 						return tile;
 			}
 

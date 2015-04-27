@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Karo.TwoDClient.Drawable;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -19,17 +18,24 @@ namespace Karo.TwoDClient
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        List<Tile> tiles = new List<Tile>();
         CKaro karo = new CKaro();
-		Vector2 zeropoint = new Vector2(0, 0);
+		Camera2D cam = new Camera2D();
+		Vector2 tilePos;
 		Vector2 mousePos;
-		Core.Player turn = Core.Player.Player1;
+		Core.Player PlayerOne;
+		Core.Player PlayerTwo;
+
+		Core.Tile selectedPiece;
+
+		bool playerOneTurn = false;
 		Vector2 oldMousePos = new Vector2(0, 0);
 
         bool _canPlacePiece = true;
 
         public Game(int player1ai, int player2ai)
         {
+			//if (player1ai == 0) { PlayerOne = new HumanPlayer(); } // else new computer
+			//if (player2ai == 0) { PlayerTwo = new HumanPlayer(); } // else new computer
 
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -92,18 +98,36 @@ namespace Karo.TwoDClient
 				
             MouseState ms = Mouse.GetState();
 
-			int x = (int)Math.Floor((ms.X / 50.0) - (int)Math.Floor(zeropoint.X/50));
-			int y = (int)Math.Floor((ms.Y / 50.0) - (int)Math.Floor(zeropoint.Y/50));
-			mousePos = new Vector2(x, y);
+			mousePos = new Vector2(ms.X, ms.Y);
+
+			
 
 			Vector2 move = oldMousePos - new Vector2(ms.X, ms.Y);
 			if (ms.RightButton == ButtonState.Pressed)
 			{
-				zeropoint -= move;
+				cam.Move(move);
 			}
 			oldMousePos = new Vector2(ms.X, ms.Y);
 
+			Vector2 camPos = cam.position;
+			Vector2 absPos = mousePos + camPos;
+			tilePos = new Vector2((int)Math.Floor(absPos.X / 50), (int)Math.Floor(absPos.Y / 50));
 
+			if(ms.LeftButton == ButtonState.Pressed && _canPlacePiece) {
+				Core.Tile t = FindTile((int)tilePos.X, (int)tilePos.Y);
+
+				if(playerOneTurn) {
+					if (selectedPiece == null)
+					{
+						selectedPiece = t;
+					}
+					else
+					{
+						//PlayerOne.DoMove();
+					}
+				}
+				_canPlacePiece = true;
+			}
 			
 
 
@@ -111,6 +135,18 @@ namespace Karo.TwoDClient
 
             base.Update(gameTime);
         }
+
+		Core.Tile FindTile(int x, int y)
+		{
+			foreach (Core.Tile tile in karo.Tiles)
+			{
+				if (tile.X == x && tile.Y == y)
+				{
+					return tile;
+				}
+			}
+			return null;
+		}
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -120,15 +156,22 @@ namespace Karo.TwoDClient
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            spriteBatch.Begin();
+			spriteBatch.Begin(SpriteSortMode.BackToFront,
+						BlendState.AlphaBlend,
+						null,
+						null,
+						null,
+						null,
+						cam.get_transform(graphics));
 
 			
             foreach (Core.Tile tile in karo.Tiles)
             {
 				Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
-				coor += zeropoint ;
+				coor += new Vector2(200, 200);
                 spriteBatch.Draw(Textures.tileTex, coor, Color.White);
             }
+			
 			
 			int counter = 0;
 			if(karo.Pieces != null)
@@ -157,22 +200,21 @@ namespace Karo.TwoDClient
 			{
 				spriteBatch.Draw(Textures.redTex, new Vector2(50, 50), Color.White);
 			}
+			
+			Vector2 marker = tilePos * 50;
 
-			Vector2 marker = new Vector2(mousePos.X * (50 + 1) + zeropoint.X, mousePos.Y * (50 + 1) + zeropoint.Y);
-			spriteBatch.Draw(Textures.selectedMarkerTex, marker, Color.White);
+			spriteBatch.Draw(Textures.cursorTex, marker, Color.White);
 			
 			spriteBatch.Draw(Textures.redTex, new Vector2(200, 25), Color.White);
 			spriteBatch.Draw(Textures.whiteTex, new Vector2(250, 25), Color.White);
-			if(turn == Core.Player.Player1){
+			if(playerOneTurn){
 				spriteBatch.Draw(Textures.turnIndicator, new Vector2(200, 75), Color.White);
-			} else if (turn == Core.Player.Player2) {
+			} else {
 				spriteBatch.Draw(Textures.turnIndicator, new Vector2(250, 75), Color.White);
 			}
 			
 
             spriteBatch.End();
-
-            // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }
