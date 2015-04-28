@@ -15,6 +15,7 @@ namespace Karo {
 
 		private:
 			Karo::Core::Karo^ BoardState;
+			Random^ rand = gcnew Random();
 		};
 	}
 }
