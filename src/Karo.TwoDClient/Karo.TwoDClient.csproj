@@ -38,9 +38,11 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Camera2D.cs" />
     <Compile Include="Drawable\Tile.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="HumanPlayer.cs" />
     <Compile Include="Menu.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -15,8 +15,11 @@ namespace Karo.TwoDClient
 		public static Texture2D whiteTex;
 		public static Texture2D redMarkTex;
 		public static Texture2D whiteMarkTex;
-		public static Texture2D selectedMarkerTex;
+		public static Texture2D cursorTex;
 		public static Texture2D turnIndicator;
+		public static Texture2D moveIndicator;
+		public static Texture2D selectIndicator;
+
 
 
         public static void Load(ContentManager content)
@@ -26,8 +29,10 @@ namespace Karo.TwoDClient
 			whiteTex = content.Load<Texture2D>("whitepiece");
 			redMarkTex = content.Load<Texture2D>("redpiecemark");
 			whiteMarkTex = content.Load<Texture2D>("whitepiecemark");
-			selectedMarkerTex = content.Load<Texture2D>("selected");
+			cursorTex = content.Load<Texture2D>("selected");
 			turnIndicator = content.Load<Texture2D>("turn_indicator");
+			moveIndicator = content.Load<Texture2D>("possiblemove");
+			selectIndicator = content.Load<Texture2D>("selectedpiece");
         }
     }
 }
