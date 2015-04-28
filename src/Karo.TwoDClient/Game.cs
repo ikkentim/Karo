@@ -41,7 +41,8 @@ namespace Karo.TwoDClient
         private Vector2 _oldMousePos = new Vector2(0, 0);
         private Position _selectedOldPiece;
         private Position _selectedNewPiece;
-
+        private TimeSpan _lastMoveTime;
+        private Move _lastMove;
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
 
@@ -109,7 +110,6 @@ namespace Karo.TwoDClient
         protected override void Initialize()
         {
             _currentPlayer = _playerOne;
-            _playerOne.DoMove(null, 0, Done);
             base.Initialize();
         }
 
@@ -148,20 +148,7 @@ namespace Karo.TwoDClient
                     return Player.None;
             }
         }
-
-        /// <summary>
-        ///     Completes the move of the current player.
-        /// </summary>
-        /// <param name="move">The move.</param>
-        private void Done(Move move)
-        {
-            history.Add(move);
-            _karo = _karo.WithMoveApplied(move, CurrentTurn);
-
-            _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
-            _currentPlayer.DoMove(move, 0, Done);
-        }
-
+        
         /// <summary>
         ///     LoadContent will be called once per game and is the place to load
         ///     all of your content.
@@ -186,6 +173,25 @@ namespace Karo.TwoDClient
         }
 
         /// <summary>
+        ///     Completes the move of the current player.
+        /// </summary>
+        /// <param name="move">The move.</param>
+        private void Done(Move move)
+        {
+            history.Add(move);
+            _lastMove = move;
+            _karo = _karo.WithMoveApplied(move, CurrentTurn);
+
+            _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
+
+            if (IsCurrentPlayerHuman)
+                _currentPlayer.DoMove(_lastMove, 0, Done);
+            else
+                _awaitingMove = true;
+        }
+
+        private bool _awaitingMove = true;
+        /// <summary>
         ///     Allows the game to run logic such as updating the world,
         ///     checking for collisions, gathering input, and playing audio.
         /// </summary>
@@ -195,6 +201,18 @@ namespace Karo.TwoDClient
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            // 
+            if (_awaitingMove)
+            {
+                _lastMoveTime += gameTime.ElapsedGameTime;
+                if (_lastMoveTime > new TimeSpan(0, 0, 0, 1))
+                {
+                    _lastMoveTime = TimeSpan.Zero;
+                    _awaitingMove = false;
+                    _currentPlayer.DoMove(_lastMove, 0, Done);
+                }
+            }
 
             //get the current mouse state			
             var mouseState = Mouse.GetState();
