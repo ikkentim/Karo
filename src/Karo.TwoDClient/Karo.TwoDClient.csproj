@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Camera2D.cs" />
+    <Compile Include="ComputerPlayer.cs" />
     <Compile Include="Drawable\Tile.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameState.cs" />
@@ -76,6 +77,10 @@
     <ProjectReference Include="..\..\Karo.Common\Karo.Common\Karo.Common.vcxproj">
       <Project>{3576e071-2688-4338-93ea-b087876cecb4}</Project>
       <Name>Karo.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Karo.AI\Karo.AI.vcxproj">
+      <Project>{e186744d-b03e-4fde-9d64-adce106421f7}</Project>
+      <Name>Karo.AI</Name>
     </ProjectReference>
     <ProjectReference Include="..\Karo.Core\Karo.Core.vcxproj">
       <Project>{31bc028b-13cd-434f-bc01-2229701c5e8b}</Project>

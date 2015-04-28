@@ -36,6 +36,9 @@
     <ClInclude Include="Karo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PlayerHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Karo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

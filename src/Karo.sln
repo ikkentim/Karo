@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.Common", "..\Karo.Common\Karo.Common\Karo.Common.vcxproj", "{3576E071-2688-4338-93EA-B087876CECB4}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.AI", "Karo.AI\Karo.AI.vcxproj", "{E186744D-B03E-4FDE-9D64-ADCE106421F7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.Core.Test", "Karo.Core.Test\Karo.Core.Test.vcxproj", "{9757CB21-B840-49A6-B057-9F322E543DD6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.AI.Test", "Karo.AI.Test\Karo.AI.Test.vcxproj", "{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,6 +97,20 @@ Global
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Win32.Build.0 = Release|Win32
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|x86.ActiveCfg = Release|Win32
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|x86.Build.0 = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|Win32.Build.0 = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|x86.ActiveCfg = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Debug|x86.Build.0 = Debug|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|Win32.ActiveCfg = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|Win32.Build.0 = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|x86.ActiveCfg = Release|Win32
+		{CC15E15B-2DA8-49FE-B91E-F90E21E5012B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
