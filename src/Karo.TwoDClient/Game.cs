@@ -33,11 +33,20 @@ namespace Karo.TwoDClient
             if (player1Ai == 0)
             {
                 _playerOne = new HumanPlayer(Player.Player1);
-            } // else new CPU player
+            }
+            else
+            {
+                _playerOne = new ComputerPlayer();
+            }
+
             if (player2Ai == 0)
             {
                 _playerTwo = new HumanPlayer(Player.Player2);
-            } // else new CPU player
+            }
+            else
+            {
+                _playerTwo = new ComputerPlayer();
+            }
 
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";

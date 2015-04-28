@@ -45,7 +45,8 @@ namespace Karo {
 		void AI::DoMove(Karo::Common::Move^ previousMove, int timeLimit, Action<Karo::Common::Move^>^ done)
 		{
 			// add previous move
-			BoardState = BoardState->WithMoveApplied(previousMove, Karo::Core::Player::Player2); // if you get a move to apply, it's always from player2
+			if (previousMove != nullptr)
+				BoardState = BoardState->WithMoveApplied(previousMove, Karo::Core::Player::Player2); // if you get a move to apply, it's always from player2
 
 			Karo::Common::Move^ newMove = ChooseBestMove(BoardState, timeLimit, Karo::Core::Player::Player1);
 
