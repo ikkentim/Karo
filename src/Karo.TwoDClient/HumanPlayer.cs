@@ -37,9 +37,9 @@ namespace Karo.TwoDClient
 	        if (Board.IsValidMove(move))
 	        {
 	            Board = Board.WithMoveApplied(move, playerNumber);
-	            chosenMove(move);
-
+	            var tmp = chosenMove;
 	            chosenMove = null;
+	            tmp(move);
 	        }
 	    }
 	}

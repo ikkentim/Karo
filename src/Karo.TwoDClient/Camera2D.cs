@@ -1,35 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+
 namespace Karo.TwoDClient
 {
-	class Camera2D
-	{
-		public float zoom;
-		public Matrix transform;
-		public Vector2 position {get;set;}
-		public float rotation;
+    internal class Camera2D
+    {
+        public float Rotation { get; private set; }
+        public Matrix Transform { get
+        {
+            return Matrix.CreateTranslation(new Vector3(-Position.X, -Position.Y, 0))
+                   *Matrix.CreateRotationZ(Rotation)
+                   *Matrix.CreateScale(new Vector3(Zoom, Zoom, 1))
+                   *Matrix.CreateTranslation(new Vector3(0, 0, 0));
+        } }
+        public float Zoom { get; private set; }
 
-		public Camera2D(int x, int y)
-		{
-			zoom = 1.0f;
-			rotation = 0.0f;
-			position = new Vector2(x, y);
-		}
+        public Camera2D(int x, int y)
+        {
+            Zoom = 1.0f;
+            Rotation = 0.0f;
+            Position = new Vector2(x, y);
+        }
 
-		public void Move(Vector2 movement)
-		{
-			position += movement;
-		}
-		public Matrix get_transform(GraphicsDeviceManager graphics)
-		{
-			transform = Matrix.CreateTranslation(new Vector3(-position.X, -position.Y, 0))
-				* Matrix.CreateRotationZ(rotation)
-				* Matrix.CreateScale(new Vector3(zoom, zoom, 1))
-				* Matrix.CreateTranslation(new Vector3(0, 0, 0));
-			return transform;
-		}
-	}
+        public Vector2 Position { get; set; }
+
+        public void Move(Vector2 movement)
+        {
+            Position += movement;
+        }
+    }
 }

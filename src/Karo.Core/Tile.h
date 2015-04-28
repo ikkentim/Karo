@@ -11,7 +11,6 @@ namespace Karo {
             }
             property int X;
             property int Y;
-			bool HasPiece = false;
         };
     }
 }
