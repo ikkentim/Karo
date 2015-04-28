@@ -13,18 +13,33 @@ namespace Karo.TwoDClient
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
+        private class Position
+        {
+            public Position(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public int X { get; private set; }
+            public int Y { get; private set; }
+        }
+
+        private const int TileSize = 50;
+
         private readonly Camera2D _camera = new Camera2D(-200, -200);
-        private readonly GraphicsDeviceManager _graphics;
+
+        private GraphicsDeviceManager _graphics;
         private readonly IPlayer _playerOne;
         private readonly IPlayer _playerTwo;
-        private bool _isLeftMouseButtonDown;
-
         private IPlayer _currentPlayer;
+        private bool _isLeftMouseButtonDown;
         private CKaro _karo = new CKaro();
-        private Vector2 _mousePosition;
 
         private Vector2 _oldMousePos = new Vector2(0, 0);
-        private Tile _selectedPiece;
+        private Position _selectedOldPiece;
+        private Position _selectedNewPiece;
+
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
 
@@ -68,13 +83,16 @@ namespace Karo.TwoDClient
         }
 
         /// <summary>
-        /// Gets a value indicating whether the current player is human.
+        ///     Gets a value indicating whether the current player is human.
         /// </summary>
         public bool IsCurrentPlayerHuman
         {
             get { return _currentPlayer is HumanPlayer; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the game is in the first phase.
+        /// </summary>
         public bool IsInFirstPhase
         {
             get { return _karo.PieceCount() < 12; }
@@ -85,11 +103,8 @@ namespace Karo.TwoDClient
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             _currentPlayer = _playerOne;
             _playerOne.DoMove(null, 0, Done);
-
             base.Initialize();
         }
 
@@ -170,32 +185,29 @@ namespace Karo.TwoDClient
         protected override void Update(GameTime gameTime)
         {
             // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-                Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            //get the current mouse state, save to vector				
-            var ms = Mouse.GetState();
-
-            _mousePosition = new Vector2(ms.X, ms.Y);
+            //get the current mouse state			
+            var mouseState = Mouse.GetState();
+            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
 
             //update the camera's position based on how far the right mouse button has been dragged since last update
-            var move = _oldMousePos - new Vector2(ms.X, ms.Y);
-            if (ms.RightButton == ButtonState.Pressed)
-            {
+            var move = _oldMousePos - new Vector2(mouseState.X, mouseState.Y);
+            if (mouseState.RightButton == ButtonState.Pressed)
                 _camera.Move(move);
-            }
-            _oldMousePos = new Vector2(ms.X, ms.Y);
+
+            _oldMousePos = mousePosition;
 
 
             //since the mouse click location is relative to the camera we need to get the absolute position in the playing field
-            var camPos = _camera.position;
-            var absPos = _mousePosition + camPos;
-            _tilePosition = new Vector2((int) Math.Floor(absPos.X/50), (int) Math.Floor(absPos.Y/50));
+            var absolutePosition = mousePosition + _camera.Position;
+            _tilePosition = new Vector2((int) Math.Floor(absolutePosition.X/TileSize),
+                (int) Math.Floor(absolutePosition.Y/TileSize));
 
             var human = _currentPlayer as HumanPlayer;
 
-            if (ms.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
+            if (mouseState.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
             {
                 _isLeftMouseButtonDown = true;
 
@@ -203,7 +215,7 @@ namespace Karo.TwoDClient
                 var tile = _karo.GetTileAt((int) _tilePosition.X, (int) _tilePosition.Y);
 
                 //if the clicked tile is not empty
-                if (_selectedPiece == null)
+                if (_selectedOldPiece == null)
                 {
                     if (IsInFirstPhase)
                     {
@@ -215,17 +227,37 @@ namespace Karo.TwoDClient
                         var piece = _karo.GetPiece(tile.X, tile.Y);
 
                         if (piece != null && piece.Player == CurrentTurn)
-                            _selectedPiece = tile;
+                            _selectedOldPiece = new Position(tile.X, tile.Y);
                     }
                 }
                 else
                 {
-                    //make a move
-                    human.PrepareMove(new Move((int)_tilePosition.X, (int)_tilePosition.Y, _selectedPiece.X, _selectedPiece.Y, 0, 0));
-                    _selectedPiece = null;
+                    if (_selectedNewPiece != null)
+                    {
+                        var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
+
+                        human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
+                            _selectedOldPiece.Y, corner.X, corner.Y));
+
+                        _selectedOldPiece = null;
+                        _selectedNewPiece = null;
+                    }
+                    else
+                    {
+                        _selectedNewPiece = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
+
+                        if (_karo.GetTileAt(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
+                        {
+                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
+                                _selectedOldPiece.Y, 0, 0));
+
+                            _selectedOldPiece = null;
+                            _selectedNewPiece = null;
+                        }
+                    }
                 }
             }
-            if (ms.LeftButton == ButtonState.Released)
+            if (mouseState.LeftButton == ButtonState.Released)
             {
                 _isLeftMouseButtonDown = false;
             }
@@ -233,6 +265,8 @@ namespace Karo.TwoDClient
             base.Update(gameTime);
         }
 
+
+        #region Drawing
 
         /// <summary>
         ///     This is called when the game should draw itself.
@@ -248,7 +282,7 @@ namespace Karo.TwoDClient
                 null,
                 null,
                 null,
-                _camera.get_transform(_graphics));
+                _camera.Transform);
 
             DrawTiles();
 
@@ -265,9 +299,9 @@ namespace Karo.TwoDClient
         {
             foreach (var tile in _karo.Tiles)
             {
-                var coor = new Vector2(tile.X*(50 + 1), tile.Y*(50 + 1));
+                var coor = new Vector2(tile.X*(TileSize + 1), tile.Y*(TileSize + 1));
 
-                _spriteBatch.Draw(Textures.tileTex, coor, Color.White);
+                _spriteBatch.Draw(Textures.Tile, coor, Color.White);
             }
         }
 
@@ -279,37 +313,37 @@ namespace Karo.TwoDClient
                 {
                     if (piece != null)
                     {
-                        var coord = new Vector2(piece.Tile.X*50, piece.Tile.Y*50);
+                        var coord = new Vector2(piece.Tile.X*TileSize, piece.Tile.Y*TileSize);
                         if (piece.Player == Player.Player1)
                             if (piece.IsFaceUp)
                             {
-                                _spriteBatch.Draw(Textures.redTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.RedPieceMarked, coord, Color.White);
                             }
                             else
                             {
-                                _spriteBatch.Draw(Textures.redMarkTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.RedPiece, coord, Color.White);
                             }
                         if (piece.Player == Player.Player2)
                         {
                             if (piece.IsFaceUp)
                             {
-                                _spriteBatch.Draw(Textures.whiteTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.WhitePieceMarked, coord, Color.White);
                             }
                             else
                             {
-                                _spriteBatch.Draw(Textures.whiteMarkTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.WhitePiece, coord, Color.White);
                             }
                         }
                     }
                     else
                     {
-                        _spriteBatch.Draw(Textures.whiteTex, new Vector2(-100, (counter*10)), Color.White);
+                        _spriteBatch.Draw(Textures.WhitePiece, new Vector2(-100, (counter*10)), Color.White);
                     }
                     counter++;
                 }
             else
             {
-                _spriteBatch.Draw(Textures.redTex, new Vector2(50, 50), Color.White);
+                _spriteBatch.Draw(Textures.RedPiece, new Vector2(TileSize, TileSize), Color.White);
             }
         }
 
@@ -317,24 +351,32 @@ namespace Karo.TwoDClient
         {
             var marker = _tilePosition*51;
 
-            _spriteBatch.Draw(Textures.cursorTex, marker, Color.White);
+            _spriteBatch.Draw(Textures.Cursor, marker, Color.White);
 
-            _spriteBatch.Draw(Textures.redTex, _camera.position + new Vector2(200, 25), Color.White);
-            _spriteBatch.Draw(Textures.whiteTex, _camera.position + new Vector2(250, 25), Color.White);
+            _spriteBatch.Draw(Textures.RedPiece, _camera.Position + new Vector2(200, 25), Color.White);
+            _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
             if (CurrentTurn == Player.Player1)
             {
-                _spriteBatch.Draw(Textures.turnIndicator, _camera.position + new Vector2(200, 75), Color.White);
+                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(200, 75), Color.White);
             }
             else
             {
-                _spriteBatch.Draw(Textures.turnIndicator, _camera.position + new Vector2(250, 75), Color.White);
+                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(250, 75), Color.White);
             }
-            if (_selectedPiece != null)
+            if (_selectedOldPiece != null)
             {
-                _spriteBatch.Draw(Textures.selectIndicator, new Vector2(_selectedPiece.X*51, _selectedPiece.Y*51),
+                _spriteBatch.Draw(Textures.SelectIndicator, new Vector2(_selectedOldPiece.X * 51, _selectedOldPiece.Y * 51),
+                    Color.White);
+            }
+            if (_selectedNewPiece != null)
+            {
+                _spriteBatch.Draw(Textures.Piece, new Vector2(_selectedNewPiece.X * 51, _selectedNewPiece.Y * 51),
                     Color.White);
             }
         }
+
+        #endregion
+
     }
 }

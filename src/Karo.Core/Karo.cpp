@@ -98,7 +98,7 @@ namespace Karo {
 			{
 				for each (Tile^ tile in Tiles)
 				{
-					if (!tile->HasPiece)
+					if (GetPiece(tile->X, tile->Y) == nullptr)
 					{
 						moves->Add(gcnew Move(tile->X, tile->Y, 0, 0, 0, 0));
 					}
