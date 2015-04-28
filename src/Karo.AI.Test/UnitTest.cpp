@@ -59,5 +59,20 @@ namespace KaroAITest
 			// TODO: Add test logic here
 			//
 		};
+
+		[TestMethod]
+		void ChooseBestMove()
+		{
+			Karo::AI::AI^ ai = gcnew Karo::AI::AI();
+
+			Karo::Common::Move^ move = gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0);
+
+			ai->DoMove(move, 10, gcnew System::Action<Karo::Common::Move^>(&BlaMove));
+		}
+
+		static void BlaMove(Karo::Common::Move^ move)
+		{
+			Assert::AreEqual(0, move->NewPieceX);
+		}
 	};
 }
