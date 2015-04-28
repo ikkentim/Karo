@@ -37,8 +37,6 @@ namespace Karo {
 
 		int AI::Evaluate(Karo::Core::Karo^ board, Karo::Core::Player player)
 		{
-			Random^ rand = gcnew Random();
-
 			return rand->Next(0, 100);
 		}
 
