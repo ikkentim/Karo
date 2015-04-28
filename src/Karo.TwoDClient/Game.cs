@@ -1,82 +1,152 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using CKaro = Karo.Core.Karo;
 
 namespace Karo.TwoDClient
 {
     /// <summary>
-    /// This is the main type for your game
+    ///     This is the main type for your game
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        CKaro karo = new CKaro();
-		Camera2D cam = new Camera2D(-200, -200);
-		Vector2 tilePos;
-		Vector2 mousePos;
-		Common.IPlayer PlayerOne;
-		Common.IPlayer PlayerTwo;
+        private readonly Camera2D _camera = new Camera2D(-200, -200);
+        private readonly GraphicsDeviceManager _graphics;
+        private readonly IPlayer _playerOne;
+        private readonly IPlayer _playerTwo;
+        private bool _isLeftMouseButtonDown;
 
-		Core.Tile selectedPiece;
+        private IPlayer _currentPlayer;
+        private CKaro _karo = new CKaro();
+        private Vector2 _mousePosition;
 
-		bool playerOneTurn = false;
-		Vector2 oldMousePos = new Vector2(0, 0);
+        private Vector2 _oldMousePos = new Vector2(0, 0);
+        private Tile _selectedPiece;
+        private SpriteBatch _spriteBatch;
+        private Vector2 _tilePosition;
 
-        bool _canPlacePiece = true;
-
-        public Game(int player1ai, int player2ai)
+        public Game(int player1Ai, int player2Ai)
         {
-			if (player1ai == 0) { PlayerOne = new HumanPlayer(Player.Player1, karo); } // else new CPU player
-			if (player2ai == 0) { PlayerTwo = new HumanPlayer(Player.Player2, karo); } // else new CPU player
+            if (player1Ai == 0)
+            {
+                _playerOne = new HumanPlayer(Player.Player1);
+            } // else new CPU player
+            if (player2Ai == 0)
+            {
+                _playerTwo = new HumanPlayer(Player.Player2);
+            } // else new CPU player
 
-            graphics = new GraphicsDeviceManager(this);
+            _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             IsFixedTimeStep = false;
         }
 
         /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
+        ///     Gets the current turn.
+        /// </summary>
+        public Player CurrentTurn
+        {
+            get
+            {
+                return _currentPlayer == _playerOne
+                    ? Player.Player1
+                    : _currentPlayer == _playerTwo ? Player.Player2 : Player.None;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the current player is human.
+        /// </summary>
+        public bool IsCurrentPlayerHuman
+        {
+            get { return _currentPlayer is HumanPlayer; }
+        }
+
+        public bool IsInFirstPhase
+        {
+            get { return _karo.PieceCount() < 12; }
+        }
+
+        /// <summary>
+        ///     Initializes this instance.
         /// </summary>
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
 
+            _currentPlayer = _playerOne;
+            _playerOne.DoMove(null, 0, Done);
+
             base.Initialize();
         }
 
         /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
+        ///     Gets the instance of the specified player.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <returns>Instance of the specified player.</returns>
+        private IPlayer GetPlayer(Player player)
+        {
+            switch (player)
+            {
+                case Player.Player1:
+                    return _playerOne;
+                case Player.Player2:
+                    return _playerTwo;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        ///     Gets the opponent of the specified player.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <returns>The opponent of the specified player.</returns>
+        private static Player GetOpponent(Player player)
+        {
+            switch (player)
+            {
+                case Player.Player1:
+                    return Player.Player2;
+                case Player.Player2:
+                    return Player.Player1;
+                default:
+                    return Player.None;
+            }
+        }
+
+        /// <summary>
+        ///     Completes the move of the current player.
+        /// </summary>
+        /// <param name="move">The move.</param>
+        private void Done(Move move)
+        {
+            _karo = _karo.WithMoveApplied(move, CurrentTurn);
+
+            _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
+            _currentPlayer.DoMove(move, 0, Done);
+        }
+
+        /// <summary>
+        ///     LoadContent will be called once per game and is the place to load
+        ///     all of your content.
         /// </summary>
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            var core = new CKaro();
-
-            var tiles = core.Tiles;
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Textures.Load(Content);
         }
 
         /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
+        ///     UnloadContent will be called once per game and is the place to unload
+        ///     all content.
         /// </summary>
         protected override void UnloadContent()
         {
@@ -84,102 +154,92 @@ namespace Karo.TwoDClient
         }
 
         /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
+        ///     Allows the game to run logic such as updating the world,
+        ///     checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
             // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                this.Exit();
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
             //get the current mouse state, save to vector				
-            MouseState ms = Mouse.GetState();
+            var ms = Mouse.GetState();
 
-			mousePos = new Vector2(ms.X, ms.Y);
+            _mousePosition = new Vector2(ms.X, ms.Y);
 
             //update the camera's position based on how far the right mouse button has been dragged since last update
-			Vector2 move = oldMousePos - new Vector2(ms.X, ms.Y);
-			if (ms.RightButton == ButtonState.Pressed)
-			{
-				cam.Move(move);
-			}
-			oldMousePos = new Vector2(ms.X, ms.Y);
+            var move = _oldMousePos - new Vector2(ms.X, ms.Y);
+            if (ms.RightButton == ButtonState.Pressed)
+            {
+                _camera.Move(move);
+            }
+            _oldMousePos = new Vector2(ms.X, ms.Y);
 
 
             //since the mouse click location is relative to the camera we need to get the absolute position in the playing field
-			Vector2 camPos = cam.position;
-			Vector2 absPos = mousePos + camPos;
-			tilePos = new Vector2((int)Math.Floor(absPos.X / 50), (int)Math.Floor(absPos.Y / 50));
+            var camPos = _camera.position;
+            var absPos = _mousePosition + camPos;
+            _tilePosition = new Vector2((int) Math.Floor(absPos.X/50), (int) Math.Floor(absPos.Y/50));
 
-            //if mouse button is pressed
-			if(ms.LeftButton == ButtonState.Pressed && _canPlacePiece) {
-                //get the tile at the mouse location
-			    Core.Tile t = karo.GetTileAt((int) tilePos.X, (int) tilePos.Y);
+            var human = _currentPlayer as HumanPlayer;
 
-			    _canPlacePiece = false;
-                //handle turn logic
-			    
-                //if the clicked tile is not empty
-			    if (t != null)
-                    //if there is no current selected tile
-			        if (selectedPiece == null)
-			        {
-                        //select the clicked tile
-			            selectedPiece = t;
-			        }
-			        else
-			        {
-                        //make a move
-                        //test code, move-making code goes here
-			            HumanPlayer testplayer;
-			            if (playerOneTurn)
-			            {
-			                testplayer = (HumanPlayer) PlayerOne;
-			            }
-			            else
-			            {
-			                testplayer = (HumanPlayer) PlayerTwo;
-			            }
-			            testplayer.PrepareMove(new Move(t.X, t.Y, 0, 0, 0, 0));
-			            selectedPiece = null;
-			            karo = testplayer.GetNewBoard();
-                        if (playerOneTurn)
-                        {
-                            PlayerOne = testplayer;
-                        }
-                        else
-                        {
-                            PlayerTwo = testplayer;
-                        }
-			            playerOneTurn = !playerOneTurn;
-			        }
-			}
-            if (ms.LeftButton == ButtonState.Released && !_canPlacePiece)
+            if (ms.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
             {
-                _canPlacePiece = true;
+                _isLeftMouseButtonDown = true;
+
+                //get the tile at the mouse location
+                var tile = _karo.GetTileAt((int) _tilePosition.X, (int) _tilePosition.Y);
+
+                //if the clicked tile is not empty
+                if (_selectedPiece == null)
+                {
+                    if (IsInFirstPhase)
+                    {
+                        if (tile != null)
+                            human.PrepareMove(new Move(tile.X, tile.Y, 0, 0, 0, 0));
+                    }
+                    else
+                    {
+                        var piece = _karo.GetPiece(tile.X, tile.Y);
+
+                        if (piece != null && piece.Player == CurrentTurn)
+                            _selectedPiece = tile;
+                    }
+                }
+                else
+                {
+                    //make a move
+                    human.PrepareMove(new Move((int)_tilePosition.X, (int)_tilePosition.Y, _selectedPiece.X, _selectedPiece.Y, 0, 0));
+                    _selectedPiece = null;
+                }
             }
-		
+            if (ms.LeftButton == ButtonState.Released)
+            {
+                _isLeftMouseButtonDown = false;
+            }
+
             base.Update(gameTime);
         }
 
 
         /// <summary>
-        /// This is called when the game should draw itself.
+        ///     This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-			spriteBatch.Begin(SpriteSortMode.Deferred,
-						BlendState.AlphaBlend,
-						null,
-						null,
-						null,
-						null,
-						cam.get_transform(graphics));
+            _spriteBatch.Begin(SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                null,
+                null,
+                null,
+                null,
+                _camera.get_transform(_graphics));
 
             DrawTiles();
 
@@ -187,83 +247,84 @@ namespace Karo.TwoDClient
 
             DrawUI();
 
-            spriteBatch.End();
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
 
         private void DrawTiles()
         {
-            foreach (Core.Tile tile in karo.Tiles)
+            foreach (var tile in _karo.Tiles)
             {
-                Vector2 coor = new Vector2(tile.X * (50 + 1), tile.Y * (50 + 1));
-                
-                spriteBatch.Draw(Textures.tileTex, coor, Color.White);
+                var coor = new Vector2(tile.X*(50 + 1), tile.Y*(50 + 1));
+
+                _spriteBatch.Draw(Textures.tileTex, coor, Color.White);
             }
         }
 
         private void DrawPieces()
         {
-            int counter = 0;
-            if (karo.Pieces != null)
-                foreach (Core.Piece piece in karo.Pieces)
+            var counter = 0;
+            if (_karo.Pieces != null)
+                foreach (var piece in _karo.Pieces)
                 {
                     if (piece != null)
                     {
-                        Vector2 coord = new Vector2(piece.Tile.X, piece.Tile.Y);
-                        if (piece.Player == Core.Player.Player1)
+                        var coord = new Vector2(piece.Tile.X*50, piece.Tile.Y*50);
+                        if (piece.Player == Player.Player1)
                             if (piece.IsFaceUp)
                             {
-                                spriteBatch.Draw(Textures.redTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.redTex, coord, Color.White);
                             }
                             else
                             {
-                                spriteBatch.Draw(Textures.redMarkTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.redMarkTex, coord, Color.White);
                             }
-                        if (piece.Player == Core.Player.Player2)
+                        if (piece.Player == Player.Player2)
                         {
                             if (piece.IsFaceUp)
                             {
-                                spriteBatch.Draw(Textures.whiteTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.whiteTex, coord, Color.White);
                             }
                             else
                             {
-                                spriteBatch.Draw(Textures.whiteMarkTex, coord, Color.White);
+                                _spriteBatch.Draw(Textures.whiteMarkTex, coord, Color.White);
                             }
                         }
                     }
                     else
                     {
-                        spriteBatch.Draw(Textures.whiteTex, new Vector2(-100, (counter * 10)), Color.White);
+                        _spriteBatch.Draw(Textures.whiteTex, new Vector2(-100, (counter*10)), Color.White);
                     }
                     counter++;
                 }
             else
             {
-                spriteBatch.Draw(Textures.redTex, new Vector2(50, 50), Color.White);
+                _spriteBatch.Draw(Textures.redTex, new Vector2(50, 50), Color.White);
             }
         }
 
         private void DrawUI()
         {
-            Vector2 marker = tilePos * 51;
+            var marker = _tilePosition*51;
 
-            spriteBatch.Draw(Textures.cursorTex, marker, Color.White);
+            _spriteBatch.Draw(Textures.cursorTex, marker, Color.White);
 
-            spriteBatch.Draw(Textures.redTex, cam.position + new Vector2(200, 25), Color.White);
-            spriteBatch.Draw(Textures.whiteTex, cam.position + new Vector2(250, 25), Color.White);
+            _spriteBatch.Draw(Textures.redTex, _camera.position + new Vector2(200, 25), Color.White);
+            _spriteBatch.Draw(Textures.whiteTex, _camera.position + new Vector2(250, 25), Color.White);
 
-            if (playerOneTurn)
+            if (CurrentTurn == Player.Player1)
             {
-                spriteBatch.Draw(Textures.turnIndicator, cam.position + new Vector2(200, 75), Color.White);
+                _spriteBatch.Draw(Textures.turnIndicator, _camera.position + new Vector2(200, 75), Color.White);
             }
             else
             {
-                spriteBatch.Draw(Textures.turnIndicator, cam.position + new Vector2(250, 75), Color.White);
+                _spriteBatch.Draw(Textures.turnIndicator, _camera.position + new Vector2(250, 75), Color.White);
             }
-            if (selectedPiece != null)
+            if (_selectedPiece != null)
             {
-                spriteBatch.Draw(Textures.selectIndicator, new Vector2(selectedPiece.X * 51, selectedPiece.Y * 51), Color.White);
+                _spriteBatch.Draw(Textures.selectIndicator, new Vector2(_selectedPiece.X*51, _selectedPiece.Y*51),
+                    Color.White);
             }
         }
     }

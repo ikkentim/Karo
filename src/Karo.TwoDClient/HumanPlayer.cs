@@ -3,25 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Karo.Common;
+using Karo.Core;
+using Karo = Karo.Core.Karo;
 
 namespace Karo.TwoDClient
 {
     
-	class HumanPlayer : Common.IPlayer
+	class HumanPlayer : IPlayer
 	{
-	    private Core.Player playerNumber;
+	    private Player playerNumber;
 	    private Action<Move> chosenMove;
 	    private Core.Karo Board;
 
-	    public HumanPlayer(Core.Player playern, Core.Karo old)
+	    public HumanPlayer(Player player)
 	    {
-	        Board = old;
-	        playerNumber = playern;
+	        Board = new Core.Karo();
+	        playerNumber = player;
             
 	    }
 	    public void DoMove(Move previousMove, int timeLimit, Action<Move> done)
 	    {
-	        Board = Board.WithMoveApplied(previousMove, playerNumber);
+	        if (previousMove != null)
+	            Board = Board.WithMoveApplied(previousMove,
+	                playerNumber == Player.Player1 ? Player.Player2 : Player.Player1);
+
 	        chosenMove = done;
 	    }
 
@@ -29,16 +34,13 @@ namespace Karo.TwoDClient
 	    {
 	        if (chosenMove == null) return;
 
-	        chosenMove(move);
+	        if (Board.IsValidMove(move))
+	        {
+	            Board = Board.WithMoveApplied(move, playerNumber);
+	            chosenMove(move);
 
-	        chosenMove = null;
+	            chosenMove = null;
+	        }
 	    }
-
-	    public Core.Karo GetNewBoard()
-	    {
-	        return Board;
-	    }
-        
-
 	}
 }
