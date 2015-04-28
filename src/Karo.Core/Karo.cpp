@@ -186,45 +186,71 @@ namespace Karo {
 			return nullptr;
 		}
 
-        bool Karo::IsValidMove(Move^ move) {
-			//Check if new location != old location
-			if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
-				return false;
+		bool Karo::IsValidMove(Move^ move) {
 
-			//Check if there is a piece on the tile you want to move to
-			for each (Tile^ tile in Tiles){
-				if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY && tile->HasPiece)
+			//Step0: Initphase //Place piece on current location, just check if there is a piece already
+			if (PieceCount() <= 11)
+			{
+				if (GetPiece(move->NewPieceX, move->NewPieceY) != nullptr)
 					return false;
-
-				//Check if the new location is into 'move-range'.
-				//Don't let pieces move 5 tiles..
-				//Keep in mind the possibilty of jumping over other pieces!!
-				int distanceX, distanceY,totalDistance;
-				distanceX = move->NewPieceX - move->OldPieceX;
-				distanceY = move->NewPieceY - move->OldPieceY;
-				if (distanceX < 0)
-					distanceX = Math::Abs(-distanceX);
-				if (distanceY < 0)
-					distanceY = Math::Abs(-distanceY);
-
-				totalDistance = distanceX + distanceY;
-				if (totalDistance < 0)
-					totalDistance = Math::Abs(-totalDistance);
-
-				//No does not allow jumping yet!
-				if (totalDistance > 3)
-					return false;
-
-				//If there is not, check if there is a tile on that position
-				//There is a tile, without piece
-				else if (tile->X == move->NewPieceX && tile->Y == move->NewPieceY)
+				else
 					return true;
 			}
-			//If there is no tile, check if you can move a tile to this position
-			//todo:: tile moving
+			//Move Phase
+			else{
+				//Step1: Check if new location is different from the current one
+				if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
+					return false;
 
-            return true;
-        }
+				//Step2: Check if there already is a piece on the tile your trying to move to
+				for each (Tile^ tile in Tiles){
+					if (GetPiece(move->NewPieceX,move->NewPieceY)!= nullptr)
+						return false;
+
+					//Step3: Check if there is a piece between your current location, and the new one
+					int pieceLocationX, pieceLocationY, distancex, distancey;
+					//If the X location won't change, keep the X location. otherwise add distance
+					if (move->NewPieceX == move->OldPieceX)
+						pieceLocationX = move->NewPieceX;
+					else{
+						distancex = (move->NewPieceX - move->OldPieceX);
+						if (distancex < 0)
+							distancex = Math::Abs(-distancex);
+						if (move->NewPieceX > move->OldPieceX)
+							pieceLocationX = (move->OldPieceX + distancex / 2);
+						else
+							pieceLocationX = (move->OldPieceX - distancex / 2);
+
+					}
+					if (move->NewPieceY == move->OldPieceY)
+						pieceLocationY = move->OldPieceY;
+					else{
+						distancey = (move->NewPieceY - move->OldPieceY);
+						if (distancey < 0)
+							distancey = Math::Abs(-distancey); 
+						if (move->NewPieceY > move->OldPieceY)
+							pieceLocationY = (move->OldPieceY + distancey / 2);
+						else
+							pieceLocationY = (move->OldPieceY - distancey / 2);
+					}
+
+					if (distancex > 2 || distancey > 2)
+						return false;
+					//If there is a piece on the calculated X and Y, Then you can jump over it (if enemy)
+					if (GetPiece(pieceLocationX, pieceLocationY) != nullptr &&
+						GetPiece(pieceLocationX, pieceLocationY)->Player != GetPiece(move->OldPieceX,move->OldPieceY)->Player)
+						return true;
+					//Check if the new location is into 'move-range'.
+					//Distance of X and Y should be max 1. Unless there is a enemy piece next to it (jumping)
+					//Keep in mind the possibilty of jumping over other pieces!!
+					if (distancex > 1 || distancey > 1)
+						return false;
+				}
+				return true;
+			}
+		}
+
+
         Karo^ Karo::WithMoveApplied(Move^ move, Player player) {
             if (move == nullptr) {
                 throw gcnew ArgumentNullException("move");
