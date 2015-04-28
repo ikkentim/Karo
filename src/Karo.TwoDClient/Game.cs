@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using CKaro = Karo.Core.Karo;
+using System.Linq;
 
 namespace Karo.TwoDClient
 {
@@ -42,6 +44,9 @@ namespace Karo.TwoDClient
 
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
+
+        private List<Move> history = new List<Move>();
+        private SpriteFont font;
 
         public Game(int player1Ai, int player2Ai)
         {
@@ -150,6 +155,7 @@ namespace Karo.TwoDClient
         /// <param name="move">The move.</param>
         private void Done(Move move)
         {
+            history.Add(move);
             _karo = _karo.WithMoveApplied(move, CurrentTurn);
 
             _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
@@ -164,6 +170,8 @@ namespace Karo.TwoDClient
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            font = Content.Load<SpriteFont>("Spritefont1");
 
             Textures.Load(Content);
         }
@@ -373,6 +381,19 @@ namespace Karo.TwoDClient
             {
                 _spriteBatch.Draw(Textures.Piece, new Vector2(_selectedNewPiece.X * 51, _selectedNewPiece.Y * 51),
                     Color.White);
+            }
+
+            int i = 0;
+            foreach (Move move in Enumerable.Reverse(history).Take(10))
+            {
+                string str = "";
+
+                str += "Piece from " + move.OldPieceX + "," + move.OldPieceY + " to " + move.NewPieceX + "," +
+                       move.NewPieceY;
+
+                _spriteBatch.DrawString(font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f, new Vector2(0, i * -50), new Vector2(0.3f, 0.3f), new SpriteEffects(), 0f);
+
+                i++;
             }
         }
 
