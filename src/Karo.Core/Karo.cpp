@@ -217,7 +217,10 @@ namespace Karo {
 						if (distancex < 0)
 							distancex = Math::Abs(-distancex);
 						
-						pieceLocationX = (distancex / 2 + move->OldPieceX);
+						if (move->NewPieceX > move->OldPieceX)
+							pieceLocationX = (move->OldPieceX + distancex / 2);
+						else
+							pieceLocationX = (move->OldPieceX - distancex / 2);
 
 					}
 					if (move->NewPieceY == move->OldPieceY)
@@ -227,7 +230,10 @@ namespace Karo {
 						if (distancey < 0)
 							distancey = Math::Abs(-distancey); 
 						
-						pieceLocationY = (distancey / 2 + move->OldPieceY);
+						if (move->NewPieceY > move->OldPieceY)
+							pieceLocationY = (move->OldPieceY + distancex / 2);
+						else
+							pieceLocationY = (move->OldPieceY - distancex / 2);
 					}
 
 					//If there is a piece on the calculated X and Y, Then you can jump over it (if enemy)
@@ -238,15 +244,12 @@ namespace Karo {
 					//Check if the new location is into 'move-range'.
 					//Distance of X and Y should be max 1. Unless there is a enemy piece next to it (jumping)
 					//Keep in mind the possibilty of jumping over other pieces!!
-					int distanceX, distanceY;
-					distanceX = move->NewPieceX - move->OldPieceX;
-					distanceY = move->NewPieceY - move->OldPieceY;
-					if (distanceX < 0)
-						distanceX = Math::Abs(-distanceX);
-					if (distanceY < 0)
-						distanceY = Math::Abs(-distanceY);
+					if (distancex < 0)
+						distancex = Math::Abs(-distancex);
+					if (distancey < 0)
+						distancey = Math::Abs(-distancey);
 
-					if (distanceX > 1 || distanceY > 1)
+					if (distancex > 1 || distancey > 1)
 						return false;
 				}
 				return true;
