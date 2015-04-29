@@ -175,12 +175,16 @@ namespace Karo.TwoDClient
             _lastMove = move;
             _karo = _karo.WithMoveApplied(move, CurrentTurn);
 
-            _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
+            var winner = _karo.GetWinner();
+            if (winner == Player.None)
+            {
+                _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
 
-            if (IsCurrentPlayerHuman)
-                _currentPlayer.DoMove(_lastMove, 0, Done);
-            else
-                _awaitingMove = true;
+                if (IsCurrentPlayerHuman)
+                    _currentPlayer.DoMove(_lastMove, 0, Done);
+                else
+                    _awaitingMove = true;
+            }
         }
 
         private bool _awaitingMove = true;
