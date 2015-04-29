@@ -387,13 +387,6 @@ namespace KaroCoreTest
 			pieces[3] = gcnew Karo::Core::Piece(tiles[3], Karo::Core::Player::Player2, true);
 			pieces[4] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, true);
 
-			//These tiles have pieces
-			tiles[0]->HasPiece = true;
-			tiles[1]->HasPiece = true;
-			tiles[2]->HasPiece = true;
-			tiles[3]->HasPiece = true;
-			tiles[6]->HasPiece = true;
-
 			auto karo = gcnew Karo::Core::Karo(tiles, pieces);
 			//Move to location without piece [true]
 			auto move = gcnew Karo::Common::Move(0, 1, 0, 0, 0, 0);
@@ -475,6 +468,137 @@ namespace KaroCoreTest
             Assert::AreEqual(4, p->Tile->X);
             Assert::AreEqual(2, p->Tile->Y);
 
+        }
+
+        [TestMethod]
+        void GetWinnerHorizontal()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[1], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[2], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[3], Karo::Core::Player::Player1, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[5], Karo::Core::Player::Player1, false);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[7], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[9], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[10], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[11], Karo::Core::Player::Player2, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(Karo::Core::Player::Player1, karo->GetWinner());
+        }
+        [TestMethod]
+        void GetWinnerVertical()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[5], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[10], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[15], Karo::Core::Player::Player1, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player1, false);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[7], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[9], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[13], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[11], Karo::Core::Player::Player2, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(Karo::Core::Player::Player1, karo->GetWinner());
+        }
+        [TestMethod]
+        void GetWinnerDiagonal1()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[0], Karo::Core::Player::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player1, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[18], Karo::Core::Player::Player1, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[5], Karo::Core::Player::Player1, false);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[13], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[7], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[9], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[10], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[11], Karo::Core::Player::Player2, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(Karo::Core::Player::Player1, karo->GetWinner());
+        }
+        [TestMethod]
+        void GetWinnerDiagonal2()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player2, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player2, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[16], Karo::Core::Player::Player2, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player1, false);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[7], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[14], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[10], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[11], Karo::Core::Player::Player2, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(Karo::Core::Player::Player2, karo->GetWinner());
+        }
+        [TestMethod]
+        void GetWinnerDiagonal2NoWinner()
+        {
+            auto tiles = gcnew array<Karo::Core::Tile^>(20);
+            for (int i = 0; i < 20; i++) {
+                tiles[i] = gcnew Karo::Core::Tile(i % 5, i / 5);
+            }
+
+            auto pieces = gcnew array<Karo::Core::Piece^>(12);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player2, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player2, false);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[16], Karo::Core::Player::Player2, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[4], Karo::Core::Player::Player1, false);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[12], Karo::Core::Player::Player1, false);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[6], Karo::Core::Player::Player2, false);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[7], Karo::Core::Player::Player2, false);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[8], Karo::Core::Player::Player2, false);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[14], Karo::Core::Player::Player2, false);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[10], Karo::Core::Player::Player2, false);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[11], Karo::Core::Player::Player2, false);
+
+            auto karo = gcnew Karo::Core::Karo(tiles, pieces);
+
+            Assert::AreEqual(Karo::Core::Player::None, karo->GetWinner());
         }
 	};
 }

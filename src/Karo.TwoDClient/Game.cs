@@ -199,7 +199,7 @@ namespace Karo.TwoDClient
             if (_awaitingMove)
             {
                 _lastMoveTime += gameTime.ElapsedGameTime;
-                if (_lastMoveTime > new TimeSpan(0, 0, 0, 1))
+                if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
                 {
                     _lastMoveTime = TimeSpan.Zero;
                     _awaitingMove = false;
@@ -375,14 +375,9 @@ namespace Karo.TwoDClient
             _spriteBatch.Draw(Textures.RedPiece, _camera.Position + new Vector2(200, 25), Color.White);
             _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
-            if (CurrentTurn == Player.Player1)
-            {
+            if (IsCurrentPlayerHuman)
                 _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(200, 75), Color.White);
-            }
-            else
-            {
-                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(250, 75), Color.White);
-            }
+
             if (_selectedOldPiece != null)
             {
                 _spriteBatch.Draw(Textures.SelectIndicator, new Vector2(_selectedOldPiece.X * 51, _selectedOldPiece.Y * 51),

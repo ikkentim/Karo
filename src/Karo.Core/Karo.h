@@ -30,10 +30,12 @@ namespace Karo {
             Tile^ GetTileAt(int, int);
             IEnumerable<Tile^>^ GetCornerTiles();
             Piece^ GetPiece(int x, int y);
+            Player GetWinner();
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;
             int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
+            bool IsRowForPlayerAt(int x, int y, Player player);
         };
     }
 }
