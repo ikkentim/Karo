@@ -9,43 +9,33 @@ namespace Karo {
 		}
 
 		Karo::Common::Move^ AI::ChooseBestMove(Karo::Core::Karo^ board, int depth, Karo::Core::Player player) {
-
 			IEnumerable<Karo::Common::Move^>^ moves = board->GetAvailableMoves(player);
 
-			// if we're not going any deeper, return best move
-			if (depth <= 0)
-			{
-				Karo::Common::Move^ bestMove;
-				int bestScore = -9001; // ITS OVER 9000!!!!!!!!!!!11111one1111
-
-				for (int i = 0; i < System::Linq::Enumerable::Count(moves); i++)
-				{
-					int score = Evaluate(board->WithMoveApplied(System::Linq::Enumerable::ElementAt(moves, i), player), player);
-
-					if (score > bestScore)
-					{
-						bestMove = System::Linq::Enumerable::ElementAt(moves, i);
-						bestScore = score;
-					}
-				}
-
-				return bestMove;
-			}
-			
 			Karo::Common::Move^ bestMove;
 			int bestScore = -9001; // ITS OVER 9000!!!!!!!!!!!11111one1111
-
+			
 			for (int i = 0; i < System::Linq::Enumerable::Count(moves); i++)
 			{
-				Core::Karo ^ innerBoard = board->WithMoveApplied(System::Linq::Enumerable::ElementAt(moves, i), player);
+				Core::Karo ^ innerBoard;
+				Common::Move ^ innerMove;
 
-				Common::Move^ bestInnerMove = ChooseBestMove(innerBoard, --depth, Karo::Core::PlayerHelper::Opposite(player));
+				if (depth > 0)
+				{
+					innerBoard = board->WithMoveApplied(System::Linq::Enumerable::ElementAt(moves, i), player);
 
-				int score = Evaluate(innerBoard->WithMoveApplied(bestInnerMove, player), player);
+					innerMove = ChooseBestMove(innerBoard, --depth, Karo::Core::PlayerHelper::Opposite(player));
+				}
+				else
+				{
+					innerBoard = board;
+					innerMove = System::Linq::Enumerable::ElementAt(moves, i);
+				}
+
+				int score = Evaluate(innerBoard->WithMoveApplied(innerMove, player), player);
 
 				if (score > bestScore)
 				{
-					bestMove = bestInnerMove;
+					bestMove = innerMove;
 					bestScore = score;
 				}
 			}
