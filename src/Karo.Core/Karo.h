@@ -25,17 +25,15 @@ namespace Karo {
             };
             IEnumerable<Move^>^ GetAvailableMoves(Player player);
             bool IsValidMove(Move^ move);
-            Karo^ WithMoveApplied(Move^ move, Player player);
+            Karo^ WithMoveApplied(Move^ move);
 			int PieceCount();
             Tile^ GetTileAt(int, int);
             IEnumerable<Tile^>^ GetCornerTiles();
-            Piece^ GetPiece(int x, int y);
-            Player GetWinner();
-            int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
         private:
-            bool IsRowForPlayerAt(int x, int y, Player player);
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;
+            Piece^ GetPiece(int x, int y);
+            int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
         };
     }
 }

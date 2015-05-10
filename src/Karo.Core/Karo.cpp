@@ -8,7 +8,6 @@ namespace Karo {
             for (int i = 0; i < 20; i++) {
                 _tiles[i] = gcnew Tile(i % 5, i / 5);
             }
-            _pieces = gcnew array<Piece^>(12);
         }
 
         Karo::Karo(array<Tile^>^ tiles, array<Piece^>^ pieces) {
@@ -98,7 +97,7 @@ namespace Karo {
 			{
 				for each (Tile^ tile in Tiles)
 				{
-					if (GetPiece(tile->X, tile->Y) == nullptr)
+					if (!tile->HasPiece)
 					{
 						moves->Add(gcnew Move(tile->X, tile->Y, 0, 0, 0, 0));
 					}
@@ -186,140 +185,13 @@ namespace Karo {
 			return nullptr;
 		}
 
-		bool Karo::IsValidMove(Move^ move) {
-
-			//Step0: Initphase //Place piece on current location, just check if there is a piece already
-			if (PieceCount() <= 11)
-			{
-				if (GetPiece(move->NewPieceX, move->NewPieceY) != nullptr)
-					return false;
-				else
-					return true;
-			}
-			//Move Phase
-			else{
-				//Step1: Check if new location is different from the current one
-				if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
-					return false;
-
-				//Step2: Check if there already is a piece on the tile your trying to move to
-				for each (Tile^ tile in Tiles){
-					if (GetPiece(move->NewPieceX,move->NewPieceY)!= nullptr)
-						return false;
-
-					//Step3: Check if there is a piece between your current location, and the new one
-					int pieceLocationX, pieceLocationY, distancex, distancey;
-					//If the X location won't change, keep the X location. otherwise add distance
-					if (move->NewPieceX == move->OldPieceX)
-						pieceLocationX = move->NewPieceX;
-					else{
-						distancex = (move->NewPieceX - move->OldPieceX);
-						if (distancex < 0)
-							distancex = Math::Abs(-distancex);
-						if (move->NewPieceX > move->OldPieceX)
-							pieceLocationX = (move->OldPieceX + distancex / 2);
-						else
-							pieceLocationX = (move->OldPieceX - distancex / 2);
-					}
-					if (move->NewPieceY == move->OldPieceY)
-						pieceLocationY = move->OldPieceY;
-					else{
-						distancey = (move->NewPieceY - move->OldPieceY);
-						if (distancey < 0)
-							distancey = Math::Abs(-distancey); 
-						if (move->NewPieceY > move->OldPieceY)
-							pieceLocationY = (move->OldPieceY + distancey / 2);
-						else
-							pieceLocationY = (move->OldPieceY - distancey / 2);
-					}
-					
-					//Cant jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
-					if (GetPiece(pieceLocationX, pieceLocationY) != nullptr &&
-						GetPiece(pieceLocationX, pieceLocationY)->Player != GetPiece(move->OldPieceX,move->OldPieceY)->Player &&
-						distancex<3 && distancey <3 && distancex+distancey!=3)
-						return true;
-					
-					if (distancex > 1 || distancey > 1)
-						return false;
-				}
-				return true;
-			}
-		}
-
-
-        Karo^ Karo::WithMoveApplied(Move^ move, Player player) {
-            if (move == nullptr) {
-                throw gcnew ArgumentNullException("move");
-            }
-
-            array<Tile^>^ tiles = gcnew array<Tile^> (20);
-            array<Piece^>^ pieces = gcnew array<Piece^>(12);
-            int tidx = 0, pidx = 0;
-
-            Tile^ movingTile = nullptr, ^targetTile = nullptr;
-            Piece^ movingPiece = nullptr;
-            
-            for each(Tile^ tile in Tiles) {
-                Tile^ newTile = tiles[tidx++] = gcnew Tile(tile->X, tile->Y);
-
-                if (newTile->X == move->OldTileX && newTile->Y == move->OldTileY) {
-                    movingTile = newTile;
-                }
-                if (newTile->X == move->NewPieceX && newTile->Y == move->NewPieceY) {
-                    targetTile = newTile;
-                }
-            }
-
-                for each(Piece^ piece in Pieces) {
-                if (piece == nullptr) continue;
-                Tile^ tile = nullptr;
-
-                for each(Tile^ t in tiles) {
-                    if (t->X == piece->Tile->X && t->Y == piece->Tile->Y) {
-                        tile = t;
-                        continue;
-                    }
-                }
-
-                if (tile == nullptr) {
-                    throw gcnew Exception("Invalid board state");
-                }
-
-                pieces[pidx++] = gcnew Piece(tile, piece->Player, piece->IsFaceUp);
-
-                if (pieces[pidx - 1]->Tile->X == move->OldPieceX && pieces[pidx - 1]->Tile->Y == move->OldPieceY)
-                    movingPiece = pieces[pidx - 1];
-            }
-
-            int pieceCount = PieceCount();
-            if (pieceCount < 12) {
-                if (targetTile == nullptr) {
-                    throw gcnew Exception("Invalid board state");
-                }
-                pieces[pieceCount] = gcnew Piece(targetTile, player, false);
-                return gcnew Karo(tiles, pieces);;
-            }
-            if (movingPiece == nullptr) {
-                throw gcnew Exception("Invalid board state");
-            }
-
-            if (targetTile == nullptr) {
-                if (movingTile == nullptr) {
-                    throw gcnew Exception("Invalid board state");
-                }
-
-                targetTile = movingTile;
-                targetTile->X = move->NewPieceX;
-                targetTile->Y = move->NewPieceY;
-            }
-
-            movingPiece->Tile = targetTile;
-
-            if (Math::Abs(move->NewPieceX - move->OldPieceX) > 1 || Math::Abs(move->NewPieceY - move->OldPieceY) > 1) {
-                movingPiece->IsFaceUp = !movingPiece->IsFaceUp;
-            }
-
-            return gcnew Karo(tiles, pieces);
+        bool Karo::IsValidMove(Move^ move) {
+            //todo: Implement
+            return true;
+        }
+        Karo^ Karo::WithMoveApplied(Move^ move) {
+            //todo: Implement
+            return nullptr;
         }
 		int Karo::PieceCount()
 		{
@@ -334,29 +206,5 @@ namespace Karo {
 
 			return i;
 		}
-
-        Player Karo::GetWinner()
-        {
-            if (PieceCount() < 12) return Player::None;
-
-            for each(Piece^ piece in Pieces)
-            {
-                if (piece->IsFaceUp && IsRowForPlayerAt(piece->Tile->X, piece->Tile->Y, Player::Player1))
-                    return Player::Player1;
-                if (piece->IsFaceUp && IsRowForPlayerAt(piece->Tile->X, piece->Tile->Y, Player::Player2))
-                    return Player::Player2;
-            }
-        }
-
-        bool Karo::IsRowForPlayerAt(int x, int y, Player player)
-        {
-            int a1 = GetRowLength(x, y, -1, -1, player) + 1 + GetRowLength(x, y, 1, 1, player);
-            int a2 = GetRowLength(x, y, -1, 1, player) + 1 + GetRowLength(x, y, 1, -1, player);
-            int a3 = GetRowLength(x, y, 0, -1, player) + 1 + GetRowLength(x, y, 0, 1, player);
-            int a4 = GetRowLength(x, y, -1, 0, player) + 1 + GetRowLength(x, y, 1, 0, player);
-            return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
-
-
-        }
     }
 }

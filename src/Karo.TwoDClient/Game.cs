@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using CKaro = Karo.Core.Karo;
 using System.Linq;
+using Karo.AI;
 
 namespace Karo.TwoDClient
 {
@@ -36,7 +37,7 @@ namespace Karo.TwoDClient
         private readonly IPlayer _playerTwo;
         private IPlayer _currentPlayer;
         private bool _isLeftMouseButtonDown;
-        private CKaro _karo = new CKaro();
+        private KaroBoardState _karo = new KaroBoardState();
 
         private Vector2 _oldMousePos = new Vector2(0, 0);
         private Position _selectedOldPiece;
@@ -53,20 +54,24 @@ namespace Karo.TwoDClient
         {
             if (player1Ai == 0)
             {
-                _playerOne = new HumanPlayer(Player.Player1);
+                _playerOne = new HumanPlayer(KaroPlayer.Player1);
             }
             else
             {
-                _playerOne = new ComputerPlayer();
+                // Some weird issue?
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                _playerOne = new Player() as IPlayer;
             }
 
             if (player2Ai == 0)
             {
-                _playerTwo = new HumanPlayer(Player.Player2);
+                _playerTwo = new HumanPlayer(KaroPlayer.Player2);
             }
             else
             {
-                _playerTwo = new ComputerPlayer();
+                // Some weird issue?
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                _playerTwo = new Player() as IPlayer;
             }
 
             _graphics = new GraphicsDeviceManager(this);
@@ -78,13 +83,13 @@ namespace Karo.TwoDClient
         /// <summary>
         ///     Gets the current turn.
         /// </summary>
-        public Player CurrentTurn
+        public KaroPlayer CurrentTurn
         {
             get
             {
                 return _currentPlayer == _playerOne
-                    ? Player.Player1
-                    : _currentPlayer == _playerTwo ? Player.Player2 : Player.None;
+                    ? KaroPlayer.Player1
+                    : _currentPlayer == _playerTwo ? KaroPlayer.Player2 : KaroPlayer.None;
             }
         }
 
@@ -101,7 +106,7 @@ namespace Karo.TwoDClient
         /// </summary>
         public bool IsInFirstPhase
         {
-            get { return _karo.PieceCount() < 12; }
+            get { return _karo.PieceCount < 12; }
         }
 
         /// <summary>
@@ -118,13 +123,13 @@ namespace Karo.TwoDClient
         /// </summary>
         /// <param name="player">The player.</param>
         /// <returns>Instance of the specified player.</returns>
-        private IPlayer GetPlayer(Player player)
+        private IPlayer GetPlayer(KaroPlayer player)
         {
             switch (player)
             {
-                case Player.Player1:
+                case KaroPlayer.Player1:
                     return _playerOne;
-                case Player.Player2:
+                case KaroPlayer.Player2:
                     return _playerTwo;
                 default:
                     return null;
@@ -136,22 +141,22 @@ namespace Karo.TwoDClient
         /// </summary>
         /// <param name="player">The player.</param>
         /// <returns>The opponent of the specified player.</returns>
-        private static Player GetOpponent(Player player)
+        private static KaroPlayer GetOpponent(KaroPlayer player)
         {
             switch (player)
             {
-                case Player.Player1:
-                    return Player.Player2;
-                case Player.Player2:
-                    return Player.Player1;
+                case KaroPlayer.Player1:
+                    return KaroPlayer.Player2;
+                case KaroPlayer.Player2:
+                    return KaroPlayer.Player1;
                 default:
-                    return Player.None;
+                    return KaroPlayer.None;
             }
         }
         
         /// <summary>
         ///     LoadContent will be called once per game and is the place to load
-        ///     all of your content.
+        ///     all of your content.y
         /// </summary>
         protected override void LoadContent()
         {
@@ -183,7 +188,7 @@ namespace Karo.TwoDClient
             _karo = _karo.WithMoveApplied(move, CurrentTurn);
 
             var winner = _karo.GetWinner();
-            if (winner == Player.None)
+            if (winner == KaroPlayer.None)
             {
                 _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
 
@@ -242,13 +247,16 @@ namespace Karo.TwoDClient
                 _isLeftMouseButtonDown = true;
 
                 //get the tile at the mouse location
-                var tile = _karo.GetTileAt((int) _tilePosition.X, (int) _tilePosition.Y);
+                var tile = _karo.GetTile((int) _tilePosition.X, (int) _tilePosition.Y);
 
+                Debug.WriteLine("Clicked tile {0}.", tile);
                 //if the clicked tile is not empty
                 if (_selectedOldPiece == null)
                 {
+                    Debug.WriteLine("No old piece.");
                     if (IsInFirstPhase)
                     {
+                        Debug.WriteLine("In first phase.");
                         if (tile != null)
                             human.PrepareMove(new Move(tile.X, tile.Y, 0, 0, 0, 0));
                     }
@@ -256,6 +264,7 @@ namespace Karo.TwoDClient
                     {
                         var piece = _karo.GetPiece(tile.X, tile.Y);
 
+                        Debug.WriteLine("Not first phase. Clicked piece {0}", piece);
                         if (piece != null && piece.Player == CurrentTurn)
                             _selectedOldPiece = new Position(tile.X, tile.Y);
                     }
@@ -276,7 +285,7 @@ namespace Karo.TwoDClient
                     {
                         _selectedNewPiece = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
-                        if (_karo.GetTileAt(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
+                        if (_karo.GetTile(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
                         {
                             human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
                                 _selectedOldPiece.Y, 0, 0));
@@ -343,8 +352,8 @@ namespace Karo.TwoDClient
                 {
                     if (piece != null)
                     {
-                        var coord = new Vector2(piece.Tile.X*TileSize, piece.Tile.Y*TileSize);
-                        if (piece.Player == Player.Player1)
+                        var coord = new Vector2(piece.X*TileSize, piece.Y*TileSize);
+                        if (piece.Player == KaroPlayer.Player1)
                             if (piece.IsFaceUp)
                             {
                                 _spriteBatch.Draw(Textures.RedPieceMarked, coord, Color.White);
@@ -353,7 +362,7 @@ namespace Karo.TwoDClient
                             {
                                 _spriteBatch.Draw(Textures.RedPiece, coord, Color.White);
                             }
-                        if (piece.Player == Player.Player2)
+                        if (piece.Player == KaroPlayer.Player2)
                         {
                             if (piece.IsFaceUp)
                             {
@@ -387,7 +396,7 @@ namespace Karo.TwoDClient
             _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
             if (IsCurrentPlayerHuman)
-                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(200, 75), Color.White);
+                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(CurrentTurn == KaroPlayer.Player1 ? 200 : 250, 75), Color.White);
 
             if (_selectedOldPiece != null)
             {
