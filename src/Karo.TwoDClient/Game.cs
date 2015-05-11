@@ -197,6 +197,11 @@ namespace Karo.TwoDClient
                 else
                     _awaitingMove = true;
             }
+            else
+            {
+                _currentPlayer = null;
+                Debug.WriteLine("WINNER SELECTED");
+            }
         }
 
         private bool _awaitingMove = true;
@@ -219,6 +224,7 @@ namespace Karo.TwoDClient
                 {
                     _lastMoveTime = TimeSpan.Zero;
                     _awaitingMove = false;
+                    Debug.WriteLine("Not turn of {0} ({1}, 0, Done)", CurrentTurn, _lastMove);
                     _currentPlayer.DoMove(_lastMove, 0, Done);
                 }
             }
@@ -242,7 +248,12 @@ namespace Karo.TwoDClient
 
             var human = _currentPlayer as HumanPlayer;
 
-            if (mouseState.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
+            if (IsActive && mouseState.RightButton == ButtonState.Pressed)
+            {
+                _selectedNewPiece = null;
+                _selectedOldPiece = null;
+            }
+            if (IsActive && mouseState.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
             {
                 _isLeftMouseButtonDown = true;
 
@@ -250,6 +261,7 @@ namespace Karo.TwoDClient
                 var tile = _karo.GetTile((int) _tilePosition.X, (int) _tilePosition.Y);
 
                 Debug.WriteLine("Clicked tile {0}.", tile);
+
                 //if the clicked tile is not empty
                 if (_selectedOldPiece == null)
                 {
@@ -262,17 +274,21 @@ namespace Karo.TwoDClient
                     }
                     else
                     {
-                        var piece = _karo.GetPiece(tile.X, tile.Y);
+                        if (tile != null)
+                        {
+                            var piece = _karo.GetPiece(tile.X, tile.Y);
 
-                        Debug.WriteLine("Not first phase. Clicked piece {0}", piece);
-                        if (piece != null && piece.Player == CurrentTurn)
-                            _selectedOldPiece = new Position(tile.X, tile.Y);
+                            Debug.WriteLine("Not first phase. Clicked piece {0}", piece);
+                            if (piece != null && piece.Player == CurrentTurn)
+                                _selectedOldPiece = new Position(tile.X, tile.Y);
+                        }
                     }
                 }
                 else
                 {
                     if (_selectedNewPiece != null)
                     {
+                        Debug.WriteLine("Has selected new piece");
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
                         human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
@@ -283,18 +299,26 @@ namespace Karo.TwoDClient
                     }
                     else
                     {
+                        Debug.WriteLine("Has no selected new piece");
                         _selectedNewPiece = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
                         if (_karo.GetTile(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
                         {
+                            Debug.WriteLine("There is tile at selected pos");
                             human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
                                 _selectedOldPiece.Y, 0, 0));
 
                             _selectedOldPiece = null;
                             _selectedNewPiece = null;
                         }
+                        else
+                        {
+                            Debug.WriteLine("There is no tile at selected new pos");
+                        }
                     }
                 }
+
+                Debug.WriteLine("\n");
             }
             if (mouseState.LeftButton == ButtonState.Released)
             {

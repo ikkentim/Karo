@@ -26,14 +26,14 @@ namespace Karo {
                 m.target.x = previousMove->NewPieceX;
                 m.target.y = previousMove->NewPieceY;
 
-                intelligence_->apply_move(m, BoardPlayer::Player2);
+                intelligence_->apply_move(m, PLAYER_PLAYER2);
             }
 
             // Choose the best move.
-            BoardMove newMove = intelligence_->choose_best_move(timeLimit, BoardPlayer::Player1);
+            BoardMove newMove = intelligence_->choose_best_move(timeLimit, PLAYER_PLAYER1);
 
             // Apply our move to our internal board state.
-            intelligence_->apply_move(newMove, BoardPlayer::Player1);
+            intelligence_->apply_move(newMove, PLAYER_PLAYER1);
 
             // Convert unmanaged move to GC'd move.
             Karo::Common::Move^ gcMove = gcnew Move(newMove.target.x, newMove.target.y,
