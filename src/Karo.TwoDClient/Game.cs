@@ -200,7 +200,6 @@ namespace Karo.TwoDClient
             else
             {
                 _currentPlayer = null;
-                Debug.WriteLine("WINNER SELECTED");
             }
         }
 
@@ -224,7 +223,6 @@ namespace Karo.TwoDClient
                 {
                     _lastMoveTime = TimeSpan.Zero;
                     _awaitingMove = false;
-                    Debug.WriteLine("Not turn of {0} ({1}, 0, Done)", CurrentTurn, _lastMove);
                     _currentPlayer.DoMove(_lastMove, 0, Done);
                 }
             }
@@ -260,15 +258,11 @@ namespace Karo.TwoDClient
                 //get the tile at the mouse location
                 var tile = _karo.GetTile((int) _tilePosition.X, (int) _tilePosition.Y);
 
-                Debug.WriteLine("Clicked tile {0}.", tile);
-
                 //if the clicked tile is not empty
                 if (_selectedOldPiece == null)
                 {
-                    Debug.WriteLine("No old piece.");
                     if (IsInFirstPhase)
                     {
-                        Debug.WriteLine("In first phase.");
                         if (tile != null)
                             human.PrepareMove(new Move(tile.X, tile.Y, 0, 0, 0, 0));
                     }
@@ -278,7 +272,6 @@ namespace Karo.TwoDClient
                         {
                             var piece = _karo.GetPiece(tile.X, tile.Y);
 
-                            Debug.WriteLine("Not first phase. Clicked piece {0}", piece);
                             if (piece != null && piece.Player == CurrentTurn)
                                 _selectedOldPiece = new Position(tile.X, tile.Y);
                         }
@@ -288,7 +281,6 @@ namespace Karo.TwoDClient
                 {
                     if (_selectedNewPiece != null)
                     {
-                        Debug.WriteLine("Has selected new piece");
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
                         if (_karo.GetPiece(corner.X, corner.Y) == null &&
@@ -304,26 +296,19 @@ namespace Karo.TwoDClient
                     }
                     else
                     {
-                        Debug.WriteLine("Has no selected new piece");
                         _selectedNewPiece = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
                         if (_karo.GetTile(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
                         {
-                            Debug.WriteLine("There is tile at selected pos");
                             human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
                                 _selectedOldPiece.Y, 0, 0));
 
                             _selectedOldPiece = null;
                             _selectedNewPiece = null;
                         }
-                        else
-                        {
-                            Debug.WriteLine("There is no tile at selected new pos");
-                        }
                     }
                 }
 
-                Debug.WriteLine("\n");
             }
             if (mouseState.LeftButton == ButtonState.Released)
             {
