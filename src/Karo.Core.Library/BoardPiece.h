@@ -12,7 +12,7 @@ struct BoardPiece {
     bool is_face_up;
 
     BoardPiece() 
-        : tile(), player(BoardPlayer::None), is_face_up(false) { }
+        : tile(), player(PLAYER_NONE), is_face_up(false) { }
 
     BoardPiece(BoardTile t, BoardPlayer p)
         : tile(t), player(p), is_face_up(false) { }
