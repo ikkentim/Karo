@@ -4,20 +4,19 @@ using System.Linq;
 using System.Text;
 using Karo.Common;
 using Karo.Core;
-using Karo = Karo.Core.Karo;
 
 namespace Karo.TwoDClient
 {
     
 	class HumanPlayer : IPlayer
 	{
-	    private Player playerNumber;
+        private KaroPlayer playerNumber;
 	    private Action<Move> chosenMove;
-	    private Core.Karo Board;
+	    private KaroBoardState Board;
 
-	    public HumanPlayer(Player player)
+	    public HumanPlayer(KaroPlayer player)
 	    {
-	        Board = new Core.Karo();
+            Board = new KaroBoardState();
 	        playerNumber = player;
             
 	    }
@@ -25,7 +24,7 @@ namespace Karo.TwoDClient
 	    {
 	        if (previousMove != null)
 	            Board = Board.WithMoveApplied(previousMove,
-	                playerNumber == Player.Player1 ? Player.Player2 : Player.Player1);
+                    playerNumber == KaroPlayer.Player1 ? KaroPlayer.Player2 : KaroPlayer.Player1);
 
 	        chosenMove = done;
 	    }
