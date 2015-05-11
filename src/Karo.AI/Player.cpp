@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Player.h"
 
+using namespace System::Diagnostics;
 using namespace Karo::Common;
 
 namespace Karo {

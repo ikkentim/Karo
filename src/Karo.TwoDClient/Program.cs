@@ -1,40 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
-using Karo.Core;
-using Microsoft.Xna.Framework;
 
 namespace Karo.TwoDClient
 {
 #if WINDOWS || LINUX
     /// <summary>
-    /// The main class.
+    ///     The main class.
     /// </summary>
     public static class Program
     {
         /// <summary>
-        /// The main entry point for the application.
+        ///     The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            
-            Menu menu = new Menu();
-			int p1ai = 0;
-			int p2ai = 0;
-            var result = menu.ShowDialog();
 
-			p1ai = menu.ai1;
-			p2ai = menu.ai2;
+            var menu = new Menu();
+            if (menu.ShowDialog() != DialogResult.OK) return;
 
-			using (Game game = new Game(p1ai, p2ai))
-            {
+            var game = new Game(menu.Player1, menu.Player2);
+                
                 game.Run();
-            }
         }
     }
 #endif
