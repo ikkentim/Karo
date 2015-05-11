@@ -219,12 +219,21 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 }
 
 bool BoardState::is_valid_move(BoardMove move) {
+
     //Step0: Initphase //Place piece on current location, just check if there is a piece already
     if (piece_count() < PIECE_COUNT)
     {
         return !piece(move.target.x, move.target.y, NULL);
     }
 
+    //Todo:: Check for tiles, clean code (make more functions oid)
+    //Make testcases for it
+
+
+    //Check for tileplacement
+    if (!is_valid_tile_placement(move.tile.x, move.tile.y))
+         return false;
+  
     //Move Phase
     //Step1: Check if new location is different from the current one
     if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
@@ -236,7 +245,7 @@ bool BoardState::is_valid_move(BoardMove move) {
             return false;
 
         //Step3: Check if there is a piece between your current location, and the new one
-        int pieceLocationX, pieceLocationY, distancex, distancey;
+        int pieceLocationX, pieceLocationY, distancex=0, distancey=0;
         //If the X location won't change, keep the X location. otherwise add distance
         if (move.target.x == move.piece.tile.x)
             pieceLocationX = move.target.x;
@@ -264,6 +273,34 @@ bool BoardState::is_valid_move(BoardMove move) {
             return false;
     }
     return true;
+}
+
+bool BoardState::is_valid_tile_placement(int x, int y) {
+    //Check for tileplacement | left | right | up | down
+    if (!tile(x - 1, y, NULL) &&
+        !tile(x + 1, y, NULL) &&
+        !tile(x, y - 1, NULL) &&
+        !tile(x, y + 1, NULL))
+        return false;
+    return true;
+}
+
+bool BoardState::is_corner_tile(int x, int y) {
+    int numberFreeSides = 0;
+
+    if (!tile(x - 1, y, NULL))
+        numberFreeSides++;
+    if (!tile(x + 1, y, NULL))
+        numberFreeSides++;
+    if (!tile(x, y - 1, NULL))
+        numberFreeSides++;
+    if (!tile(x, y + 1, NULL))
+        numberFreeSides++;
+
+    if (numberFreeSides > 1)
+        return true;
+
+    return false;
 }
 
 BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {

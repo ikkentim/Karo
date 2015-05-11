@@ -357,14 +357,25 @@ namespace KaroCoreTest
 			}
 
 			auto pieces = gcnew array<Piece^>(12);
-			pieces[0] = gcnew Piece(tiles[1 * 5 + 1], KaroPlayer::Player1, true);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[2], KaroPlayer::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[4], KaroPlayer::Player2, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[5], KaroPlayer::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[6], KaroPlayer::Player2, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[8], KaroPlayer::Player1, true);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[10], KaroPlayer::Player2, true);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[11], KaroPlayer::Player1, true);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[12], KaroPlayer::Player2, true);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[14], KaroPlayer::Player1, true);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[16], KaroPlayer::Player2, true);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[17], KaroPlayer::Player1, true);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[19], KaroPlayer::Player2, true);
 
 			auto karo = gcnew KaroBoardState(tiles, pieces);
-			//Move from (1,1) to (1,1) [false]
+			//Move from (2,0) to (2,0) [false]
 			auto move = gcnew Karo::Common::Move(2, 0, 2, 0, 2, 0);
 			Assert::AreEqual(false, karo->IsValidMove(move));
 
-			//Move from (1,1) to (1,2) [true]
+			//Move from (2,0) to (1,0) [true]
 			move = gcnew Karo::Common::Move(1, 0, 2, 0, 2, 0);
 			Assert::AreEqual(true, karo->IsValidMove(move));
 		}
@@ -378,11 +389,18 @@ namespace KaroCoreTest
 			}
 
 			auto pieces = gcnew array<Piece^>(12);
-			pieces[0] = gcnew Piece(tiles[0], KaroPlayer::Player1, true);
-			pieces[1] = gcnew Piece(tiles[1], KaroPlayer::Player2, true);
-			pieces[2] = gcnew Piece(tiles[2], KaroPlayer::Player1, true);
-			pieces[3] = gcnew Piece(tiles[3], KaroPlayer::Player2, true);
-			pieces[4] = gcnew Piece(tiles[6], KaroPlayer::Player2, true);
+            pieces[0] = gcnew Karo::Core::Piece(tiles[2], KaroPlayer::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[4], KaroPlayer::Player2, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[5], KaroPlayer::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[6], KaroPlayer::Player2, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[8], KaroPlayer::Player1, true);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[10], KaroPlayer::Player2, true);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[11], KaroPlayer::Player1, true);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[12], KaroPlayer::Player2, true);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[14], KaroPlayer::Player1, true);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[16], KaroPlayer::Player2, true);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[17], KaroPlayer::Player1, true);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[19], KaroPlayer::Player2, true);
 
 			auto karo = gcnew KaroBoardState(tiles, pieces);
 			//Move to location without piece [true]
@@ -465,27 +483,29 @@ namespace KaroCoreTest
 				tiles[i] = gcnew Tile(i % 5, i / 5);
 			}
 
+
+            //Place pieces
 			auto pieces = gcnew array<Piece^>(12);
-			pieces[0] = gcnew Piece(tiles[0 * 5 + 0], KaroPlayer::Player1, true);
-            pieces[1] = gcnew Piece(tiles[0 * 5 + 1], KaroPlayer::Player1, true);
-            pieces[2] = gcnew Piece(tiles[0 * 5 + 2], KaroPlayer::Player1, true);
-            pieces[3] = gcnew Piece(tiles[0 * 5 + 3], KaroPlayer::Player1, true);
-            pieces[4] = gcnew Piece(tiles[0 * 5 + 4], KaroPlayer::Player1, true);
-            pieces[4] = gcnew Piece(tiles[1 * 5 + 0], KaroPlayer::Player1, true);
-            pieces[0] = gcnew Piece(tiles[3 * 5 + 0], KaroPlayer::Player2, true);
-            pieces[1] = gcnew Piece(tiles[3 * 5 + 1], KaroPlayer::Player2, true);
-            pieces[2] = gcnew Piece(tiles[3 * 5 + 2], KaroPlayer::Player2, true);
-            pieces[3] = gcnew Piece(tiles[3 * 5 + 3], KaroPlayer::Player2, true);
-            pieces[4] = gcnew Piece(tiles[3 * 5 + 4], KaroPlayer::Player2, true);
-            pieces[4] = gcnew Piece(tiles[2 * 5 + 0], KaroPlayer::Player2, true);
-        
+            pieces[0] = gcnew Karo::Core::Piece(tiles[2], KaroPlayer::Player1, true);
+            pieces[1] = gcnew Karo::Core::Piece(tiles[4], KaroPlayer::Player2, true);
+            pieces[2] = gcnew Karo::Core::Piece(tiles[5], KaroPlayer::Player1, true);
+            pieces[3] = gcnew Karo::Core::Piece(tiles[6], KaroPlayer::Player2, true);
+            pieces[4] = gcnew Karo::Core::Piece(tiles[8], KaroPlayer::Player1, true);
+            pieces[5] = gcnew Karo::Core::Piece(tiles[10], KaroPlayer::Player2, true);
+            pieces[6] = gcnew Karo::Core::Piece(tiles[11], KaroPlayer::Player1, true);
+            pieces[7] = gcnew Karo::Core::Piece(tiles[12], KaroPlayer::Player2, true);
+            pieces[8] = gcnew Karo::Core::Piece(tiles[14], KaroPlayer::Player1, true);
+            pieces[9] = gcnew Karo::Core::Piece(tiles[16], KaroPlayer::Player2, true);
+            pieces[10] = gcnew Karo::Core::Piece(tiles[17], KaroPlayer::Player1, true);
+            pieces[11] = gcnew Karo::Core::Piece(tiles[19], KaroPlayer::Player2, true);
+
 			auto karo = gcnew KaroBoardState(tiles, pieces);
 			//Test moving 5squares [false]
 			auto move = gcnew Karo::Common::Move(0, 3, 2, 0, 2, 0);
 			Assert::AreEqual(false, karo->IsValidMove(move));
 
 			//Test moving 2squares [true]
-			move = gcnew Karo::Common::Move(1, 1, 0, 0, 0, 0);
+			move = gcnew Karo::Common::Move(1, 0, 0, 1, 0, 1);
             Assert::AreEqual(true, karo->IsValidMove(move));
 
 			//Test moving to negative y [true]
