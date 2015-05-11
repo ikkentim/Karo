@@ -54,5 +54,44 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 int Intelligence::evaluate(BoardState * state, BoardPlayer player)
 {
-    return 1;
+    BoardPiece* allPieces = state->pieces();
+
+    int score = 0;
+
+    if (state->piece_count() < PIECE_COUNT)
+        return 0;
+
+
+    for (int i = 0; i < PIECE_COUNT; i++) {
+        //for each piece
+        //is piece flipped
+        if (!allPieces[i].is_face_up)
+            break;
+        bool mypiece = (allPieces[i].player == player);
+
+        BoardTile tile = allPieces[i].tile;
+        for (int j = 0; j <= NEIGHBOUR_COUNT; j++) {
+
+            // for each neighbour
+            int neighbourscore = state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player) + 1 + state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
+
+            //check for winstate
+            if (neighbourscore >= 4)
+                if (mypiece)
+                    return 9001; // it's power level is in fact over 9000
+                else
+                    return -9001; // you got rekt
+
+            //twice as more score
+            neighbourscore *= 2;
+
+            if (mypiece)
+                score += neighbourscore;
+            else
+                score -= neighbourscore;
+        }
+    }
+
+
+    return score;
 }

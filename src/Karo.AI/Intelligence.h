@@ -2,6 +2,8 @@
 
 #include "BoardState.h"
 
+#define NEIGHBOUR_COUNT     (4)
+
 class Intelligence
 {
 public:
@@ -12,6 +14,9 @@ public:
     int evaluate(BoardState * state, BoardPlayer player);
 
 private:
+    const int* neighbourx = new int[]{ 1, 1, 0, -1 };
+    const int* neighboury = new int[]{ 1, 0, 1, 1 };
+
 	BoardState * state_;
     BoardMove choose_best_move(BoardState * state, int depth, BoardPlayer player);
 };
