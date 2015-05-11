@@ -376,7 +376,7 @@ namespace Karo.TwoDClient
                 {
                     if (piece != null)
                     {
-                        var coord = new Vector2(piece.X*TileSize, piece.Y*TileSize);
+                        var coord = new Vector2(piece.X*(TileSize + 1), piece.Y*(TileSize + 1));
                         if (piece.Player == KaroPlayer.Player1)
                             if (piece.IsFaceUp)
                             {
@@ -441,7 +441,7 @@ namespace Karo.TwoDClient
                 str += "Piece from " + move.OldPieceX + "," + move.OldPieceY + " to " + move.NewPieceX + "," +
                        move.NewPieceY;
 
-                _spriteBatch.DrawString(font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f, new Vector2(0, i * -50), new Vector2(0.3f, 0.3f), new SpriteEffects(), 0f);
+                _spriteBatch.DrawString(font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f, new Vector2(0, i * -50), new Vector2(0.3f), new SpriteEffects(), 0f);
 
                 i++;
             }
