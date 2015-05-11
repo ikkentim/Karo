@@ -43,10 +43,9 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 		if (score > bestScore)
 		{
-			bestMove = innerMove;
+			bestMove = moves[i];
 			bestScore = score;
 		}
-
 		delete innerState;
 	}
 
