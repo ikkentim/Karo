@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
+using Karo.Core;
 using Microsoft.Xna.Framework;
 
 namespace Karo.TwoDClient
@@ -20,7 +22,7 @@ namespace Karo.TwoDClient
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
+            
             Menu menu = new Menu();
 			int p1ai = 0;
 			int p2ai = 0;

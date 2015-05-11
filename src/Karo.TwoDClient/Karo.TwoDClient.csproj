@@ -39,7 +39,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Camera2D.cs" />
-    <Compile Include="ComputerPlayer.cs" />
     <Compile Include="Drawable\Tile.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameState.cs" />
