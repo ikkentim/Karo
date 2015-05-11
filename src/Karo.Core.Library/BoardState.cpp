@@ -66,7 +66,8 @@ bool BoardState::piece(int x, int y, BoardPiece * result) {
     assert(pieces_);
 
     for (int i = 0; i < PIECE_COUNT; i++)
-        if (pieces_[i].tile.x == x && pieces_[i].tile.y == y)
+        if (pieces_[i].tile.x == x && pieces_[i].tile.y == y && 
+            pieces_[i].player != BoardPlayer::None)
         {
             if (result)
                 *result = pieces_[i];
@@ -266,9 +267,7 @@ bool BoardState::is_valid_move(BoardMove move) {
 }
 
 BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
-    BoardState state;
-    memcpy(state.tiles_, tiles_, TILE_COUNT * sizeof(BoardTile));
-    memcpy(state.pieces_, pieces_, PIECE_COUNT * sizeof(BoardPiece));
+    BoardState state = *this;
 
     // If in initial phase, simply add the piece to the pieces array.
     int count = piece_count();
@@ -291,7 +290,7 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
                     }
 
                 // No piece was found, should never happen.
-                assert(0 && "piece was moved but does not exist!");
+                assert(0 && "piece was moved but does not exist!(1)");
                 return state; // return error state.
             }
 
@@ -302,14 +301,14 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
 
     // Simply move the piece. 
     for (int j = 0; j < PIECE_COUNT; j++)
-        if (state.pieces_[j] == move.piece) {
+        if (state.pieces_[j].tile == move.piece.tile) {
             state.pieces_[j].tile = move.target;
 
             return state;
         }
 
     // No piece was found, should never happen.
-    assert(0 && "piece was moved but does not exist!");
+    assert(0 && "piece was moved but does not exist!(2)");
     return state; // return error state.
 }
 
@@ -323,10 +322,11 @@ int BoardState::corner_tiles(BoardTile * tiles, int count) {
         bool left = tile(tiles_[i].x - 1, tiles_[i].y, NULL);
         bool right = tile(tiles_[i].x + 1, tiles_[i].y, NULL);
 
-        if ((top == false && left == false) ||
+        if (((top == false && left == false) ||
             (top == false && right == false) ||
             (bottom == false && left == false) ||
-            (bottom == false && right == false)) {
+            (bottom == false && right == false)) && 
+            !piece(tiles_[i].x, tiles_[i].y, NULL)) {
             if (idx < count)
                 tiles[idx] = tiles_[i];
             idx++;

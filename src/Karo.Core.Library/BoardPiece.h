@@ -2,6 +2,7 @@
 
 #include "BoardPlayer.h"
 #include "BoardTile.h"
+#include <assert.h>
 
 struct BoardTile;
 

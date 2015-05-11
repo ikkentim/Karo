@@ -1,11 +1,34 @@
 #include "Stdafx.h"
 #include "KaroBoardState.h"
 #include <cstring>
+#include <assert.h>
 
 namespace Karo {
     namespace Core {
         KaroBoardState::KaroBoardState() {
             state_ = new BoardState();
+        }
+        KaroBoardState::KaroBoardState(array<Tile^>^ tiles, 
+            array<Piece^>^ pieces) {
+            assert(tiles != nullptr);
+            assert(pieces != nullptr);
+            assert(tiles->Length == TILE_COUNT);
+            assert(pieces->Length == PIECE_COUNT);
+
+            BoardTile * pTiles = new BoardTile[TILE_COUNT];
+            BoardPiece * pPieces = new BoardPiece[PIECE_COUNT];
+
+            for (int i = 0; i < TILE_COUNT; i++)
+                if (tiles[i] != nullptr)
+                    pTiles[i] = BoardTile(tiles[i]->X, tiles[i]->Y);
+
+            for (int i = 0; i < PIECE_COUNT; i++)
+                if (pieces[i] != nullptr)
+                    pPieces[i] = BoardPiece(BoardTile(pieces[i]->X, 
+                    pieces[i]->Y), (BoardPlayer)pieces[i]->Player, 
+                    pieces[i]->IsFaceUp);
+
+            state_ = new BoardState(pTiles, pPieces);
         }
 
         KaroBoardState::KaroBoardState(BoardState * state) {
@@ -33,8 +56,8 @@ namespace Karo {
 
             for (int i = 0; i < state_->piece_count(); i++)
                 result->Add(gcnew Piece(pieces[i].tile.x, pieces[i].tile.y, 
-                pieces[i].is_face_up, (KaroPlayer)pieces[i].player));
-
+                (KaroPlayer)pieces[i].player, pieces[i].is_face_up));
+            
             return result;
         }
 
@@ -89,6 +112,7 @@ namespace Karo {
             m.tile.y = move->OldTileY;
             m.piece.tile.x = move->OldPieceX;
             m.piece.tile.y = move->OldPieceY;
+            m.piece.player = (BoardPlayer)player;
             m.target.x = move->NewPieceX;
             m.target.y = move->NewPieceY;
 
@@ -113,7 +137,8 @@ namespace Karo {
             BoardPiece result;
             if (state_->piece(x, y, &result))
             {
-                return gcnew Piece(result.tile.x, result.tile.y, result.is_face_up, (KaroPlayer)result.player);
+                return gcnew Piece(result.tile.x, result.tile.y, 
+                    (KaroPlayer)result.player, result.is_face_up);
             }
             else
             {
@@ -121,7 +146,7 @@ namespace Karo {
             }
         }
         KaroPlayer KaroBoardState::GetWinner() {
-            return (KaroPlayer)state_->winner();
+            return (KaroPlayer)(int)state_->winner();
         }
     }
 }

@@ -24,7 +24,13 @@ namespace Karo {
             property int Y;
             property bool IsFaceUp;
             property KaroPlayer Player;
-            Piece(int x, int y, bool isFaceUp, KaroPlayer player) {
+            Piece(Tile^ tile, KaroPlayer player, bool isFaceUp) {
+                X = tile->X;
+                Y = tile->Y;
+                Player = player;
+                IsFaceUp = isFaceUp;
+            }
+            Piece(int x, int y, KaroPlayer player, bool isFaceUp) {
                 X = x;
                 Y = y;
                 IsFaceUp = isFaceUp;
@@ -36,6 +42,7 @@ namespace Karo {
         {
         public:
             KaroBoardState();
+            KaroBoardState(array<Tile^>^ tiles, array<Piece^>^ pieces);
             ~KaroBoardState();
             property IEnumerable<Tile^>^ Tiles {
                 IEnumerable<Tile^>^ get();
