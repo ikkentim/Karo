@@ -19,8 +19,7 @@ BoardState::BoardState(const BoardState& other) {
     tiles_ = new BoardTile[TILE_COUNT];
     pieces_ = new BoardPiece[PIECE_COUNT];
 
-    memcpy(tiles_, other.tiles_, TILE_COUNT * sizeof(BoardTile));
-    memcpy(pieces_, other.pieces_, PIECE_COUNT * sizeof(BoardPiece));
+    *this = other;
 }
 
 BoardState::BoardState(BoardTile * tiles, BoardPiece * pieces) {
@@ -327,6 +326,7 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
                     }
 
                 // No piece was found, should never happen.
+
                 assert(0 && "piece was moved but does not exist!(1)");
                 return state; // return error state.
             }
