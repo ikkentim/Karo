@@ -45,14 +45,9 @@ namespace Karo {
 
 		int AI::Evaluate(Karo::Core::Karo^ board, Karo::Core::Player player)
 		{
-			//array < Core::Piece^>^ _piece = board->Pieces;
-			//for each(Core::Piece^ p in _piece) {
-			//	if (p->Player == player) {
-			//		/*for each(Tuple<int, int>^ tup in neighbours) {
 
-			//		}*/
-			//	}
-			//}
+
+			
 			return rand->Next(0, 100);
 		}
 
