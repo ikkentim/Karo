@@ -207,6 +207,13 @@ namespace Karo.TwoDClient
 
             var human = _currentPlayer as HumanPlayer;
 
+            //Reset on rightmouse button
+            if(mouseState.RightButton == ButtonState.Pressed && human != null)
+            {
+                _selectedNewPiece = null;
+                _selectedOldPiece = null;
+            }
+
             if (mouseState.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
             {
                 _isLeftMouseButtonDown = true;
@@ -236,11 +243,16 @@ namespace Karo.TwoDClient
                     {
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
-                        human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
-                            _selectedOldPiece.Y, corner.X, corner.Y));
+                        //Check if selected tile is corner tile, and free
+                        if (_karo.GetPiece(corner.X, corner.Y) == null &&
+                            _karo.IsCornerTile(corner.X, corner.Y))
+                        {
+                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
+                                _selectedOldPiece.Y, corner.X, corner.Y));
 
-                        _selectedOldPiece = null;
-                        _selectedNewPiece = null;
+                            _selectedOldPiece = null;
+                            _selectedNewPiece = null;
+                        }
                     }
                     else
                     {

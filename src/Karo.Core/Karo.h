@@ -30,6 +30,8 @@ namespace Karo {
             Tile^ GetTileAt(int, int);
             IEnumerable<Tile^>^ GetCornerTiles();
             Piece^ GetPiece(int x, int y);
+			bool IsValidTilePlacement(int x, int y);
+			bool IsCornerTile(int x, int y);
         private:
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;

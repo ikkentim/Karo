@@ -188,6 +188,10 @@ namespace Karo {
 
 		bool Karo::IsValidMove(Move^ move) {
 
+			//Todo:: Check for tiles, clean code (make more functions oid)
+			//Make testcases for it
+
+
 			//Step0: Initphase //Place piece on current location, just check if there is a piece already
 			if (PieceCount() <= 11)
 			{
@@ -198,6 +202,10 @@ namespace Karo {
 			}
 			//Move Phase
 			else{
+				//Check for tileplacement
+				if (!IsValidTilePlacement(move->NewPieceX, move->NewPieceY))
+					return false;
+
 				//Step1: Check if new location is different from the current one
 				if (move->NewPieceX == move->OldPieceX && move->NewPieceY == move->OldPieceY)
 					return false;
@@ -333,6 +341,36 @@ namespace Karo {
 					i++;
 
 			return i;
+		}
+
+		bool Karo::IsValidTilePlacement(int x, int y)
+		{
+			//Check for tileplacement | left | right | up | down
+			if (GetTileAt(x - 1, y) == nullptr &&
+				GetTileAt(x + 1, y) == nullptr &&
+				GetTileAt(x, y - 1) == nullptr &&
+				GetTileAt(x, y + 1) == nullptr)
+				return false;
+			return true;
+		}
+
+		bool Karo::IsCornerTile(int x, int y)
+		{
+			int numberFreeSides=0;
+			
+			if (GetTileAt(x - 1, y) == nullptr)
+				numberFreeSides++;
+			if (GetTileAt(x + 1, y) == nullptr)
+				numberFreeSides++;
+			if (GetTileAt(x, y-1) == nullptr)
+				numberFreeSides++;
+			if (GetTileAt(x, y+1) == nullptr)
+				numberFreeSides++;
+
+			if (numberFreeSides > 1)
+				return true;
+
+			return false;
 		}
     }
 }
