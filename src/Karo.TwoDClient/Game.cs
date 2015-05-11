@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using CKaro = Karo.Core.Karo;
+using System.Linq;
 
 namespace Karo.TwoDClient
 {
@@ -39,9 +41,13 @@ namespace Karo.TwoDClient
         private Vector2 _oldMousePos = new Vector2(0, 0);
         private Position _selectedOldPiece;
         private Position _selectedNewPiece;
-
+        private TimeSpan _lastMoveTime;
+        private Move _lastMove;
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
+
+        private List<Move> history = new List<Move>();
+        private SpriteFont font;
 
         public Game(int player1Ai, int player2Ai)
         {
@@ -104,7 +110,6 @@ namespace Karo.TwoDClient
         protected override void Initialize()
         {
             _currentPlayer = _playerOne;
-            _playerOne.DoMove(null, 0, Done);
             base.Initialize();
         }
 
@@ -143,19 +148,7 @@ namespace Karo.TwoDClient
                     return Player.None;
             }
         }
-
-        /// <summary>
-        ///     Completes the move of the current player.
-        /// </summary>
-        /// <param name="move">The move.</param>
-        private void Done(Move move)
-        {
-            _karo = _karo.WithMoveApplied(move, CurrentTurn);
-
-            _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
-            _currentPlayer.DoMove(move, 0, Done);
-        }
-
+        
         /// <summary>
         ///     LoadContent will be called once per game and is the place to load
         ///     all of your content.
@@ -164,6 +157,8 @@ namespace Karo.TwoDClient
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            font = Content.Load<SpriteFont>("Spritefont1");
 
             Textures.Load(Content);
         }
@@ -178,6 +173,29 @@ namespace Karo.TwoDClient
         }
 
         /// <summary>
+        ///     Completes the move of the current player.
+        /// </summary>
+        /// <param name="move">The move.</param>
+        private void Done(Move move)
+        {
+            history.Add(move);
+            _lastMove = move;
+            _karo = _karo.WithMoveApplied(move, CurrentTurn);
+
+            var winner = _karo.GetWinner();
+            if (winner == Player.None)
+            {
+                _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
+
+                if (IsCurrentPlayerHuman)
+                    _currentPlayer.DoMove(_lastMove, 0, Done);
+                else
+                    _awaitingMove = true;
+            }
+        }
+
+        private bool _awaitingMove = true;
+        /// <summary>
         ///     Allows the game to run logic such as updating the world,
         ///     checking for collisions, gathering input, and playing audio.
         /// </summary>
@@ -187,6 +205,18 @@ namespace Karo.TwoDClient
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            // 
+            if (_awaitingMove)
+            {
+                _lastMoveTime += gameTime.ElapsedGameTime;
+                if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
+                {
+                    _lastMoveTime = TimeSpan.Zero;
+                    _awaitingMove = false;
+                    _currentPlayer.DoMove(_lastMove, 0, Done);
+                }
+            }
 
             //get the current mouse state			
             var mouseState = Mouse.GetState();
@@ -368,14 +398,9 @@ namespace Karo.TwoDClient
             _spriteBatch.Draw(Textures.RedPiece, _camera.Position + new Vector2(200, 25), Color.White);
             _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
-            if (CurrentTurn == Player.Player1)
-            {
+            if (IsCurrentPlayerHuman)
                 _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(200, 75), Color.White);
-            }
-            else
-            {
-                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(250, 75), Color.White);
-            }
+
             if (_selectedOldPiece != null)
             {
                 _spriteBatch.Draw(Textures.SelectIndicator, new Vector2(_selectedOldPiece.X * 51, _selectedOldPiece.Y * 51),
@@ -385,6 +410,19 @@ namespace Karo.TwoDClient
             {
                 _spriteBatch.Draw(Textures.Piece, new Vector2(_selectedNewPiece.X * 51, _selectedNewPiece.Y * 51),
                     Color.White);
+            }
+
+            int i = 0;
+            foreach (Move move in Enumerable.Reverse(history).Take(10))
+            {
+                string str = "";
+
+                str += "Piece from " + move.OldPieceX + "," + move.OldPieceY + " to " + move.NewPieceX + "," +
+                       move.NewPieceY;
+
+                _spriteBatch.DrawString(font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f, new Vector2(0, i * -50), new Vector2(0.3f, 0.3f), new SpriteEffects(), 0f);
+
+                i++;
             }
         }
 

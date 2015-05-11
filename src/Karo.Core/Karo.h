@@ -32,10 +32,12 @@ namespace Karo {
             Piece^ GetPiece(int x, int y);
 			bool IsValidTilePlacement(int x, int y);
 			bool IsCornerTile(int x, int y);
+            Player GetWinner();
+            int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
         private:
+            bool IsRowForPlayerAt(int x, int y, Player player);
             array<Tile^>^ _tiles;
             array<Piece^>^ _pieces;
-            int GetRowLength(int x, int y, int offsetX, int offsetY, Player player);
         };
     }
 }

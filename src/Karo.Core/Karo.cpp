@@ -372,5 +372,27 @@ namespace Karo {
 
 			return false;
 		}
+		
+        Player Karo::GetWinner()
+        {
+            if (PieceCount() < 12) return Player::None;
+
+            for each(Piece^ piece in Pieces)
+            {
+                if (piece->IsFaceUp && IsRowForPlayerAt(piece->Tile->X, piece->Tile->Y, Player::Player1))
+                    return Player::Player1;
+                if (piece->IsFaceUp && IsRowForPlayerAt(piece->Tile->X, piece->Tile->Y, Player::Player2))
+                    return Player::Player2;
+            }
+        }
+
+        bool Karo::IsRowForPlayerAt(int x, int y, Player player)
+        {
+            int a1 = GetRowLength(x, y, -1, -1, player) + 1 + GetRowLength(x, y, 1, 1, player);
+            int a2 = GetRowLength(x, y, -1, 1, player) + 1 + GetRowLength(x, y, 1, -1, player);
+            int a3 = GetRowLength(x, y, 0, -1, player) + 1 + GetRowLength(x, y, 0, 1, player);
+            int a4 = GetRowLength(x, y, -1, 0, player) + 1 + GetRowLength(x, y, 1, 0, player);
+            return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
+        }
     }
 }
