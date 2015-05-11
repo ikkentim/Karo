@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BoardState.h"
-
+#define NEIGHBOUR_COUNT (4)
 class Intelligence
 {
 public:
@@ -10,6 +10,10 @@ public:
     void apply_move(BoardMove move, BoardPlayer player);
     BoardMove choose_best_move(int depth, BoardPlayer player);
     int evaluate(BoardState * state, BoardPlayer player);
+
+	int* neighbourx = new int[]{ 1, 1, 0, -1 };
+	int* neighboury = new int[]{ 1, 0, 1, 1 };
+
 
 private:
 	BoardState * state_;
