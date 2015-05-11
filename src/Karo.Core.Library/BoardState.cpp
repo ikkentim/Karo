@@ -319,16 +319,16 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
                 state.tiles_[i] = move.target;
 
                 for (int j = 0; j < PIECE_COUNT; j++)
-                    if (state.pieces_[j] == move.piece) {
+                    if (state.pieces_[j].tile == move.piece.tile) {
                         state.pieces_[j].tile = move.target;
+
                         if (abs(move.target.x - move.piece.tile.x) > 1 ||
                             abs(move.target.y - move.piece.tile.y) > 1)
-                        state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
+                            state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
                         return state;
                     }
 
                 // No piece was found, should never happen.
-
                 assert(0 && "piece was moved but does not exist!(1)");
                 return state; // return error state.
             }
