@@ -150,5 +150,34 @@ namespace Karo {
             assert(w <= 2 && w >= 0);
             return (KaroPlayer)w;
         }
+
+		bool KaroBoardState::IsCornerTile(int x, int y){
+			if (GetTile(x - 1, y) == nullptr && GetTile(x, y - 1) == nullptr && (
+				(GetTile(x - 1, y - 1)) != nullptr ||
+				(GetTile(x - 1, y + 1)) != nullptr ||
+				(GetTile(x + 1, y - 1)) != nullptr ||
+				(GetTile(x + 1, y + 1)) != nullptr))
+				return true;
+			if (GetTile(x - 1, y) == nullptr && GetTile(x, y + 1) == nullptr && (
+				(GetTile(x - 1, y - 1)) != nullptr ||
+				(GetTile(x - 1, y + 1)) != nullptr ||
+				(GetTile(x + 1, y - 1)) != nullptr ||
+				(GetTile(x + 1, y + 1)) != nullptr))
+				return true;
+			if (GetTile(x + 1, y) == nullptr && GetTile(x, y - 1) == nullptr && (
+				(GetTile(x - 1, y - 1)) != nullptr ||
+				(GetTile(x - 1, y + 1)) != nullptr ||
+				(GetTile(x + 1, y - 1)) != nullptr ||
+				(GetTile(x + 1, y + 1)) != nullptr))
+				return true;
+			if (GetTile(x + 1, y) == nullptr && GetTile(x, y + 1) == nullptr && (
+				(GetTile(x - 1, y - 1)) != nullptr ||
+				(GetTile(x - 1, y + 1)) != nullptr ||
+				(GetTile(x + 1, y - 1)) != nullptr ||
+				(GetTile(x + 1, y + 1)) != nullptr))
+				return true;
+
+			return false;
+		}
     }
 }
