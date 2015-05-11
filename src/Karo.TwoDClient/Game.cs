@@ -291,11 +291,16 @@ namespace Karo.TwoDClient
                         Debug.WriteLine("Has selected new piece");
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
-                        human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
-                            _selectedOldPiece.Y, corner.X, corner.Y));
+                        if (_karo.GetPiece(corner.X, corner.Y) == null &&
+                            _karo.IsCornerTile(corner.X, corner.Y))
+                        {
 
-                        _selectedOldPiece = null;
-                        _selectedNewPiece = null;
+                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
+                                _selectedOldPiece.Y, corner.X, corner.Y));
+
+                            _selectedOldPiece = null;
+                            _selectedNewPiece = null;
+                        }
                     }
                     else
                     {
