@@ -4,9 +4,9 @@
 namespace Karo {
     namespace Core {
         public enum class KaroPlayer {
-            None = (int)BoardPlayer::None,
-            Player1 = (int)BoardPlayer::Player1,
-            Player2 = (int)BoardPlayer::Player2
+            None = PLAYER_NONE,
+            Player1 = PLAYER_PLAYER1,
+            Player2 = PLAYER_PLAYER2
         };
     }
 }

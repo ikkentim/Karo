@@ -146,7 +146,9 @@ namespace Karo {
             }
         }
         KaroPlayer KaroBoardState::GetWinner() {
-            return (KaroPlayer)(int)state_->winner();
+            int w = static_cast<int> (state_->winner());
+            assert(w <= 2 && w >= 0);
+            return (KaroPlayer)w;
         }
     }
 }

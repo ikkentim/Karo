@@ -33,7 +33,8 @@ namespace Karo.TwoDClient
 	    {
 	        if (chosenMove == null) return;
 
-	        if (Board.IsValidMove(move))
+	        var isValid = Board.IsValidMove(move);
+	        if (isValid)
 	        {
 	            Board = Board.WithMoveApplied(move, playerNumber);
 	            var tmp = chosenMove;

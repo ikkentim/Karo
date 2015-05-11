@@ -67,7 +67,7 @@ bool BoardState::piece(int x, int y, BoardPiece * result) {
 
     for (int i = 0; i < PIECE_COUNT; i++)
         if (pieces_[i].tile.x == x && pieces_[i].tile.y == y && 
-            pieces_[i].player != BoardPlayer::None)
+            pieces_[i].player != PLAYER_NONE)
         {
             if (result)
                 *result = pieces_[i];
@@ -84,7 +84,7 @@ bool BoardState::is_finished() {
 
         // If the piece has no set player yet, this indicates that the game is
         // still in the first phase and cannot have finished.
-        if (pieces_[i].player == BoardPlayer::None) {
+        if (pieces_[i].player == PLAYER_NONE) {
             return false;
         }
 
@@ -117,7 +117,7 @@ int BoardState::piece_count() {
 
     // Count the number of pieces with a set player
     for (int i = 0; i < PIECE_COUNT; i++)
-        if (pieces_[i].player != BoardPlayer::None)
+        if (pieces_[i].player != PLAYER_NONE)
             c++;
 
     return c;
@@ -374,15 +374,17 @@ int BoardState::corner_tiles(BoardTile * tiles, int count) {
 }
 
 BoardPlayer BoardState::winner() {
-    if (piece_count() < PIECE_COUNT) return BoardPlayer::None;
+    if (piece_count() < PIECE_COUNT) return PLAYER_NONE;
 
     for (int i = 0; i < PIECE_COUNT; i++)
     {
-        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, BoardPlayer::Player1))
-            return BoardPlayer::Player1;
-        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, BoardPlayer::Player2))
-            return BoardPlayer::Player2;
+        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER1))
+            return PLAYER_PLAYER1;
+        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER2))
+            return PLAYER_PLAYER2;
     }
+
+    return PLAYER_NONE;
 }
 
 int BoardState::row_length(int x, int y, int ox, int oy, BoardPlayer player) {
