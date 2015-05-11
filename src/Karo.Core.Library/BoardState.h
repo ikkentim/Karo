@@ -8,7 +8,7 @@
 
 #define TILE_COUNT      (20)
 #define PIECE_COUNT     (12)
-#define MOVE_COUNT     (PIECE_COUNT * 8)
+#define MOVE_COUNT     (PIECE_COUNT * (8 + TILE_COUNT / 4))
 
 class BoardState {
 public:
