@@ -76,8 +76,9 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
 		for (int j = 0; j <= NEIGHBOUR_COUNT; j++) {
 
 			// for each neighbour
-			int neighbourscore = state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player) + 1 + state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
-
+			int neighbourscore = state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player);
+			neighbourscore += 1;
+			neighbourscore += state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
 			//check for winstate
 			if (neighbourscore >= 4)
 				if (mypiece)
@@ -94,7 +95,6 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
 				score -= neighbourscore;
 		}
 	}
-
 
     return score;
 }
