@@ -261,6 +261,20 @@ bool BoardState::is_valid_move(BoardMove move) {
             distancey = abs(distancey);
         }
 
+		//I have no information about the tile you want to move here -_-;
+		//Cant take certain tiles when jumping 
+		//int tileX = move.target.x;
+		//int tileY = move.target.y;
+
+		//if (tile(tileX + 1, tileY,NULL))
+		//	tileX + 1;
+		//if (tile(tileX - 1, tileY, NULL))
+		//	tileX - 1;
+		//if (tile(tileX, tileY + 1, NULL))
+		//	tileY + 1;
+		//if (tile(tileX, tileY -1, NULL))
+		//	tileY - 1;
+
         //Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
         BoardPiece jumped_piece;
         if (piece(pieceLocationX, pieceLocationY, &jumped_piece) &&
