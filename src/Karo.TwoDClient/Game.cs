@@ -265,7 +265,7 @@ namespace Karo.TwoDClient
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
                         //Make sure the location where you jump to, will not become invalid after moving a tile
-                        Tile t = null;
+                        Tile t = new Tile(0, 0);
                         if (_karo.GetTile(_selectedNewPiece.X + 1, _selectedNewPiece.Y) != null)
                             t = _karo.GetTile(_selectedNewPiece.X + 1, _selectedNewPiece.Y);
                         if (_karo.GetTile(_selectedNewPiece.X - 1, _selectedNewPiece.Y) != null)

@@ -238,6 +238,11 @@ bool BoardState::is_valid_move(BoardMove move) {
     if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
         return false;
 
+	//Check if new location has any neighbors (otherwise you get invalid boardstate)
+	if (!(tile(move.target.x+1, move.target.y, NULL) || tile(move.target.x-1, move.target.y, NULL) ||
+		tile(move.target.x, move.target.y+1, NULL) || tile(move.target.x, move.target.y-1, NULL)))
+		return false;
+
     //Step2: Check if there already is a piece on the tile your trying to move to
     for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
         if (piece(move.target.x, move.target.y, NULL))
