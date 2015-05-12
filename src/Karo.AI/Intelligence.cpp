@@ -66,7 +66,7 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
         //for each piece
         //is piece flipped
         if (!allPieces[i].is_face_up)
-            break;
+            continue;
         bool mypiece = (allPieces[i].player == player);
 
         BoardTile tile = allPieces[i].tile;
