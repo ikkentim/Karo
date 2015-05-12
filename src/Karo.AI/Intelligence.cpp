@@ -27,7 +27,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 	int move_count = state->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
-	int bestScore = MIN_SCORE;
+    int bestScore = MIN_SCORE;
 
 	for (int i = 0; i < move_count; i++) {
 		BoardState * innerState;
@@ -44,7 +44,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 		int score = evaluate(new BoardState(innerState->with_move_applied(innerMove, player)), player);
 
-		if (score > bestScore)
+        if (score > bestScore)
 		{
 			bestMove = moves[i];
 			bestScore = score;
