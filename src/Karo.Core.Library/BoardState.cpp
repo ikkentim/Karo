@@ -238,6 +238,11 @@ bool BoardState::is_valid_move(BoardMove move) {
     if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
         return false;
 
+	//Check if new location has any neighbors (otherwise you get invalid boardstate)
+	if (!(tile(move.target.x+1, move.target.y, NULL) || tile(move.target.x-1, move.target.y, NULL) ||
+		tile(move.target.x, move.target.y+1, NULL) || tile(move.target.x, move.target.y-1, NULL)))
+		return false;
+
     //Step2: Check if there already is a piece on the tile your trying to move to
     for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
         if (piece(move.target.x, move.target.y, NULL))
@@ -260,6 +265,20 @@ bool BoardState::is_valid_move(BoardMove move) {
             pieceLocationY = move.piece.tile.y + distancey / 2;
             distancey = abs(distancey);
         }
+
+		//I have no information about the tile you want to move here -_-;
+		//Cant take certain tiles when jumping 
+		//int tileX = move.target.x;
+		//int tileY = move.target.y;
+
+		//if (tile(tileX + 1, tileY,NULL))
+		//	tileX + 1;
+		//if (tile(tileX - 1, tileY, NULL))
+		//	tileX - 1;
+		//if (tile(tileX, tileY + 1, NULL))
+		//	tileY + 1;
+		//if (tile(tileX, tileY -1, NULL))
+		//	tileY - 1;
 
         //Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
         BoardPiece jumped_piece;

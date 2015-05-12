@@ -75,20 +75,18 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
         bool mypiece = (allPieces[i].player == player);
 
         BoardTile tile = allPieces[i].tile;
-        for (int j = 0; j <= NEIGHBOUR_COUNT; j++) {
 
-            // for each neighbour
-            int neighbourscore =1;//
-            //state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player) + 
-            //    1 + 
-            //    state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
+#define TRY_OFFSET(ox,oy, idx); int idx = state->row_length(tile.x, tile.y, (ox), (oy), player) + \
+            1 + \
+            state->row_length(tile.x, tile.y, -(ox), -(oy), player); \
+            if(idx >= 4) { return mypiece ? MAX_SCORE : MIN_SCORE; } else { score += mypiece ? idx : -idx; }
 
-            //check for winstate
-            if (neighbourscore >= 4)
-                    return mypiece ? MAX_SCORE : MIN_SCORE;
-       
-            score += mypiece ? neighbourscore : -neighbourscore;
-        }
+        TRY_OFFSET(1, 1, d1);
+        TRY_OFFSET(1, 0, d2);
+        TRY_OFFSET(0, 1, d3);
+        TRY_OFFSET(-1, 1, d4);
+
+#undef TRY_OFFSET
     }
 
     return score;
