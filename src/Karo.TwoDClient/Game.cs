@@ -86,6 +86,7 @@ namespace Karo.TwoDClient
         protected override void Initialize()
         {
             _currentPlayer = _player1;
+            _currentPlayer.DoMove(null, 0, Done);
 
             base.Initialize();
         }
