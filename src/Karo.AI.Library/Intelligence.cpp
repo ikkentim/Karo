@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Intelligence.h"
 
 using namespace std;
@@ -19,7 +18,7 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
 }
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
     // TODO: Dismiss time for now, just go on for a few rounds.
-	return choose_best_move(state_, 8, player);
+	return choose_best_move(state_, 5, player);
 }
 
 BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlayer player) {
