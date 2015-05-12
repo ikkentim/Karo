@@ -173,7 +173,10 @@ namespace Karo.TwoDClient
                     _awaitingMove = true;
             }
             else
+            {
                 _currentPlayer = null;
+                Console.WriteLine("There is a winner!!");
+            }
         }
 
         /// <summary>
