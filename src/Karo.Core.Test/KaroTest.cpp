@@ -113,9 +113,6 @@ namespace KaroCoreTest
 
             auto corners = karo->CornerTiles;
 
-            for each(auto c in corners) {
-                Console::WriteLine(c);
-            }
             Assert::AreEqual(2, System::Linq::Enumerable::Count(corners));
         };
 

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Intelligence.h"
 
+using namespace std;
+
 Intelligence::Intelligence() {
     state_ = new BoardState();
 }
@@ -16,7 +18,7 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
 }
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
     // TODO: Dismiss time for now, just go on for a few rounds.
-	return choose_best_move(state_, 3, player);
+	return choose_best_move(state_, 8, player);
 }
 
 BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlayer player) {
@@ -54,6 +56,12 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 int Intelligence::evaluate(BoardState * state, BoardPlayer player)
 {
+    static int* neighbourx = 0; 
+    static int* neighboury = 0;
+
+    if (!neighbourx) neighbourx = new int[]{ 1, 1, 0, -1 };
+    if (!neighboury)neighboury = new int[]{ 1, 0, 1, 1 };
+
     BoardPiece* allPieces = state->pieces();
 
     int score = 0;
@@ -66,7 +74,7 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
         //for each piece
         //is piece flipped
         if (!allPieces[i].is_face_up)
-            continue;
+            break;
         bool mypiece = (allPieces[i].player == player);
 
         BoardTile tile = allPieces[i].tile;
@@ -91,7 +99,5 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
                 score -= neighbourscore;
         }
     }
-
-
     return score;
 }

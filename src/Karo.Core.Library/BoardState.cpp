@@ -193,8 +193,8 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
                 // We need to move a tile to this position, fill the corners
                 // array if empty.
                 if (!corners) {
-                    corners = new BoardTile[20];
-                    corner_count = corner_tiles(corners, 20);
+                    corners = new BoardTile[TILE_COUNT];
+                    corner_count = corner_tiles(corners, TILE_COUNT);
                 }
 
                 // For every corner add a move of moving this corner to the
@@ -329,13 +329,13 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
                     }
 
                 // No piece was found, should never happen.
-                assert(0 && "piece was moved but does not exist!(1)");
-                return state; // return error state.
+                assert(0 && "piece not found in with_move_applied while moving tile.");
+                return state; // return faulty state.
             }
 
         // No tile was found, should never happen.
-        assert(0 && "tile was moved but does not exist!");
-        return state; // return error state.
+        assert(0 && "tile not found in with_move_applied.");
+        return state; // return faulty state.
     }
 
     // Simply move the piece. 
@@ -349,8 +349,8 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
         }
 
     // No piece was found, should never happen.
-    assert(0 && "piece was moved but does not exist!(2)");
-    return state; // return error state.
+    assert(0 && "piece not found in with_move_applied.");
+    return state; // return faulty state.
 }
 
 int BoardState::corner_tiles(BoardTile * tiles, int count) {
@@ -366,8 +366,10 @@ int BoardState::corner_tiles(BoardTile * tiles, int count) {
         if (((top == false && left == false) ||
             (top == false && right == false) ||
             (bottom == false && left == false) ||
-            (bottom == false && right == false)) && 
+            (bottom == false && right == false)) &&
             !piece(tiles_[i].x, tiles_[i].y, NULL)) {
+            assert(tiles_[i].x > -100 && tiles_[i].x < 100);//temp for debug
+            assert(tiles_[i].y > -100 && tiles_[i].y < 100);//temp for debug
             if (idx < count)
                 tiles[idx] = tiles_[i];
             idx++;
