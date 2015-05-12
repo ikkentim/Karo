@@ -183,7 +183,7 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
                     continue;
                 }
 
-                // To place a tile here, we need at least one connecting edge.
+                // To place a tile here, we need at least one connecting tile.
                 if (!tile(newx - 1, newy, NULL) &&
                     !tile(newx + 1, newy, NULL) &&
                     !tile(newx, newy - 1, NULL) &&
