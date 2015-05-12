@@ -16,7 +16,8 @@ public:
 private:
     const int* neighbourx = new int[]{ 1, 1, 0, -1 };
     const int* neighboury = new int[]{ 1, 0, 1, 1 };
-
+	const int minscore = -9001;
+	const int maxscore = 9000;
 	BoardState * state_;
     BoardMove choose_best_move(BoardState * state, int depth, BoardPlayer player);
 };
