@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using Karo.AI;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Linq;
-using Karo.AI;
 
 namespace Karo.TwoDClient
 {
@@ -16,64 +17,34 @@ namespace Karo.TwoDClient
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
-        private class Position
-        {
-            public Position(int x, int y)
-            {
-                X = x;
-                Y = y;
-            }
-
-            public int X { get; private set; }
-            public int Y { get; private set; }
-        }
-
         private const int TileSize = 50;
-
         private readonly Camera2D _camera = new Camera2D(-200, -200);
-
-        private GraphicsDeviceManager _graphics;
-        private readonly IPlayer _playerOne;
-        private readonly IPlayer _playerTwo;
+        private readonly List<Move> _history = new List<Move>();
+        private readonly IPlayer _player1;
+        private readonly IPlayer _player2;
+        private bool _awaitingMove = true;
         private IPlayer _currentPlayer;
+        private SpriteFont _font;
+        private GraphicsDeviceManager _graphics;
         private bool _isLeftMouseButtonDown;
+        private bool _isThinking;
         private KaroBoardState _karo = new KaroBoardState();
-
-        private Vector2 _oldMousePos = new Vector2(0, 0);
-        private Position _selectedOldPiece;
-        private Position _selectedNewPiece;
-        private TimeSpan _lastMoveTime;
         private Move _lastMove;
+        private TimeSpan _lastMoveTime;
+        private Vector2 _oldMousePos = new Vector2(0, 0);
+        private Position _selectedNewPiece;
+        private Position _selectedOldPiece;
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
 
-        private List<Move> history = new List<Move>();
-        private SpriteFont font;
-
-        public Game(int player1Ai, int player2Ai)
+        public Game(IPlayer player1, IPlayer player2)
         {
-            if (player1Ai == 0)
-            {
-                _playerOne = new HumanPlayer(KaroPlayer.Player1);
-            }
-            else
-            {
-                // Some weird issue?
-                // ReSharper disable once SuspiciousTypeConversion.Global
-                _playerOne = new Player() as IPlayer;
-            }
+            if (player1 == null) throw new ArgumentNullException("player1");
+            if (player2 == null) throw new ArgumentNullException("player2");
 
-            if (player2Ai == 0)
-            {
-                _playerTwo = new HumanPlayer(KaroPlayer.Player2);
-            }
-            else
-            {
-                // Some weird issue?
-                // ReSharper disable once SuspiciousTypeConversion.Global
-                _playerTwo = new Player() as IPlayer;
-            }
-
+            _player1 = player1;
+            _player2 = player2;
+           
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -87,9 +58,9 @@ namespace Karo.TwoDClient
         {
             get
             {
-                return _currentPlayer == _playerOne
+                return _currentPlayer == _player1
                     ? KaroPlayer.Player1
-                    : _currentPlayer == _playerTwo ? KaroPlayer.Player2 : KaroPlayer.None;
+                    : _currentPlayer == _player2 ? KaroPlayer.Player2 : KaroPlayer.None;
             }
         }
 
@@ -102,7 +73,7 @@ namespace Karo.TwoDClient
         }
 
         /// <summary>
-        /// Gets a value indicating whether the game is in the first phase.
+        ///     Gets a value indicating whether the game is in the first phase.
         /// </summary>
         public bool IsInFirstPhase
         {
@@ -114,7 +85,8 @@ namespace Karo.TwoDClient
         /// </summary>
         protected override void Initialize()
         {
-            _currentPlayer = _playerOne;
+            _currentPlayer = _player1;
+
             base.Initialize();
         }
 
@@ -128,9 +100,9 @@ namespace Karo.TwoDClient
             switch (player)
             {
                 case KaroPlayer.Player1:
-                    return _playerOne;
+                    return _player1;
                 case KaroPlayer.Player2:
-                    return _playerTwo;
+                    return _player2;
                 default:
                     return null;
             }
@@ -153,7 +125,7 @@ namespace Karo.TwoDClient
                     return KaroPlayer.None;
             }
         }
-        
+
         /// <summary>
         ///     LoadContent will be called once per game and is the place to load
         ///     all of your content.y
@@ -163,7 +135,7 @@ namespace Karo.TwoDClient
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            font = Content.Load<SpriteFont>("Spritefont1");
+            _font = Content.Load<SpriteFont>("Spritefont1");
 
             Textures.Load(Content);
         }
@@ -174,7 +146,7 @@ namespace Karo.TwoDClient
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            _spriteBatch.Dispose();
         }
 
         /// <summary>
@@ -183,7 +155,9 @@ namespace Karo.TwoDClient
         /// <param name="move">The move.</param>
         private void Done(Move move)
         {
-            history.Add(move);
+            _isThinking = false;
+
+            _history.Add(move);
             _lastMove = move;
             _karo = _karo.WithMoveApplied(move, CurrentTurn);
 
@@ -198,12 +172,9 @@ namespace Karo.TwoDClient
                     _awaitingMove = true;
             }
             else
-            {
                 _currentPlayer = null;
-            }
         }
 
-        private bool _awaitingMove = true;
         /// <summary>
         ///     Allows the game to run logic such as updating the world,
         ///     checking for collisions, gathering input, and playing audio.
@@ -218,12 +189,21 @@ namespace Karo.TwoDClient
             // 
             if (_awaitingMove)
             {
-                _lastMoveTime += gameTime.ElapsedGameTime;
-                if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
-                {
-                    _lastMoveTime = TimeSpan.Zero;
+                if (IsCurrentPlayerHuman)
                     _awaitingMove = false;
-                    _currentPlayer.DoMove(_lastMove, 0, Done);
+                else
+                {
+                    _lastMoveTime += gameTime.ElapsedGameTime;
+                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
+                    {
+                        _lastMoveTime = TimeSpan.Zero;
+                        _awaitingMove = false;
+//                        new Thread(() =>
+//                        {
+                            _isThinking = true;
+                            _currentPlayer.DoMove(_lastMove, 0, Done);
+//                        }).Start();
+                    }
                 }
             }
 
@@ -286,7 +266,6 @@ namespace Karo.TwoDClient
                         if (_karo.GetPiece(corner.X, corner.Y) == null &&
                             _karo.IsCornerTile(corner.X, corner.Y))
                         {
-
                             human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
                                 _selectedOldPiece.Y, corner.X, corner.Y));
 
@@ -308,7 +287,6 @@ namespace Karo.TwoDClient
                         }
                     }
                 }
-
             }
             if (mouseState.LeftButton == ButtonState.Released)
             {
@@ -317,7 +295,6 @@ namespace Karo.TwoDClient
 
             base.Update(gameTime);
         }
-
 
         #region Drawing
 
@@ -367,26 +344,15 @@ namespace Karo.TwoDClient
                     if (piece != null)
                     {
                         var coord = new Vector2(piece.X*(TileSize + 1), piece.Y*(TileSize + 1));
+
                         if (piece.Player == KaroPlayer.Player1)
-                            if (piece.IsFaceUp)
-                            {
-                                _spriteBatch.Draw(Textures.RedPieceMarked, coord, Color.White);
-                            }
-                            else
-                            {
-                                _spriteBatch.Draw(Textures.RedPiece, coord, Color.White);
-                            }
+                            _spriteBatch.Draw(piece.IsFaceUp ? Textures.RedPieceMarked : Textures.RedPiece, coord,
+                                Color.White);
+
                         if (piece.Player == KaroPlayer.Player2)
-                        {
-                            if (piece.IsFaceUp)
-                            {
-                                _spriteBatch.Draw(Textures.WhitePieceMarked, coord, Color.White);
-                            }
-                            else
-                            {
-                                _spriteBatch.Draw(Textures.WhitePiece, coord, Color.White);
-                            }
-                        }
+                            _spriteBatch.Draw(piece.IsFaceUp ? Textures.WhitePieceMarked : Textures.WhitePiece, coord,
+                                Color.White);
+                        
                     }
                     else
                     {
@@ -402,7 +368,7 @@ namespace Karo.TwoDClient
 
         private void DrawUI()
         {
-            var marker = _tilePosition*51;
+            var marker = _tilePosition * (TileSize + 1);
 
             _spriteBatch.Draw(Textures.Cursor, marker, Color.White);
 
@@ -410,34 +376,39 @@ namespace Karo.TwoDClient
             _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
             if (IsCurrentPlayerHuman)
-                _spriteBatch.Draw(Textures.TurnIndicator, _camera.Position + new Vector2(CurrentTurn == KaroPlayer.Player1 ? 200 : 250, 75), Color.White);
+                _spriteBatch.Draw(Textures.TurnIndicator,
+                    _camera.Position + new Vector2(CurrentTurn == KaroPlayer.Player1 ? 200 : 250, 75), Color.White);
 
             if (_selectedOldPiece != null)
             {
-                _spriteBatch.Draw(Textures.SelectIndicator, new Vector2(_selectedOldPiece.X * 51, _selectedOldPiece.Y * 51),
+                _spriteBatch.Draw(Textures.SelectIndicator, new Vector2(_selectedOldPiece.X*51, _selectedOldPiece.Y*51),
                     Color.White);
             }
             if (_selectedNewPiece != null)
             {
-                _spriteBatch.Draw(Textures.Piece, new Vector2(_selectedNewPiece.X * 51, _selectedNewPiece.Y * 51),
+                _spriteBatch.Draw(Textures.Piece, new Vector2(_selectedNewPiece.X*51, _selectedNewPiece.Y*51),
                     Color.White);
             }
 
-            int i = 0;
-            foreach (Move move in Enumerable.Reverse(history).Take(10))
+            var i = 0;
+            foreach (var move in Enumerable.Reverse(_history).Take(10))
             {
-                string str = "";
-
-                str += "Piece from " + move.OldPieceX + "," + move.OldPieceY + " to " + move.NewPieceX + "," +
+                var str = "Piece from " + move.OldPieceX + "," + move.OldPieceY + " to " + move.NewPieceX + "," +
                        move.NewPieceY;
 
-                _spriteBatch.DrawString(font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f, new Vector2(0, i * -50), new Vector2(0.3f), new SpriteEffects(), 0f);
+                _spriteBatch.DrawString(_font, str, _camera.Position + new Vector2(5, 5), Color.Red, 0f,
+                    new Vector2(0, i*-50), new Vector2(0.3f), new SpriteEffects(), 0f);
 
                 i++;
+            }
+
+            if (_isThinking)
+            {
+                _spriteBatch.DrawString(_font, string.Format("{0} is thinking...", CurrentTurn), new Vector2(20),
+                    Color.BlueViolet);
             }
         }
 
         #endregion
-
     }
 }

@@ -12,8 +12,7 @@ public:
     int evaluate(BoardState * state, BoardPlayer player);
 
 private:
-	int* neighbourx = new int[]{ 1, 1, 0, -1 };
-	int* neighboury = new int[]{ 1, 0, 1, 1 };
-	BoardState * state_;
     BoardMove choose_best_move(BoardState * state, int depth, BoardPlayer player);
+
+	BoardState * state_ = 0;
 };

@@ -1,46 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Karo.Common;
 using Karo.Core;
 
 namespace Karo.TwoDClient
 {
-    
-	class HumanPlayer : IPlayer
-	{
-        private KaroPlayer playerNumber;
-	    private Action<Move> chosenMove;
-	    private KaroBoardState Board;
+    internal class HumanPlayer : IPlayer
+    {
+        private KaroBoardState Board;
+        private Action<Move> chosenMove;
 
-	    public HumanPlayer(KaroPlayer player)
-	    {
+        public HumanPlayer()
+        {
             Board = new KaroBoardState();
-	        playerNumber = player;
-            
-	    }
-	    public void DoMove(Move previousMove, int timeLimit, Action<Move> done)
-	    {
-	        if (previousMove != null)
-	            Board = Board.WithMoveApplied(previousMove,
-                    playerNumber == KaroPlayer.Player1 ? KaroPlayer.Player2 : KaroPlayer.Player1);
+        }
 
-	        chosenMove = done;
-	    }
+        public void DoMove(Move previousMove, int timeLimit, Action<Move> done)
+        {
+            if (previousMove != null)
+                Board = Board.WithMoveApplied(previousMove, KaroPlayer.Player2);
 
-	    public void PrepareMove(Move move)
-	    {
-	        if (chosenMove == null) return;
+            chosenMove = done;
+        }
 
-	        var isValid = Board.IsValidMove(move);
-	        if (isValid)
-	        {
-	            Board = Board.WithMoveApplied(move, playerNumber);
-	            var tmp = chosenMove;
-	            chosenMove = null;
-	            tmp(move);
-	        }
-	    }
-	}
+        public void PrepareMove(Move move)
+        {
+            if (chosenMove == null) return;
+
+            if (!Board.IsValidMove(move))
+                return;
+
+            Board = Board.WithMoveApplied(move, KaroPlayer.Player1);
+
+            chosenMove(move);
+            chosenMove = null;
+        }
+    }
 }
