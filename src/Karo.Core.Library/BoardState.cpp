@@ -329,15 +329,11 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
                     }
 
                 // No piece was found, should never happen.
-                //cout << "piece was moved but does not exist while also moving a tile." << endl;
-                //cout << "Moving (" << move.piece.tile.x << ", " << move.piece.tile.y << ") >> (" << move.target.x << ", " << move.target.y << ") w/tile (" << move.tile.x << ", " << move.tile.y << ")" << endl;
                 assert(0 && "piece not found in with_move_applied while moving tile.");
                 return state; // return faulty state.
             }
 
         // No tile was found, should never happen.
-        //cout << "tile not found in with_move_applied." << endl;
-        //cout << "Moving (" << move.piece.tile.x << ", " << move.piece.tile.y << ") >> (" << move.target.x << ", " << move.target.y << ") w/tile (" << move.tile.x << ", " << move.tile.y << ")" << endl;
         assert(0 && "tile not found in with_move_applied.");
         return state; // return faulty state.
     }
@@ -353,8 +349,6 @@ BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
         }
 
     // No piece was found, should never happen.
-    //cout << "piece not found in with_move_applied." << endl;
-    //cout << "Moving (" << move.piece.tile.x << ", " << move.piece.tile.y << ") >> (" << move.target.x << ", " << move.target.y << ")" << endl;
     assert(0 && "piece not found in with_move_applied.");
     return state; // return faulty state.
 }

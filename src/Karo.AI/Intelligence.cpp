@@ -56,8 +56,8 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 int Intelligence::evaluate(BoardState * state, BoardPlayer player)
 {
-    const int* neighbourx = NULL; 
-    const int* neighboury = NULL;
+    static int* neighbourx = 0; 
+    static int* neighboury = 0;
 
     if (!neighbourx) neighbourx = new int[]{ 1, 1, 0, -1 };
     if (!neighboury)neighboury = new int[]{ 1, 0, 1, 1 };
