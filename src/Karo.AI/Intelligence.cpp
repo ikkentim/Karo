@@ -26,7 +26,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 	int move_count = state->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
-	int bestScore = minscore; // ITS OVER 9000!!!!!!!!!!!11111one1111
+	int bestScore = MIN_SCORE; // ITS OVER 9000!!!!!!!!!!!11111one1111
 
 	for (int i = 0; i < move_count; i++) {
 		BoardState * innerState;
@@ -86,9 +86,9 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
             //check for winstate
             if (neighbourscore >= 4)
                 if (mypiece)
-                    return maxscore; // it's power level is in fact over 9000
+                    return MAX_SCORE; // it's power level is in fact over 9000
                 else
-                    return minscore; // you got rekt
+                    return MIN_SCORE; // you got rekt
 
             //twice as more score
             neighbourscore *= 2;
