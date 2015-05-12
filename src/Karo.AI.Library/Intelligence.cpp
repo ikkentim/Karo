@@ -3,7 +3,11 @@
 using namespace std;
 
 Intelligence::Intelligence() {
-    state_ = new BoardState();
+	state_ = new BoardState();
+}
+
+Intelligence::Intelligence(BoardState * state) {
+	state_ = state;
 }
 
 Intelligence::~Intelligence() {
@@ -32,7 +36,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 		BoardState * innerState;
 		BoardMove innerMove;
 
-		if (time > 0) {
+		if (time > 0 && !state->with_move_applied(moves[i], player).is_finished()) {
 			innerState = new BoardState(state->with_move_applied(moves[i], player));
 			innerMove = choose_best_move(innerState, --time, OPPONENT(player));
 		}

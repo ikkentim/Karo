@@ -9,7 +9,8 @@
 class Intelligence
 {
 public:
-    Intelligence();
+	Intelligence();
+	Intelligence(BoardState*);
     ~Intelligence();
     void apply_move(BoardMove move, BoardPlayer player);
     BoardMove choose_best_move(int depth, BoardPlayer player);
