@@ -8,6 +8,7 @@ Intelligence::Intelligence() {
 }
 
 Intelligence::~Intelligence() {
+
     delete state_;
 }
 
@@ -26,7 +27,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 	int move_count = state->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
-	int bestScore = minscore; // ITS OVER 9000!!!!!!!!!!!11111one1111
+	int bestScore = MIN_SCORE;
 
 	for (int i = 0; i < move_count; i++) {
 		BoardState * innerState;
@@ -53,14 +54,11 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 
 	return bestMove;
 }
+int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
-int Intelligence::evaluate(BoardState * state, BoardPlayer player)
-{
-    static int* neighbourx = 0; 
-    static int* neighboury = 0;
 
-    if (!neighbourx) neighbourx = new int[]{ 1, 1, 0, -1 };
-    if (!neighboury)neighboury = new int[]{ 1, 0, 1, 1 };
+//neighbourx = new int[]{ 1, 1, 0, -1 };
+//neighboury = new int[]{ 1, 0, 1, 1 }; 
 
     BoardPiece* allPieces = state->pieces();
 
@@ -69,35 +67,30 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player)
     if (state->piece_count() < PIECE_COUNT)
         return 0;
 
-
     for (int i = 0; i < PIECE_COUNT; i++) {
         //for each piece
         //is piece flipped
         if (!allPieces[i].is_face_up)
-            break;
+            continue;
+
         bool mypiece = (allPieces[i].player == player);
 
         BoardTile tile = allPieces[i].tile;
         for (int j = 0; j <= NEIGHBOUR_COUNT; j++) {
 
             // for each neighbour
-            int neighbourscore = state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player) + 1 + state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
+            int neighbourscore =1;//
+            //state->row_length(tile.x, tile.y, neighbourx[j], neighboury[j], player) + 
+            //    1 + 
+            //    state->row_length(tile.x, tile.y, -neighbourx[j], -neighboury[j], player);
 
             //check for winstate
             if (neighbourscore >= 4)
-                if (mypiece)
-                    return maxscore; // it's power level is in fact over 9000
-                else
-                    return minscore; // you got rekt
-
-            //twice as more score
-            neighbourscore *= 2;
-
-            if (mypiece)
-                score += neighbourscore;
-            else
-                score -= neighbourscore;
+                    return mypiece ? MAX_SCORE : MIN_SCORE;
+       
+            score += mypiece ? neighbourscore : -neighbourscore;
         }
     }
+
     return score;
 }
