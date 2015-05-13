@@ -3,7 +3,11 @@
 using namespace std;
 
 Intelligence::Intelligence() {
-    state_ = new BoardState();
+	state_ = new BoardState();
+}
+
+Intelligence::Intelligence(BoardState * state) {
+	state_ = state;
 }
 
 Intelligence::~Intelligence() {
@@ -32,7 +36,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 		BoardState * innerState;
 		BoardMove innerMove;
 
-		if (time > 0) {
+		if (time > 0 && !state->with_move_applied(moves[i], player).is_finished()) {
 			innerState = new BoardState(state->with_move_applied(moves[i], player));
 			innerMove = choose_best_move(innerState, --time, OPPONENT(player));
 		}
@@ -76,15 +80,18 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
         BoardTile tile = allPieces[i].tile;
 
-#define TRY_OFFSET(ox,oy, idx); int idx = state->row_length(tile.x, tile.y, (ox), (oy), player) + \
+#define TRY_OFFSET(ox,oy, idx, oidx); int idx = state->row_length(tile.x, tile.y, (ox), (oy), player) + \
             1 + \
             state->row_length(tile.x, tile.y, -(ox), -(oy), player); \
-            if(idx >= 4) { return mypiece ? MAX_SCORE : MIN_SCORE; } else { score += mypiece ? idx : -idx; }
+			int oidx = state->row_length(tile.x, tile.y, (ox), (oy), OPPONENT(player)) + \
+            1 + \
+            state->row_length(tile.x, tile.y, -(ox), -(oy), OPPONENT(player)); \
+            if(idx >= 4) { return MAX_SCORE; } else if (oidx >= 4) { return MIN_SCORE; } else { score += mypiece ? idx : -idx; }
 
-        TRY_OFFSET(1, 1, d1);
-        TRY_OFFSET(1, 0, d2);
-        TRY_OFFSET(0, 1, d3);
-        TRY_OFFSET(-1, 1, d4);
+        TRY_OFFSET(1, 1, d1, od1);
+        TRY_OFFSET(1, 0, d2, od2);
+        TRY_OFFSET(0, 1, d3, od3);
+        TRY_OFFSET(-1, 1, d4, od4);
 
 #undef TRY_OFFSET
     }
