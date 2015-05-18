@@ -53,7 +53,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)Karo.Core.Library</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Karo.AI.Library;$(SolutionDir)Karo.Core.Library</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -79,12 +79,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Intelligence.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Intelligence.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Stdafx.cpp">
@@ -95,6 +93,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Karo.Common\Karo.Common\Karo.Common.vcxproj">
       <Project>{3576e071-2688-4338-93ea-b087876cecb4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Karo.AI.Library\Karo.AI.Library.vcxproj">
+      <Project>{c77b9bcd-a1f6-4b36-8e12-53bedc320feb}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Karo.Core.Library\Karo.Core.Library.vcxproj">
       <Project>{3fd85272-0c3a-48f9-bce1-a708c7fa8b9b}</Project>

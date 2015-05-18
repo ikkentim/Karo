@@ -1,11 +1,10 @@
-#include "stdafx.h"
 #include "Intelligence.h"
 #include <stdio.h>
 
 using namespace std;
 
 Intelligence::Intelligence() {
-    state_ = new BoardState();
+	state_ = new BoardState();
 }
 
 Intelligence::~Intelligence() {
@@ -20,7 +19,7 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
 }
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
     // TODO: Dismiss time for now, just go on for a few rounds.
-	return choose_best_move(state_, 8, player);
+	return choose_best_move(state_, 5, player);
 }
 
 BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlayer player) {
@@ -34,7 +33,7 @@ BoardMove Intelligence::choose_best_move(BoardState * state, int time, BoardPlay
 		BoardState * innerState;
 		BoardMove innerMove;
 
-		if (time > 0) {
+		if (time > 0 && !state->with_move_applied(moves[i], player).is_finished()) {
 			innerState = new BoardState(state->with_move_applied(moves[i], player));
 			innerMove = choose_best_move(innerState, --time, OPPONENT(player));
 		}
@@ -80,21 +79,6 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
 		score += best_score(state, player, allPieces, i);
 	}
-//old Macro
-/*
-	#define TRY_OFFSET(ox,oy, idx); int idx = state->row_length(tile.x, tile.y, (ox), (oy), player) + \
-            1 + \
-            state->row_length(tile.x, tile.y, -(ox), -(oy), player); \
-            if(idx >= 4) { return mypiece ? MAX_SCORE : MIN_SCORE; } else { score += mypiece ? idx : -idx; }
-
-        TRY_OFFSET(1, 1, d1);
-        TRY_OFFSET(1, 0, d2);
-        TRY_OFFSET(0, 1, d3);
-        TRY_OFFSET(-1, 1, d4);
-
-#undef TRY_OFFSET
-    }
-	*/
     return score;
 }
 

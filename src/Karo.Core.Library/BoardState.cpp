@@ -238,6 +238,11 @@ bool BoardState::is_valid_move(BoardMove move) {
     if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
         return false;
 
+	//Check if new location has any neighbors (otherwise you get invalid boardstate)
+	if (!(tile(move.target.x+1, move.target.y, NULL) || tile(move.target.x-1, move.target.y, NULL) ||
+		tile(move.target.x, move.target.y+1, NULL) || tile(move.target.x, move.target.y-1, NULL)))
+		return false;
+
     //Step2: Check if there already is a piece on the tile your trying to move to
     for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
         if (piece(move.target.x, move.target.y, NULL))
@@ -398,10 +403,14 @@ BoardPlayer BoardState::winner() {
 
     for (int i = 0; i < PIECE_COUNT; i++)
     {
-        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER1))
+		
+        /*if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER1))
             return PLAYER_PLAYER1;
         if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER2))
-            return PLAYER_PLAYER2;
+            return PLAYER_PLAYER2;*/
+
+		if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, pieces_[i].player))
+			return pieces_[i].player;
     }
 
     return PLAYER_NONE;
@@ -425,7 +434,7 @@ bool BoardState::is_row_for_player(int x, int y, BoardPlayer player) {
     int a3 = row_length(x, y, 0, -1, player) + 1 + row_length(x, y, 0, 1, player);
     int a4 = row_length(x, y, -1, 0, player) + 1 + row_length(x, y, 1, 0, player);
 
-    return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
+	return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
 }
 
 BoardState& BoardState::operator=(const BoardState& other) {
