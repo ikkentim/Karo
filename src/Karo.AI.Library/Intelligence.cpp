@@ -50,31 +50,6 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	return bestMove;
 }
 
-BoardMove Intelligence::choose_best_move(BoardState * state, BoardMove move, int alpha, int beta, int time, BoardPlayer player, int& v) {
-	BoardMove * moves = new BoardMove[MOVE_COUNT];
-	int move_count = state->available_moves(player, moves, MOVE_COUNT);
-	
-	BoardMove bestMove;
-	int bestScore = MIN_SCORE - 1;
-
-	for (int i = 0; i < move_count; i++)
-	{
-		BoardState * innerState;
-
-		innerState = new BoardState(state->with_move_applied(moves[i], player));
-
-		int newScore = alpha_beta(innerState, time, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
-
-		if (newScore > bestScore)
-		{
-			bestMove = moves[i];
-			bestScore = newScore;
-		}
-	}
-
-	return bestMove;
-}
-
 int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta, BoardPlayer player)
 {
 	iteration_count++;
