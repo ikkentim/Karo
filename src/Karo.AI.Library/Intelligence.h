@@ -17,7 +17,11 @@ public:
     int evaluate(BoardState * state, BoardPlayer player);
 
 private:
-    BoardMove choose_best_move(BoardState * state, int depth, BoardPlayer player);
+	BoardMove choose_best_move(BoardState * state, BoardMove move, int alpha, int beta, int depth, BoardPlayer player, int&);
+	int alpha_beta(BoardState * state, int depth, int alpha, int beta, BoardPlayer player);
 
 	BoardState * state_ = 0;
+
+	int prune_count = 0;
+	int iteration_count = 0;
 };
