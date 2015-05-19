@@ -115,7 +115,7 @@ namespace Karo {
             m.piece.player = (BoardPlayer)player;
             m.target.x = move->NewPieceX;
             m.target.y = move->NewPieceY;
-
+			
             return gcnew KaroBoardState(new BoardState(
                 state_->with_move_applied(m, (BoardPlayer)player)));
         }
