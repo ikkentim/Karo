@@ -36,6 +36,6 @@ private:
     BoardPiece * pieces_;
 
     bool is_corner_tile(int x, int y);
-    bool is_valid_tile_placement(int x, int y);
+    bool is_valid_tile_placement(int x, int y,int tilex, int tiley);
     bool is_row_for_player(int x, int y, BoardPlayer player);
 };

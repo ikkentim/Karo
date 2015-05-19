@@ -2,443 +2,476 @@
 #include <cstring>
 #include <assert.h>
 #include <math.h>
+#include <iostream>
+#include <string>
 
 #define BOARD_INITIAL_WIDTH     (5);
 
 BoardState::BoardState() {
-    tiles_ = new BoardTile[TILE_COUNT];
-    pieces_ = new BoardPiece[PIECE_COUNT];
+	tiles_ = new BoardTile[TILE_COUNT];
+	pieces_ = new BoardPiece[PIECE_COUNT];
 
-    for (int i = 0; i < TILE_COUNT; i++) {
-        tiles_[i].x = i % BOARD_INITIAL_WIDTH;
-        tiles_[i].y = i / BOARD_INITIAL_WIDTH;
-    }
+	for (int i = 0; i < TILE_COUNT; i++) {
+		tiles_[i].x = i % BOARD_INITIAL_WIDTH;
+		tiles_[i].y = i / BOARD_INITIAL_WIDTH;
+	}
 }
 
 BoardState::BoardState(const BoardState& other) {
-    tiles_ = new BoardTile[TILE_COUNT];
-    pieces_ = new BoardPiece[PIECE_COUNT];
+	tiles_ = new BoardTile[TILE_COUNT];
+	pieces_ = new BoardPiece[PIECE_COUNT];
 
-    *this = other;
+	*this = other;
 }
 
 BoardState::BoardState(BoardTile * tiles, BoardPiece * pieces) {
-    assert(tiles);
-    assert(pieces);
+	assert(tiles);
+	assert(pieces);
 
-    tiles_ = new BoardTile[TILE_COUNT];
-    pieces_ = new BoardPiece[PIECE_COUNT];
+	tiles_ = new BoardTile[TILE_COUNT];
+	pieces_ = new BoardPiece[PIECE_COUNT];
 
-    memcpy(tiles_, tiles, TILE_COUNT * sizeof(BoardTile));
-    memcpy(pieces_, pieces, PIECE_COUNT * sizeof(BoardPiece));
+	memcpy(tiles_, tiles, TILE_COUNT * sizeof(BoardTile));
+	memcpy(pieces_, pieces, PIECE_COUNT * sizeof(BoardPiece));
 }
 
 BoardState:: ~BoardState() {
-    delete[] tiles_;
-    delete[] pieces_;
+	delete[] tiles_;
+	delete[] pieces_;
 }
 
 BoardTile * BoardState::tiles() const {
-    return tiles_;
+	return tiles_;
 }
 
 BoardPiece * BoardState::pieces() const {
-    return pieces_;
+	return pieces_;
 }
 
 bool BoardState::tile(int x, int y, BoardTile * result) {
-    assert(tiles_);
+	assert(tiles_);
 
-    for (int i = 0; i < TILE_COUNT;i++)
-        if (tiles_[i].x == x && tiles_[i].y == y)
-        {
-            
-            if (result)
-                *result = tiles_[i];
-            return true;
-        }
+	for (int i = 0; i < TILE_COUNT; i++)
+		if (tiles_[i].x == x && tiles_[i].y == y)
+		{
 
-    return false;
+			if (result)
+				*result = tiles_[i];
+			return true;
+		}
+
+	return false;
 }
 
 bool BoardState::piece(int x, int y, BoardPiece * result) {
-    assert(pieces_);
+	assert(pieces_);
 
-    for (int i = 0; i < PIECE_COUNT; i++)
-        if (pieces_[i].tile.x == x && pieces_[i].tile.y == y && 
-            pieces_[i].player != PLAYER_NONE)
-        {
-            if (result)
-                *result = pieces_[i];
-            return true;
-        }
+	for (int i = 0; i < PIECE_COUNT; i++)
+		if (pieces_[i].tile.x == x && pieces_[i].tile.y == y &&
+			pieces_[i].player != PLAYER_NONE)
+		{
+			if (result)
+				*result = pieces_[i];
+			return true;
+		}
 
-    return false;
+	return false;
 }
 
 bool BoardState::is_finished() {
-    assert(pieces_);
+	assert(pieces_);
 
-    for (int i = 0; i < PIECE_COUNT;i++){
+	for (int i = 0; i < PIECE_COUNT; i++){
 
-        // If the piece has no set player yet, this indicates that the game is
-        // still in the first phase and cannot have finished.
-        if (pieces_[i].player == PLAYER_NONE) {
-            return false;
-        }
+		// If the piece has no set player yet, this indicates that the game is
+		// still in the first phase and cannot have finished.
+		if (pieces_[i].player == PLAYER_NONE) {
+			return false;
+		}
 
-        // Look for a row of 4 or more face up pieces of the same player.
-        if (!pieces_[i].is_face_up) {
-            continue;
-        }
+		// Look for a row of 4 or more face up pieces of the same player.
+		if (!pieces_[i].is_face_up) {
+			continue;
+		}
 
-        int x = pieces_[i].tile.x;
-        int y = pieces_[i].tile.y;
+		int x = pieces_[i].tile.x;
+		int y = pieces_[i].tile.y;
 
-        // Check for rows in every direction ( |, -, /, \ )
-        return 1 + row_length(x, y, -1, -1, pieces_[i].player) +
-            row_length(x, y, 1, 1, pieces_[i].player) >= 4 ||
-            1 + row_length(x, y, 1, -1, pieces_[i].player) +
-            row_length(x, y, -1, 1, pieces_[i].player) >= 4 ||
-            1 + row_length(x, y, -1, 0, pieces_[i].player) +
-            row_length(x, y, 1, 0, pieces_[i].player) >= 4 ||
-            1 + row_length(x, y, 0, -1, pieces_[i].player) +
-            row_length(x, y, 0, 1, pieces_[i].player) >= 4;
-    }
+		// Check for rows in every direction ( |, -, /, \ )
+		return 1 + row_length(x, y, -1, -1, pieces_[i].player) +
+			row_length(x, y, 1, 1, pieces_[i].player) >= 4 ||
+			1 + row_length(x, y, 1, -1, pieces_[i].player) +
+			row_length(x, y, -1, 1, pieces_[i].player) >= 4 ||
+			1 + row_length(x, y, -1, 0, pieces_[i].player) +
+			row_length(x, y, 1, 0, pieces_[i].player) >= 4 ||
+			1 + row_length(x, y, 0, -1, pieces_[i].player) +
+			row_length(x, y, 0, 1, pieces_[i].player) >= 4;
+	}
 
-    return false;
+	return false;
 }
 
 int BoardState::piece_count() {
-    int c = 0;
+	int c = 0;
 
-    assert(pieces_);
+	assert(pieces_);
 
-    // Count the number of pieces with a set player
-    for (int i = 0; i < PIECE_COUNT; i++)
-        if (pieces_[i].player != PLAYER_NONE)
-            c++;
+	// Count the number of pieces with a set player
+	for (int i = 0; i < PIECE_COUNT; i++)
+		if (pieces_[i].player != PLAYER_NONE)
+			c++;
 
-    return c;
+	return c;
 }
 
 int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count) {
-    int idx = 0, corner_count;
-    BoardTile * corners = NULL;
+	int idx = 0, corner_count;
+	BoardTile * corners = NULL;
 
-    assert(moves);
+	assert(moves);
 
-    // If there are less than PIECE_COUNT placed pieces, we're still in the 
-    // first phase. In this phase we can only place pieces in any free spot.
-    if (piece_count() < PIECE_COUNT)
-    {
-        for (int tile_idx = 0; tile_idx < TILE_COUNT; tile_idx++) {
-            if (!piece(tiles_[tile_idx].x, tiles_[tile_idx].y, NULL)) {
+	// If there are less than PIECE_COUNT placed pieces, we're still in the 
+	// first phase. In this phase we can only place pieces in any free spot.
+	if (piece_count() < PIECE_COUNT)
+	{
+		for (int tile_idx = 0; tile_idx < TILE_COUNT; tile_idx++) {
+			if (!piece(tiles_[tile_idx].x, tiles_[tile_idx].y, NULL)) {
 
-                // Add the move to the moves array.
-                if (idx < count)
-                    moves[idx] = BoardMove(tiles_[tile_idx]);
-                idx++;
-            }
-        }
+				// Add the move to the moves array.
+				if (idx < count)
+					moves[idx] = BoardMove(tiles_[tile_idx]);
+				idx++;
+			}
+		}
 
-        return idx;
-    }
+		return idx;
+	}
 
-    // Loop trough every piece of the specified player and calculate the moves
-    // it is able to perform.
-    for (int piece_idx = 0; piece_idx < PIECE_COUNT; piece_idx++) {
-        if (pieces_[piece_idx].player != player)
-            continue;
+	// Loop trough every piece of the specified player and calculate the moves
+	// it is able to perform.
+	for (int piece_idx = 0; piece_idx < PIECE_COUNT; piece_idx++) {
+		if (pieces_[piece_idx].player != player)
+			continue;
 
-        // Iterate every move in every direction ( |, -, /, \ )
-        for (int ox = -1; ox <= 1; ox++)
-            for (int oy = -1; oy <= 1; oy++) {
-                // If both offsets are 0, it's not a move.
-                if (ox == 0 && oy == 0) {
-                    continue;
-                }
+		// Iterate every move in every direction ( |, -, /, \ )
+		for (int ox = -1; ox <= 1; ox++)
+			for (int oy = -1; oy <= 1; oy++) {
+				// If both offsets are 0, it's not a move.
+				if (ox == 0 && oy == 0) {
+					continue;
+				}
 
-                int newx = pieces_[piece_idx].tile.x + ox,
-                    newy = pieces_[piece_idx].tile.y + oy;
+				int newx = pieces_[piece_idx].tile.x + ox,
+					newy = pieces_[piece_idx].tile.y + oy;
 
-                // If the target position is blocked, attempt jumping over it.
-                // If this position is also blocked, skip.
-                if (piece(newx, newy, NULL)) {
-                    newx += ox;
-                    newy += oy;
+				// If the target position is blocked, attempt jumping over it.
+				// If this position is also blocked, skip.
+				if (piece(newx, newy, NULL)) {
+					newx += ox;
+					newy += oy;
 
-                    if (piece(newx, newy, NULL))
-                        continue;
-                }
+					if (piece(newx, newy, NULL))
+						continue;
+				}
 
-                BoardTile target;
+				BoardTile target;
 
-                // If there is a tile at the target, add the move.
-                if (tile(newx, newy, &target)) {
-                    if (idx < count)
-                        moves[idx] = BoardMove(target, pieces_[piece_idx]);
-                    idx++;
+				// If there is a tile at the target, add the move.
+				if (tile(newx, newy, &target)) {
+					if (idx < count)
+						moves[idx] = BoardMove(target, pieces_[piece_idx]);
+					idx++;
 
-                    continue;
-                }
+					continue;
+				}
 
-                // To place a tile here, we need at least one connecting tile.
-                if (!tile(newx - 1, newy, NULL) &&
-                    !tile(newx + 1, newy, NULL) &&
-                    !tile(newx, newy - 1, NULL) &&
-                    !tile(newx, newy + 1, NULL))
-                    continue;
+				// To place a tile here, we need at least one connecting tile.
+				if (!tile(newx - 1, newy, NULL) &&
+					!tile(newx + 1, newy, NULL) &&
+					!tile(newx, newy - 1, NULL) &&
+					!tile(newx, newy + 1, NULL))
+					continue;
 
-                // We need to move a tile to this position, fill the corners
-                // array if empty.
-                if (!corners) {
-                    corners = new BoardTile[TILE_COUNT];
-                    corner_count = corner_tiles(corners, TILE_COUNT);
-                }
+				// We need to move a tile to this position, fill the corners
+				// array if empty.
+				if (!corners) {
+					corners = new BoardTile[TILE_COUNT];
+					corner_count = corner_tiles(corners, TILE_COUNT);
+				}
 
-                // For every corner add a move of moving this corner to the
-                // target position.
-                for (int corner_idx = 0; corner_idx < corner_count;
-                    corner_idx++) {
-                    if (idx < count)
-                        moves[idx] = BoardMove(BoardTile(newx, newy),
-                        pieces_[piece_idx], corners[corner_idx]);
-                    idx++;
-                }
-            }
-    }
+				// For every corner add a move of moving this corner to the
+				// target position.
+				for (int corner_idx = 0; corner_idx < corner_count;
+					corner_idx++) {
+					if (idx < count)
+						moves[idx] = BoardMove(BoardTile(newx, newy),
+						pieces_[piece_idx], corners[corner_idx]);
+					idx++;
+				}
+			}
+	}
 
-    if (corners) {
-        delete[] corners;
-        corners = NULL;
-    }
+	if (corners) {
+		delete[] corners;
+		corners = NULL;
+	}
 
-    return idx;
+	return idx;
 }
 
 bool BoardState::is_valid_move(BoardMove move) {
 
-    //Step0: Initphase //Place piece on current location, just check if there is a piece already
-    if (piece_count() < PIECE_COUNT)
-    {
-        return !piece(move.target.x, move.target.y, NULL);
-    }
+	//Step0: Initphase //Place piece on current location, just check if there is a piece already
+	if (piece_count() < PIECE_COUNT)
+	{
+		return !piece(move.target.x, move.target.y, NULL);
+	}
 
-    //Todo:: Check for tiles, clean code (make more functions oid)
-    //Make testcases for it
+	//Todo:: Check for tiles, clean code (make more functions oid)
+	//Make testcases for it
 
+	//Check for tileplacement
+	//if (!is_valid_tile_placement(move.tile.x, move.tile.y))
+	//	return false;
 
-    //Check for tileplacement
-    if (!is_valid_tile_placement(move.tile.x, move.tile.y))
-         return false;
-  
-    //Move Phase
-    //Step1: Check if new location is different from the current one
-    if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
-        return false;
-
-	//Check if new location has any neighbors (otherwise you get invalid boardstate)
-	if (!(tile(move.target.x+1, move.target.y, NULL) || tile(move.target.x-1, move.target.y, NULL) ||
-		tile(move.target.x, move.target.y+1, NULL) || tile(move.target.x, move.target.y-1, NULL)))
+	if (!is_valid_tile_placement(move.target.x, move.target.y,move.tile.x,move.tile.y))
 		return false;
 
-    //Step2: Check if there already is a piece on the tile your trying to move to
-    for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
-        if (piece(move.target.x, move.target.y, NULL))
-            return false;
+	//Move Phase
+	//Step1: Check if new location is different from the current one
+	if (move.target.x == move.piece.tile.x && move.target.y == move.piece.tile.y)
+		return false;
 
-        //Step3: Check if there is a piece between your current location, and the new one
-        int pieceLocationX, pieceLocationY, distancex=0, distancey=0;
-        //If the X location won't change, keep the X location. otherwise add distance
-        if (move.target.x == move.piece.tile.x)
-            pieceLocationX = move.target.x;
-        else {
-            distancex = move.target.x - move.piece.tile.x;
-            pieceLocationX = move.piece.tile.x + distancex / 2;
-            distancex = abs(distancex);
-        }
-        if (move.target.y == move.piece.tile.y)
-            pieceLocationY = move.target.y;
-        else {
-            distancey = move.target.y - move.piece.tile.y;
-            pieceLocationY = move.piece.tile.y + distancey / 2;
-            distancey = abs(distancey);
-        }
+	//Check if new location has any neighbors (otherwise you get invalid boardstate)
+	if (!(tile(move.target.x + 1, move.target.y, NULL) || tile(move.target.x - 1, move.target.y, NULL) ||
+		tile(move.target.x, move.target.y + 1, NULL) || tile(move.target.x, move.target.y - 1, NULL)))
+		return false;
 
-		//I have no information about the tile you want to move here -_-;
-		//Cant take certain tiles when jumping 
-		//int tileX = move.target.x;
-		//int tileY = move.target.y;
+	//Step2: Check if there already is a piece on the tile your trying to move to
+	for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
+		if (piece(move.target.x, move.target.y, NULL))
+			return false;
 
-		//if (tile(tileX + 1, tileY,NULL))
-		//	tileX + 1;
-		//if (tile(tileX - 1, tileY, NULL))
-		//	tileX - 1;
-		//if (tile(tileX, tileY + 1, NULL))
-		//	tileY + 1;
-		//if (tile(tileX, tileY -1, NULL))
-		//	tileY - 1;
+		//Step3: Check if there is a piece between your current location, and the new one
+		int pieceLocationX, pieceLocationY, distancex = 0, distancey = 0;
+		//If the X location won't change, keep the X location. otherwise add distance
+		if (move.target.x == move.piece.tile.x)
+			pieceLocationX = move.target.x;
+		else {
+			distancex = move.target.x - move.piece.tile.x;
+			pieceLocationX = move.piece.tile.x + distancex / 2;
+			distancex = abs(distancex);
+		}
+		if (move.target.y == move.piece.tile.y)
+			pieceLocationY = move.target.y;
+		else {
+			distancey = move.target.y - move.piece.tile.y;
+			pieceLocationY = move.piece.tile.y + distancey / 2;
+			distancey = abs(distancey);
+		}
 
-        //Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
-        BoardPiece jumped_piece;
-        if (piece(pieceLocationX, pieceLocationY, &jumped_piece) &&
-            jumped_piece != move.piece &&
-            distancex < 3 && distancey < 3 && distancex + distancey != 3)
-            return true;
+		//Make sure the location where you jump to, will not become invalid after moving a tile
+		//int tilex=0, tiley=0;
+		//if (tile(move.target.x + 1, move.target.y, NULL)){
+		//	tilex = move.target.x + 1;
+		//	tiley = move.target.y;
+		//}
+		//if (tile(move.target.x - 1, move.target.y, NULL)){
+		//	tilex = move.target.x - 1;
+		//	tiley = move.target.y;
+		//}
+		//if (tile(move.target.x, move.target.y + 1, NULL)){
+		//	tilex = move.target.x;
+		//	tiley = move.target.y + 1;
+		//}
+		//if (tile(move.target.x, move.target.y - 1, NULL)){
+		//	tilex = move.target.x;
+		//	tiley = move.target.y - 1;
+		//}
+		//if (tilex == move.tile.x && tiley == move.tile.y)
+		//	return false;
 
-        if (distancex > 1 || distancey > 1)
-            return false;
-    }
-    return true;
+			//Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
+			BoardPiece jumped_piece;
+		if (piece(pieceLocationX, pieceLocationY, &jumped_piece) &&
+			jumped_piece != move.piece &&
+			distancex < 3 && distancey < 3 && distancex + distancey != 3)
+			return true;
+
+		if (distancex > 1 || distancey > 1)
+			return false;
+	}
+	return true;
 }
 
-bool BoardState::is_valid_tile_placement(int x, int y) {
-    //Check for tileplacement | left | right | up | down
-    if (!tile(x - 1, y, NULL) &&
-        !tile(x + 1, y, NULL) &&
-        !tile(x, y - 1, NULL) &&
-        !tile(x, y + 1, NULL))
-        return false;
-    return true;
+bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
+	//Check if the tile used to move, doesnt make it invalid
+	//first check if the move has only 1 neighbor
+	int neightbor = 0;
+	int tilex,tiley;
+	if (tile(x - 1, y, NULL)){
+		neightbor++;
+		tilex = x - 1;
+		tiley = y;
+	}
+	if (tile(x + 1, y, NULL)){
+		neightbor++;
+		tilex = x + 1;
+		tiley = y;
+	}
+	if (tile(x, y - 1, NULL)){
+		neightbor++;
+		tilex = x;
+		tiley = y-1;
+	}
+	if (tile(x, y + 1, NULL)){
+		neightbor++;
+		tilex = x;
+		tiley = y+1;
+	}
+	//Check if the tile used to move, is not the only neighbor
+	if (neightbor == 1 && tilex == tx && tiley == ty || neightbor==0)
+		return false;
+
+	return true;
 }
 
 bool BoardState::is_corner_tile(int x, int y) {
-    int numberFreeSides = 0;
+	int numberFreeSides = 0;
 
-    if (!tile(x - 1, y, NULL))
-        numberFreeSides++;
-    if (!tile(x + 1, y, NULL))
-        numberFreeSides++;
-    if (!tile(x, y - 1, NULL))
-        numberFreeSides++;
-    if (!tile(x, y + 1, NULL))
-        numberFreeSides++;
+	if (!tile(x - 1, y, NULL))
+		numberFreeSides++;
+	if (!tile(x + 1, y, NULL))
+		numberFreeSides++;
+	if (!tile(x, y - 1, NULL))
+		numberFreeSides++;
+	if (!tile(x, y + 1, NULL))
+		numberFreeSides++;
 
-    if (numberFreeSides > 1)
-        return true;
+	if (numberFreeSides > 1)
+		return true;
 
-    return false;
+	return false;
 }
 
 BoardState BoardState::with_move_applied(BoardMove move, BoardPlayer player) {
-    BoardState state = *this;
+	BoardState state = *this;
 
-    // If in initial phase, simply add the piece to the pieces array.
-    int count = piece_count();
-    if (count < PIECE_COUNT) {
-        state.pieces_[count] = BoardPiece(move.target, player);
-        return state;
-    }
+	// If in initial phase, simply add the piece to the pieces array.
+	int count = piece_count();
+	if (count < PIECE_COUNT) {
+		state.pieces_[count] = BoardPiece(move.target, player);
+		return state;
+	}
 
-    // If there is no tile present, we are moving an existing tile.
-    if(!tile(move.target.x, move.target.y, NULL)) {
-        for (int i = 0; i < TILE_COUNT; i++)
-            if (state.tiles_[i] == move.tile) {
-                state.tiles_[i] = move.target;
+	// If there is no tile present, we are moving an existing tile.
+	if (!tile(move.target.x, move.target.y, NULL)) {
+		for (int i = 0; i < TILE_COUNT; i++)
+			if (state.tiles_[i] == move.tile) {
+				state.tiles_[i] = move.target;
 
-                for (int j = 0; j < PIECE_COUNT; j++)
-                    if (state.pieces_[j].tile == move.piece.tile) {
-                        state.pieces_[j].tile = move.target;
+				for (int j = 0; j < PIECE_COUNT; j++)
+					if (state.pieces_[j].tile == move.piece.tile) {
+						state.pieces_[j].tile = move.target;
 
-                        if (abs(move.target.x - move.piece.tile.x) > 1 ||
-                            abs(move.target.y - move.piece.tile.y) > 1)
-                            state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
-                        return state;
-                    }
+						if (abs(move.target.x - move.piece.tile.x) > 1 ||
+							abs(move.target.y - move.piece.tile.y) > 1)
+							state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
+						return state;
+					}
 
-                // No piece was found, should never happen.
-                assert(0 && "piece not found in with_move_applied while moving tile.");
-                return state; // return faulty state.
-            }
+				// No piece was found, should never happen.
+				assert(0 && "piece not found in with_move_applied while moving tile.");
+				return state; // return faulty state.
+			}
 
-        // No tile was found, should never happen.
-        assert(0 && "tile not found in with_move_applied.");
-        return state; // return faulty state.
-    }
+		// No tile was found, should never happen.
+		assert(0 && "tile not found in with_move_applied.");
+		return state; // return faulty state.
+	}
 
-    // Simply move the piece. 
-    for (int j = 0; j < PIECE_COUNT; j++)
-        if (state.pieces_[j].tile == move.piece.tile) {
-            state.pieces_[j].tile = move.target;
-            if (abs(move.target.x - move.piece.tile.x) > 1 ||
-                abs(move.target.y - move.piece.tile.y) > 1)
-                state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
-            return state;
-        }
+	// Simply move the piece. 
+	for (int j = 0; j < PIECE_COUNT; j++)
+		if (state.pieces_[j].tile == move.piece.tile) {
+			state.pieces_[j].tile = move.target;
+			if (abs(move.target.x - move.piece.tile.x) > 1 ||
+				abs(move.target.y - move.piece.tile.y) > 1)
+				state.pieces_[j].is_face_up = !state.pieces_[j].is_face_up;
+			return state;
+		}
 
-    // No piece was found, should never happen.
-    assert(0 && "piece not found in with_move_applied.");
-    return state; // return faulty state.
+	// No piece was found, should never happen.
+	assert(0 && "piece not found in with_move_applied.");
+	return state; // return faulty state.
 }
 
 int BoardState::corner_tiles(BoardTile * tiles, int count) {
-    int idx = 0;
+	int idx = 0;
 
-    for (int i = 0; i < TILE_COUNT;i++) {
-        // If the tile has at least 2 adjacent disconnected edges it is a corner.
-        bool top = tile(tiles_[i].x, tiles_[i].y - 1, NULL);
-        bool bottom = tile(tiles_[i].x, tiles_[i].y + 1, NULL);
-        bool left = tile(tiles_[i].x - 1, tiles_[i].y, NULL);
-        bool right = tile(tiles_[i].x + 1, tiles_[i].y, NULL);
+	for (int i = 0; i < TILE_COUNT; i++) {
+		// If the tile has at least 2 adjacent disconnected edges it is a corner.
+		bool top = tile(tiles_[i].x, tiles_[i].y - 1, NULL);
+		bool bottom = tile(tiles_[i].x, tiles_[i].y + 1, NULL);
+		bool left = tile(tiles_[i].x - 1, tiles_[i].y, NULL);
+		bool right = tile(tiles_[i].x + 1, tiles_[i].y, NULL);
 
-        if (((top == false && left == false) ||
-            (top == false && right == false) ||
-            (bottom == false && left == false) ||
-            (bottom == false && right == false)) &&
-            !piece(tiles_[i].x, tiles_[i].y, NULL)) {
-            assert(tiles_[i].x > -100 && tiles_[i].x < 100);//temp for debug
-            assert(tiles_[i].y > -100 && tiles_[i].y < 100);//temp for debug
-            if (idx < count)
-                tiles[idx] = tiles_[i];
-            idx++;
-        }
-    }
+		if (((top == false && left == false) ||
+			(top == false && right == false) ||
+			(bottom == false && left == false) ||
+			(bottom == false && right == false)) &&
+			!piece(tiles_[i].x, tiles_[i].y, NULL)) {
+			assert(tiles_[i].x > -100 && tiles_[i].x < 100);//temp for debug
+			assert(tiles_[i].y > -100 && tiles_[i].y < 100);//temp for debug
+			if (idx < count)
+				tiles[idx] = tiles_[i];
+			idx++;
+		}
+	}
 
-    return idx;
+	return idx;
 }
 
 BoardPlayer BoardState::winner() {
-    if (piece_count() < PIECE_COUNT) return PLAYER_NONE;
+	if (piece_count() < PIECE_COUNT) return PLAYER_NONE;
 
-    for (int i = 0; i < PIECE_COUNT; i++)
-    {
-		
-        /*if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER1))
-            return PLAYER_PLAYER1;
-        if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER2))
-            return PLAYER_PLAYER2;*/
+	for (int i = 0; i < PIECE_COUNT; i++)
+	{
+
+		/*if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER1))
+			return PLAYER_PLAYER1;
+			if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, PLAYER_PLAYER2))
+			return PLAYER_PLAYER2;*/
 
 		if (pieces_[i].is_face_up && is_row_for_player(pieces_[i].tile.x, pieces_[i].tile.y, pieces_[i].player))
 			return pieces_[i].player;
-    }
+	}
 
-    return PLAYER_NONE;
+	return PLAYER_NONE;
 }
 
 int BoardState::row_length(int x, int y, int ox, int oy, BoardPlayer player) {
-    x += ox;
-    y += oy;
+	x += ox;
+	y += oy;
 
-    BoardPiece p;
-    if (!piece(x, y, &p)) return 0;
+	BoardPiece p;
+	if (!piece(x, y, &p)) return 0;
 
-    if (!p.is_face_up || p.player != player) return 0;
+	if (!p.is_face_up || p.player != player) return 0;
 
-    return 1 + row_length(x, y, ox, oy, player);
+	return 1 + row_length(x, y, ox, oy, player);
 }
 
 bool BoardState::is_row_for_player(int x, int y, BoardPlayer player) {
-    int a1 = row_length(x, y, -1, -1, player) + 1 + row_length(x, y, 1, 1, player);
-    int a2 = row_length(x, y, -1, 1, player) + 1 + row_length(x, y, 1, -1, player);
-    int a3 = row_length(x, y, 0, -1, player) + 1 + row_length(x, y, 0, 1, player);
-    int a4 = row_length(x, y, -1, 0, player) + 1 + row_length(x, y, 1, 0, player);
+	int a1 = row_length(x, y, -1, -1, player) + 1 + row_length(x, y, 1, 1, player);
+	int a2 = row_length(x, y, -1, 1, player) + 1 + row_length(x, y, 1, -1, player);
+	int a3 = row_length(x, y, 0, -1, player) + 1 + row_length(x, y, 0, 1, player);
+	int a4 = row_length(x, y, -1, 0, player) + 1 + row_length(x, y, 1, 0, player);
 
 	return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
 }
 
 BoardState& BoardState::operator=(const BoardState& other) {
-    memcpy(tiles_, other.tiles_, TILE_COUNT * sizeof(BoardTile));
-    memcpy(pieces_, other.pieces_, PIECE_COUNT * sizeof(BoardPiece));
-    return *this;
+	memcpy(tiles_, other.tiles_, TILE_COUNT * sizeof(BoardTile));
+	memcpy(pieces_, other.pieces_, PIECE_COUNT * sizeof(BoardPiece));
+	return *this;
 }
