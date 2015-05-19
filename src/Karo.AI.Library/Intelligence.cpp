@@ -23,17 +23,31 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
     state_ = new BoardState(state);
 }
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
-	int alpha = MIN_SCORE - 1;
-	int beta = MAX_SCORE + 1;
-	
-	int score = 0;
-    // TODO: Dismiss time for now, just go on for a few rounds.
-	BoardMove move = choose_best_move(state_, BoardMove(), alpha, beta, 3, player, score);
+	BoardMove * moves = new BoardMove[MOVE_COUNT];
+	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
+
+	BoardMove bestMove;
+	int bestScore = MIN_SCORE - 1;
+
+	for (int i = 0; i < move_count; i++)
+	{
+		BoardState * innerState;
+
+		innerState = new BoardState(state_->with_move_applied(moves[i], player));
+
+		int newScore = alpha_beta(innerState, 3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+
+		if (newScore > bestScore)
+		{
+			bestMove = moves[i];
+			bestScore = newScore;
+		}
+	}
 
 	cout << "iterations " << iteration_count << endl;
 	cout << "prunes " << prune_count << endl;
 
-	return move;
+	return bestMove;
 }
 
 BoardMove Intelligence::choose_best_move(BoardState * state, BoardMove move, int alpha, int beta, int time, BoardPlayer player, int& v) {
