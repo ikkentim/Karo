@@ -1,15 +1,12 @@
 #include "Intelligence.h"
 #include <iostream>
 #include <algorithm>
+#include <stdio.h>
 
 using namespace std;
 
 Intelligence::Intelligence() {
 	state_ = new BoardState();
-}
-
-Intelligence::Intelligence(BoardState * state) {
-	state_ = state;
 }
 
 Intelligence::~Intelligence() {
@@ -22,6 +19,7 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
 
     state_ = new BoardState(state);
 }
+
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	BoardMove * moves = new BoardMove[MOVE_COUNT];
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
@@ -139,31 +137,69 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 		}
 	}
 
-    for (int i = 0; i < PIECE_COUNT; i++) {
-        //for each piece
-        //is piece flipped
-        if (!allPieces[i].is_face_up)
-            continue;
+	for (int i = 0; i < PIECE_COUNT; i++) {
+		//for each piece
+		//is piece flipped
+		if (!allPieces[i].is_face_up)
+			continue;
 
-        bool mypiece = (allPieces[i].player == player);
+	//	bool mypiece = (allPieces[i].player == player);
 
-        BoardTile tile = allPieces[i].tile;
-
-#define TRY_OFFSET(ox,oy, idx, oidx); int idx = state->row_length(tile.x, tile.y, (ox), (oy), player) + \
-            1 + \
-            state->row_length(tile.x, tile.y, -(ox), -(oy), player); \
-			int oidx = state->row_length(tile.x, tile.y, (ox), (oy), OPPONENT(player)) + \
-            1 + \
-            state->row_length(tile.x, tile.y, -(ox), -(oy), OPPONENT(player)); \
-            if(idx >= 4) { return MIN_SCORE; } else if (oidx >= 4) { return MAX_SCORE; } else { score += mypiece ? idx : -idx; }
-
-        TRY_OFFSET(1, 1, d1, od1);
-        TRY_OFFSET(1, 0, d2, od2);
-        TRY_OFFSET(0, 1, d3, od3);
-        TRY_OFFSET(-1, 1, d4, od4);
-
-#undef TRY_OFFSET
-    }
-
+		score += best_score(state, player, allPieces, i);
+	}
     return score;
+}
+
+int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i){
+
+	int idx = 0;
+	bool mypiece = (allPieces[i].player == player);
+
+	BoardTile tile = allPieces[i].tile;
+
+	//Array who store all diagonal
+	int diag[2][4];
+	//Diag1
+	diag[0][0] = diag[1][0] = 1;
+	//diag2
+	diag[0][1] = 1;
+	diag[1][1] = 0;
+	//diag3
+	diag[0][2] = 0;
+	diag[1][2] = 1;
+	//diag4
+	diag[0][3] = -1;
+	diag[1][3] = 1;
+
+	
+	for (int j=0; j<4; j++){
+		//Calculate the lenght of the line
+		int lenA = state->row_length(tile.x, tile.y, diag[0][j], diag[1][j], allPieces[i].player);
+		
+		int lenB = state->row_length(tile.x, tile.y, -diag[0][j], -diag[1][j], allPieces[i].player);
+
+		idx += lenA+1+lenB;
+		
+		if (idx >= 4){
+			return mypiece ? MAX_SCORE : MIN_SCORE;
+		}
+		
+		
+		//Check if the edge of the line is blocked by an enemy piece or not
+		bool blockedA = state->piece((tile.x + diag[0][j] + lenA) * diag[0][j], (tile.y + diag[1][j] + lenA) * diag[1][j], NULL);
+		bool blockedB = state->piece((tile.x  -diag[0][j] - lenB) * diag[0][j], (tile.y - diag[1][j] - lenB) * diag[1][j], NULL);
+		
+		//if it's blocked we decrease the score
+		if (blockedA){
+			idx--;
+		}
+		if (blockedB){
+			idx--;
+		}
+		if (blockedA && blockedB){
+			idx = 0;
+		}
+	}
+
+	return mypiece ? idx : -idx;
 }

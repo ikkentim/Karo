@@ -11,10 +11,10 @@ class Intelligence
 public:
 	Intelligence();
 	Intelligence(BoardState*);
-    ~Intelligence();
-    void apply_move(BoardMove move, BoardPlayer player);
-    BoardMove choose_best_move(int depth, BoardPlayer player);
-    int evaluate(BoardState * state, BoardPlayer player);
+	~Intelligence();
+	void apply_move(BoardMove move, BoardPlayer player);
+	BoardMove choose_best_move(int depth, BoardPlayer player);
+	int evaluate(BoardState * state, BoardPlayer player);
 
 private:
 	int alpha_beta(BoardState * state, int depth, int alpha, int beta, BoardPlayer player);
@@ -23,4 +23,6 @@ private:
 
 	int prune_count = 0;
 	int iteration_count = 0;
+
+	int best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i);
 };
