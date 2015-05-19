@@ -54,6 +54,10 @@ int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta,
 
 	if (depth == 0)
 	{
+		// TODO: this if statement is debug
+		if (evaluate(state, player) != evaluate(state, OPPONENT(player)) * -1)
+			assert("Evaluation is not zero sum");
+
 		return evaluate(state, player);
 	}
 	
