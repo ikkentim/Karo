@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.AI.Test", "Karo.AI.Tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.AI.Library", "Karo.AI.Library\Karo.AI.Library.vcxproj", "{C77B9BCD-A1F6-4B36-8E12-53BEDC320FEB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Karo.Core.CppTest", "Karo.Core.CppTest\Karo.Core.CppTest.vcxproj", "{D679247C-48C0-4DB7-9028-12F58EA193B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,20 @@ Global
 		{C77B9BCD-A1F6-4B36-8E12-53BEDC320FEB}.Release|Win32.Build.0 = Release|Win32
 		{C77B9BCD-A1F6-4B36-8E12-53BEDC320FEB}.Release|x86.ActiveCfg = Release|Win32
 		{C77B9BCD-A1F6-4B36-8E12-53BEDC320FEB}.Release|x86.Build.0 = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|Win32.Build.0 = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|x86.ActiveCfg = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Debug|x86.Build.0 = Debug|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|Win32.ActiveCfg = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|Win32.Build.0 = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|x86.ActiveCfg = Release|Win32
+		{D679247C-48C0-4DB7-9028-12F58EA193B3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

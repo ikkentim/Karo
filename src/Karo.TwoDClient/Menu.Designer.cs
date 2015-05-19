@@ -34,6 +34,7 @@
             this.player2ComboBox = new System.Windows.Forms.ComboBox();
             this.playButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
+            this.browse = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -93,6 +94,16 @@
             this.exitButton.UseVisualStyleBackColor = true;
             this.exitButton.Click += new System.EventHandler(this.exitButton_Click);
             // 
+            // browse
+            // 
+            this.browse.Location = new System.Drawing.Point(13, 76);
+            this.browse.Name = "browse";
+            this.browse.Size = new System.Drawing.Size(75, 23);
+            this.browse.TabIndex = 6;
+            this.browse.Text = "Browse";
+            this.browse.UseVisualStyleBackColor = true;
+            this.browse.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Menu
             // 
             this.AcceptButton = this.playButton;
@@ -100,6 +111,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.exitButton;
             this.ClientSize = new System.Drawing.Size(284, 111);
+            this.Controls.Add(this.browse);
             this.Controls.Add(this.exitButton);
             this.Controls.Add(this.playButton);
             this.Controls.Add(this.player2ComboBox);
@@ -110,6 +122,7 @@
             this.Name = "Menu";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Menu";
+            this.Load += new System.EventHandler(this.Menu_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -123,5 +136,6 @@
         private System.Windows.Forms.ComboBox player2ComboBox;
         private System.Windows.Forms.Button playButton;
         private System.Windows.Forms.Button exitButton;
+        private System.Windows.Forms.Button browse;
     }
 }

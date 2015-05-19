@@ -8,7 +8,7 @@ using namespace Karo::Core;
 using namespace Karo::Common;
 namespace KaroCoreTest
 {
-	[TestClass]
+	//[TestClass]
 	public ref class KaroTest
 	{
 	private:
