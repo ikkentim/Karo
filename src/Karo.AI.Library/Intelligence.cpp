@@ -33,7 +33,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 
 		innerState = new BoardState(state_->with_move_applied(moves[i], player));
 
-		int newScore = alpha_beta(innerState, 3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+		int newScore = alpha_beta(innerState, 4, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
 
 		if (newScore > bestScore)
 		{
@@ -56,7 +56,13 @@ int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta,
 	{
 		// TODO: this if statement is debug
 		if (evaluate(state, player) != evaluate(state, OPPONENT(player)) * -1)
-			assert("Evaluation is not zero sum");
+		{
+			cout << "current player " << evaluate(state, player) << endl;
+			cout << "current player " << evaluate(state, OPPONENT(player)) << endl;
+
+			assert(0 && "Evaluation is not zero sum");
+		}
+			
 
 		return evaluate(state, player);
 	}
@@ -136,9 +142,11 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 		for (int i = 0; i < PIECE_COUNT; i++) {
 			if (allPieces[i].player == player)
 				score += 1;
-			else
+			else if (allPieces[i].player == OPPONENT(player))
 				score -= 1;
 		}
+
+		return score;
 	}
 
 	for (int i = 0; i < PIECE_COUNT; i++) {
@@ -149,15 +157,23 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
 	//	bool mypiece = (allPieces[i].player == player);
 
-		score += best_score(state, player, allPieces, i);
+
+		if (allPieces[i].player == player)
+		{
+			score += best_score(state, allPieces, i);
+		}
+		else
+		{
+			score -= best_score(state, allPieces, i);
+		}
 	}
+
     return score;
 }
 
-int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i){
+int Intelligence::best_score(BoardState * state, BoardPiece* allPieces, int i){
 
 	int idx = 0;
-	bool mypiece = (allPieces[i].player == player);
 
 	BoardTile tile = allPieces[i].tile;
 
@@ -185,7 +201,7 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 		idx += lenA+1+lenB;
 		
 		if (idx >= 4){
-			return mypiece ? MAX_SCORE : MIN_SCORE;
+			return MAX_SCORE;
 		}
 		
 		
@@ -205,5 +221,5 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 		}
 	}
 
-	return mypiece ? idx : -idx;
+	return idx;
 }

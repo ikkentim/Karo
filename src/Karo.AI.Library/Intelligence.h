@@ -24,5 +24,5 @@ private:
 	int prune_count = 0;
 	int iteration_count = 0;
 
-	int best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i);
+	int best_score(BoardState * state, BoardPiece* allPieces, int i);
 };
