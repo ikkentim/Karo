@@ -84,7 +84,6 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
 int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i){
 
-
 	int idx = 0;
 	bool mypiece = (allPieces[i].player == player);
 
@@ -119,8 +118,8 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 		
 		
 		//Check if the edge of the line is blocked by an enemy piece or not
-		bool blockedA = state->piece(tile.x + diag[0][j] + lenA * diag[0][j], tile.y + diag[1][j] + lenA * diag[1][j], NULL);
-		bool blockedB = state->piece(tile.x  -diag[0][j] - lenB * diag[0][j], tile.y - diag[1][j] - lenB * diag[1][j], NULL);
+		bool blockedA = state->piece((tile.x + diag[0][j] + lenA) * diag[0][j], (tile.y + diag[1][j] + lenA) * diag[1][j], NULL);
+		bool blockedB = state->piece((tile.x  -diag[0][j] - lenB) * diag[0][j], (tile.y - diag[1][j] - lenB) * diag[1][j], NULL);
 		
 		//if it's blocked we decrease the score
 		if (blockedA){
@@ -135,6 +134,4 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 	}
 
 	return mypiece ? idx : -idx;
-
-
 }
