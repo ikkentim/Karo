@@ -53,6 +53,12 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 
 	if (depth == 0)
 	{
+#if defined _DEBUG
+        if (evaluate(player) != -evaluate(OPPONENT(player))) {
+            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
+            assert(evaluate(player) == -evaluate(OPPONENT(player)));
+        }
+#endif
 		return evaluate(player);
 	}
 	
@@ -118,9 +124,11 @@ int Intelligence::evaluate(BoardPlayer player) {
 		for (int i = 0; i < PIECE_COUNT; i++) {
 			if (allPieces[i].player == player)
 				score += 1;
-			else
+			else if (allPieces[i].player == OPPONENT(player))
 				score -= 1;
 		}
+
+		return score;
 	}
 
 	for (int i = 0; i < PIECE_COUNT; i++) {
@@ -131,16 +139,22 @@ int Intelligence::evaluate(BoardPlayer player) {
 
 	//	bool mypiece = (allPieces[i].player == player);
 
-
-		score += best_score(player, allPieces[i]);
+		if (allPieces[i].player == player)
+		{
+			score += best_score(allPieces[i]);
+		}
+		else
+		{
+			score -= best_score(allPieces[i]);
+		}
 	}
+
     return score;
 }
 
-int Intelligence::best_score(BoardPlayer player, BoardPiece piece){
+int Intelligence::best_score(BoardPiece piece){
 
 	int idx = 0;
-    bool mypiece = piece.player == player;
 
     BoardTile * tile = piece.tile;
 
@@ -168,7 +182,7 @@ int Intelligence::best_score(BoardPlayer player, BoardPiece piece){
 		idx += lenA+1+lenB;
 		
 		if (idx >= 4){
-			return mypiece ? MAX_SCORE : MIN_SCORE;
+			return MAX_SCORE;
 		}
 		
 		
@@ -188,5 +202,5 @@ int Intelligence::best_score(BoardPlayer player, BoardPiece piece){
 		}
 	}
 
-	return mypiece ? idx : -idx;
+	return idx;
 }

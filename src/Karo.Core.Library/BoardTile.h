@@ -16,6 +16,8 @@
 #define DIRECTION_FLIP(d)       ((d + 4) % DIRECTION_COUNT)
 
 struct BoardTile {
+    bool tagged;
+
     BoardPosition position;
     BoardPiece * piece;
     BoardTile * neighbors[DIRECTION_COUNT];
@@ -23,6 +25,14 @@ struct BoardTile {
 
     BoardTile(int xx, int yy)
         : position(xx, yy) { }
+
+	void tag(){
+		tagged = true;
+	}
+
+	void untag(){
+		tagged = false;
+	}
 
     inline bool operator==(BoardTile o) {
         return position == o.position;

@@ -25,5 +25,5 @@ private:
 	int prune_count = 0;
 	int iteration_count = 0;
 
-	int best_score(BoardPlayer player, BoardPiece piece);
+	int best_score(BoardPiece piece);
 };

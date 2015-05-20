@@ -42,6 +42,6 @@ private:
         BoardTile * tile);
 
     bool is_corner_tile(int x, int y);
-    bool is_valid_tile_placement(int x, int y);
+    bool is_valid_tile_placement(int x, int y, int tx, int ty);
     bool is_row_for_player(int x, int y, BoardPlayer player);
 };
