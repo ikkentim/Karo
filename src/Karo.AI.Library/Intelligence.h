@@ -14,15 +14,16 @@ public:
 	~Intelligence();
 	void apply_move(BoardMove move, BoardPlayer player);
 	BoardMove choose_best_move(int depth, BoardPlayer player);
-	int evaluate(BoardState * state, BoardPlayer player);
-
+	int evaluate(BoardPlayer player);
+    BoardState * state() const { return state_; }
 private:
-	int alpha_beta(BoardState * state, int depth, int alpha, int beta, BoardPlayer player);
+	int alpha_beta(int depth, int alpha, int beta, BoardPlayer player);
+
 
 	BoardState * state_ = 0;
 
 	int prune_count = 0;
 	int iteration_count = 0;
 
-	int best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i);
+	int best_score(BoardPlayer player, BoardPiece piece);
 };

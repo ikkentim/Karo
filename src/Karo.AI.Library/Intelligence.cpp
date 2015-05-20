@@ -15,27 +15,24 @@ Intelligence::~Intelligence() {
 }
 
 void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
-    auto state = state_->with_move_applied(move, player);
-
-    state_ = new BoardState(state);
+    state_->apply_move(move, player);
 }
 
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
-	BoardMove * moves = new BoardMove[MOVE_COUNT];
+	BoardMove moves[MOVE_COUNT];
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
 	int bestScore = MIN_SCORE - 1;
 
 	for (int i = 0; i < move_count; i++)
-	{
-		BoardState * innerState;
-
-		innerState = new BoardState(state_->with_move_applied(moves[i], player));
-
-		int newScore = alpha_beta(innerState, 3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+    {
+        state_->apply_move(moves[i], player);
+        int newScore = alpha_beta(3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+        state_->undo_move(moves[i], player);
 
 		if (newScore > bestScore)
+
 		{
 			bestMove = moves[i];
 			bestScore = newScore;
@@ -45,32 +42,33 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	cout << "iterations " << iteration_count << endl;
 	cout << "prunes " << prune_count << endl;
 
+    assert(bestScore != MIN_SCORE - 1);
+
 	return bestMove;
 }
 
-int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta, BoardPlayer player)
+int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 {
 	iteration_count++;
 
 	if (depth == 0)
 	{
-		return evaluate(state, player);
+		return evaluate(player);
 	}
 	
 	if (player == PLAYER_PLAYER1)
 	{
 		int v = MIN_SCORE - 1;
 
-		BoardMove * moves = new BoardMove[MOVE_COUNT];
-		int move_count = state->available_moves(player, moves, MOVE_COUNT);
+		BoardMove moves[MOVE_COUNT];
+		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 		
 		for (int i = 0; i < move_count; i++)
-		{
-			BoardState * innerState;
+        {
+            state_->apply_move(moves[i], player);
+            v = max(v, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
 
-			innerState = new BoardState(state->with_move_applied(moves[i], player));
-
-			v = max(v, alpha_beta(innerState, depth - 1, alpha, beta, OPPONENT(player)));
+            state_->undo_move(moves[i], player);
 
 			alpha = max(alpha, v);
 
@@ -79,9 +77,6 @@ int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta,
 				prune_count++;
 				break;
 			}
-
-			delete innerState;
-			innerState = 0;
 		}
 
 		return v;
@@ -90,16 +85,15 @@ int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta,
 	{
 		int v = MAX_SCORE + 1;
 
-		BoardMove * moves = new BoardMove[MOVE_COUNT];
-		int move_count = state->available_moves(player, moves, MOVE_COUNT);
+		BoardMove moves[MOVE_COUNT];
+		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 
 		for (int i = 0; i < move_count; i++)
-		{
-			BoardState * innerState;
+        {
+            state_->apply_move(moves[i], player);
+            v = min(v, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
 
-			innerState = new BoardState(state->with_move_applied(moves[i], player));
-
-			v = min(v, alpha_beta(innerState, depth - 1, alpha, beta, OPPONENT(player)));
+            state_->undo_move(moves[i], player);
 
 			beta = min(beta, v);
 
@@ -108,26 +102,18 @@ int Intelligence::alpha_beta(BoardState * state, int depth, int alpha, int beta,
 				prune_count++;
 				break;
 			}
-
-			delete innerState;
-			innerState = 0;
 		}
 
 		return v;
 	}
 }
 
-int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
-
-
-//neighbourx = new int[]{ 1, 1, 0, -1 };
-//neighboury = new int[]{ 1, 0, 1, 1 }; 
-
-    BoardPiece* allPieces = state->pieces();
+int Intelligence::evaluate(BoardPlayer player) {
+    BoardPiece* allPieces = state_->pieces();
 
     int score = 0;
 
-	if (state->piece_count() < PIECE_COUNT)
+	if (state_->piece_count() < PIECE_COUNT)
 	{
 		for (int i = 0; i < PIECE_COUNT; i++) {
 			if (allPieces[i].player == player)
@@ -145,17 +131,18 @@ int Intelligence::evaluate(BoardState * state, BoardPlayer player) {
 
 	//	bool mypiece = (allPieces[i].player == player);
 
-		score += best_score(state, player, allPieces, i);
+
+		score += best_score(player, allPieces[i]);
 	}
     return score;
 }
 
-int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece* allPieces, int i){
+int Intelligence::best_score(BoardPlayer player, BoardPiece piece){
 
 	int idx = 0;
-	bool mypiece = (allPieces[i].player == player);
+    bool mypiece = piece.player == player;
 
-	BoardTile tile = allPieces[i].tile;
+    BoardTile * tile = piece.tile;
 
 	//Array who store all diagonal
 	int diag[2][4];
@@ -174,9 +161,9 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 	
 	for (int j=0; j<4; j++){
 		//Calculate the lenght of the line
-		int lenA = state->row_length(tile.x, tile.y, diag[0][j], diag[1][j], allPieces[i].player);
+        int lenA = state_->row_length(tile->position.x, tile->position.y, diag[0][j], diag[1][j], piece.player);
 		
-		int lenB = state->row_length(tile.x, tile.y, -diag[0][j], -diag[1][j], allPieces[i].player);
+        int lenB = state_->row_length(tile->position.x, tile->position.y, -diag[0][j], -diag[1][j], piece.player);
 
 		idx += lenA+1+lenB;
 		
@@ -186,8 +173,8 @@ int Intelligence::best_score(BoardState * state, BoardPlayer player, BoardPiece*
 		
 		
 		//Check if the edge of the line is blocked by an enemy piece or not
-		bool blockedA = state->piece((tile.x + diag[0][j] + lenA) * diag[0][j], (tile.y + diag[1][j] + lenA) * diag[1][j], NULL);
-		bool blockedB = state->piece((tile.x  -diag[0][j] - lenB) * diag[0][j], (tile.y - diag[1][j] - lenB) * diag[1][j], NULL);
+        bool blockedA = state_->piece((tile->position.x + diag[0][j] + lenA) * diag[0][j], (tile->position.y + diag[1][j] + lenA) * diag[1][j], NULL);
+        bool blockedB = state_->piece((tile->position.x - diag[0][j] - lenB) * diag[0][j], (tile->position.y - diag[1][j] - lenB) * diag[1][j], NULL);
 		
 		//if it's blocked we decrease the score
 		if (blockedA){

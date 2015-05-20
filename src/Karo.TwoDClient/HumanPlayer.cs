@@ -17,7 +17,7 @@ namespace Karo.TwoDClient
         public void DoMove(Move previousMove, int timeLimit, Action<Move> done)
         {
             if (previousMove != null)
-                Board = Board.WithMoveApplied(previousMove, KaroPlayer.Player2);
+                Board.ApplyMove(previousMove, KaroPlayer.Player2);
 
             chosenMove = done;
         }
@@ -29,7 +29,7 @@ namespace Karo.TwoDClient
             if (!Board.IsValidMove(move))
                 return;
 
-            Board = Board.WithMoveApplied(move, KaroPlayer.Player1);
+            Board.ApplyMove(move, KaroPlayer.Player1);
 
             chosenMove(move);
             chosenMove = null;

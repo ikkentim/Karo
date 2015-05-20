@@ -62,12 +62,11 @@ namespace Karo {
             IEnumerable<Move^>^ GetAvailableMoves(KaroPlayer player);
             bool IsValidMove(Move^ move);
 			bool IsCornerTile(int x, int y);
-            KaroBoardState^ WithMoveApplied(Move^ move, KaroPlayer player);
+            void ApplyMove(Move^ move, KaroPlayer player);
             Tile^ GetTile(int x, int y);
             Piece^ GetPiece(int x, int y);
             KaroPlayer GetWinner();
         private:
-            KaroBoardState(BoardState * state);
             BoardState *state_ = 0;
         };
     }

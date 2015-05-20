@@ -160,7 +160,7 @@ namespace Karo.TwoDClient
 
             _history.Add(move);
             _lastMove = move;
-            _karo = _karo.WithMoveApplied(move, CurrentTurn);
+            _karo.ApplyMove(move, CurrentTurn);
 
             var winner = _karo.GetWinner();
             if (winner == KaroPlayer.None)
@@ -198,15 +198,15 @@ namespace Karo.TwoDClient
                 else
                 {
                     _lastMoveTime += gameTime.ElapsedGameTime;
-                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
+                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 10))
                     {
                         _lastMoveTime = TimeSpan.Zero;
                         _awaitingMove = false;
-//                        new Thread(() =>
-//                        {
+                        new Thread(() =>
+                        {
                             _isThinking = true;
                             _currentPlayer.DoMove(_lastMove, 0, Done);
-//                        }).Start();
+                        }).Start();
                     }
                 }
             }

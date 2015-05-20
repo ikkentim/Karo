@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClInclude Include="BoardMove.h" />
     <ClInclude Include="BoardPiece.h" />
+    <ClInclude Include="BoardPosition.h" />
     <ClInclude Include="BoardState.h" />
     <ClInclude Include="BoardTile.h" />
     <ClInclude Include="BoardPlayer.h" />

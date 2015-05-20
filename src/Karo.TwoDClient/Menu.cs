@@ -26,8 +26,8 @@ namespace Karo.TwoDClient
             player1ComboBox.Items.AddRange(Types.Select(t => new PlayerType(t.FullName, t)).ToArray());
             player2ComboBox.Items.AddRange(Types.Select(t => new PlayerType(t.FullName, t)).ToArray());
 
-            player1ComboBox.SelectedIndex = 0;
-            player2ComboBox.SelectedIndex = 0;
+            player1ComboBox.SelectedIndex = 1;
+            player2ComboBox.SelectedIndex = 1;
         }
 
         public static IEnumerable<Type> Types { get; private set; }
