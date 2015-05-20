@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Karo.AI;
@@ -69,7 +70,7 @@ namespace Karo.TwoDClient
 
             AppDomain.CurrentDomain.Load(assembly.GetName());
 
-            var type = assembly.GetType(assembly.GetName() + ".Player") ??
+            var type = assembly.GetType(Path.GetFileNameWithoutExtension(of.FileName) + ".Player") ??
                        assembly.GetTypes().FirstOrDefault(n => typeof (IPlayer).IsAssignableFrom(n));
 
             try
