@@ -365,26 +365,6 @@ bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
     return true;
 }
 
-bool BoardState::is_corner_tile(int x, int y) {
-    return false;
-    
-    int numberFreeSides = 0;
-
-    if (!tile(x - 1, y, NULL))
-    numberFreeSides++;
-    if (!tile(x + 1, y, NULL))
-    numberFreeSides++;
-    if (!tile(x, y - 1, NULL))
-    numberFreeSides++;
-    if (!tile(x, y + 1, NULL))
-    numberFreeSides++;
-
-    if (numberFreeSides > 1)
-        return true;
-
-    return false;
-}
-
 BoardMove BoardState::create_move(BoardPosition target, BoardPosition piecePos,
     BoardPosition tilePos) {
     BoardMove m;
