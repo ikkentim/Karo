@@ -109,7 +109,7 @@ bool BoardState::piece(int x, int y, BoardPiece ** result) {
 
 bool BoardState::is_finished() {
     assert(pieces_);
-    /*
+    
     for (int i = 0; i < PIECE_COUNT;i++){
 
     // If the piece has no set player yet, this indicates that the game is
@@ -136,8 +136,6 @@ bool BoardState::is_finished() {
     1 + row_length(x, y, 0, -1, pieces_[i].player) +
     row_length(x, y, 0, 1, pieces_[i].player) >= 4;
     }
-    */
-    return false;
 }
 
 int BoardState::piece_count() {
@@ -369,7 +367,7 @@ bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
 
 bool BoardState::is_corner_tile(int x, int y) {
     return false;
-    /*
+    
     int numberFreeSides = 0;
 
     if (!tile(x - 1, y, NULL))
@@ -382,9 +380,9 @@ bool BoardState::is_corner_tile(int x, int y) {
     numberFreeSides++;
 
     if (numberFreeSides > 1)
-    return true;
+        return true;
 
-    return false;*/
+    return false;
 }
 
 BoardMove BoardState::create_move(BoardPosition target, BoardPosition piecePos,

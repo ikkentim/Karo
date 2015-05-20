@@ -10,14 +10,11 @@ namespace Karo.TwoDClient
 {
     public partial class Menu : Form
     {
-        static Menu()
+        private static readonly IEnumerable<Type> Types = new[]
         {
-            Types = new[]
-            {
-                typeof (HumanPlayer),
-                typeof (Player)
-            };
-        }
+            typeof (HumanPlayer),
+            typeof (Player)
+        };
 
         public Menu()
         {
@@ -30,14 +27,22 @@ namespace Karo.TwoDClient
             player2ComboBox.SelectedIndex = 1;
         }
 
-        public static IEnumerable<Type> Types { get; private set; }
         public IPlayer Player1 { get; private set; }
         public IPlayer Player2 { get; private set; }
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            Player1 = Activator.CreateInstance((player1ComboBox.SelectedItem as PlayerType).Type) as IPlayer;
-            Player2 = Activator.CreateInstance((player2ComboBox.SelectedItem as PlayerType).Type) as IPlayer;
+            var type1 = player1ComboBox.SelectedItem as PlayerType;
+            var type2 = player2ComboBox.SelectedItem as PlayerType;
+
+            if (type1 == null || type2 == null)
+            {
+                MessageBox.Show("Please select a player.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Player1 = Activator.CreateInstance(type1.Type) as IPlayer;
+            Player2 = Activator.CreateInstance(type2.Type) as IPlayer;
 
             DialogResult = DialogResult.OK;
 
@@ -49,36 +54,30 @@ namespace Karo.TwoDClient
             Close();
         }
 
-        private void Menu_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog of = new OpenFileDialog();
-            of.Filter = "DLL Files (.dll)|*.dll|All Files (*.*)|*.*";
-            of.FilterIndex = 1;
+            var of = new OpenFileDialog
+            {
+                Filter = "DLL Files|*.dll|All Files (*.*)|*.*", 
+                FilterIndex = 1
+            };
 
-            of.ShowDialog();
+            if (of.ShowDialog() != DialogResult.OK)
+                return;
 
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFrom(of.FileName);
+            var assembly = System.Reflection.Assembly.LoadFrom(of.FileName);
 
             AppDomain.CurrentDomain.Load(assembly.GetName());
 
-            Type t = assembly.GetType(assembly.GetName() + ".Player");
-
-            var iPlayer = typeof(IPlayer);
-            if (t == null)
-                t = assembly.GetTypes().FirstOrDefault(n => iPlayer.IsAssignableFrom(n));
+            var type = assembly.GetType(assembly.GetName() + ".Player") ??
+                       assembly.GetTypes().FirstOrDefault(n => typeof (IPlayer).IsAssignableFrom(n));
 
             try
             {
-                if (t != null)
-                {
-                    player1ComboBox.Items.Add(new PlayerType(assembly.GetName().ToString(), t));
-                    player2ComboBox.Items.Add(new PlayerType(assembly.GetName().ToString(), t));
-                }
+                if (type == null) return;
+
+                player1ComboBox.Items.Add(new PlayerType(assembly.GetName().ToString(), type));
+                player2ComboBox.Items.Add(new PlayerType(assembly.GetName().ToString(), type));
             }
             catch (Exception exception)
             {
@@ -87,19 +86,21 @@ namespace Karo.TwoDClient
             
         }
 
-        class PlayerType{
-            public String Name { get; set; }
-            public Type Type { get; set; }
+        private class PlayerType
+        {
+            private readonly String _name;
+
+            public Type Type { get; private set; }
 
             public PlayerType(String name, Type type)
             {
-                Name = name;
+                _name = name;
                 Type = type;
             }
 
             public override string ToString()
             {
-                return Name;
+                return _name;
             }
         }
     }
