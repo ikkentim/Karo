@@ -63,7 +63,9 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
             assert(evaluate(player) == -evaluate(OPPONENT(player)));
         }
 #endif
-        return player == PLAYER_PLAYER1 ? evaluate(player) : evaluate(player);// TODO: Does this look OK?
+
+        // WAS: return evaluate(player);
+        return player == PLAYER_PLAYER1 ? evaluate(player) : -evaluate(player);
 	}
 	
 	if (player == PLAYER_PLAYER1)

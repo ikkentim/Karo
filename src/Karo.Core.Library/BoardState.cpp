@@ -173,6 +173,7 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
         if (pieces_[piece_idx].player != player)
             continue;
 
+        // TODO: Use tile neighbors
         // Iterate every move in every direction ( |, -, /, \ )
         for (int ox = -1; ox <= 1; ox++)
             for (int oy = -1; oy <= 1; oy++) {
@@ -205,6 +206,7 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
                     continue;
                 }
 
+                // TODO: Use tile neighbors
                 // To place a tile here, we need at least one connecting tile.
                 if (!tile(newx - 1, newy, NULL) &&
                     !tile(newx + 1, newy, NULL) &&
@@ -272,6 +274,7 @@ bool BoardState::is_valid_move(BoardMove move) {
     if (move.target.x == move.piece->tile->position.x && move.target.y == move.piece->tile->position.y)
         return false;
 
+    // TODO: Use tile neighbors
     //Check if new location has any neighbors (otherwise you get invalid boardstate)
     if (!(tile(move.target.x + 1, move.target.y, NULL) || tile(move.target.x - 1, move.target.y, NULL) ||
         tile(move.target.x, move.target.y + 1, NULL) || tile(move.target.x, move.target.y - 1, NULL)))
@@ -333,6 +336,7 @@ bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
     //first check if the move has only 1 neighbor
     int neightbor = 0;
     int tilex, tiley;
+    // TODO: Use tile neighbors
     if (tile(x - 1, y, NULL)){
         neightbor++;
         tilex = x - 1;
