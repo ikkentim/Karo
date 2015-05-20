@@ -382,30 +382,25 @@ BoardMove BoardState::create_move(BoardPosition target, BoardPosition piecePos,
 }
 
 void BoardState::update_neighbors(BoardPosition newPos, BoardTile * t) {
+   for (int d = 0; d < DIRECTION_COUNT; d++)
+        t->neighbors[d] = NULL;
 
-#define SET_NEIGHBOR(ox, oy, d, n) {  \
-    if(tile(newPos.x + ox, newPos.y + oy, &t->neighbors[d])) {\
-    t->neighbors[d]->neighbors[DIRECTION_FLIP(d)] = t; } }
+    for (int i = 0; i < TILE_COUNT; i++) {
+        if (tiles_ + i == t)
+            continue;
 
-    // Unset neighbors of old tile position.
-    for (int d = 0; d < DIRECTION_COUNT; d++) {
-        if (t->neighbors[d]){
-                t->neighbors[d]->neighbors[DIRECTION_FLIP(d)] = NULL;
-                t->neighbors[d] = NULL;
+        for (int d = 0; d < DIRECTION_COUNT; d++)
+        {
+            if (tiles_[i].neighbors[d] == t)
+                tiles_[i].neighbors[d] = NULL;
+
+            if (tiles_[i].position.x + DIRECTION_OFFSET_X(d) == newPos.x &&
+                tiles_[i].position.y + DIRECTION_OFFSET_Y(d) == newPos.y) {
+                tiles_[i].neighbors[d] = t;
+                t->neighbors[DIRECTION_FLIP(d)] = &tiles_[i];
+            }
         }
     }
-
-    // Set neighbors of new tile position.
-    SET_NEIGHBOR( 0, -1, DIRECTION_NORTH);
-    SET_NEIGHBOR( 1, -1, DIRECTION_NORTHEAST);
-    SET_NEIGHBOR( 1,  0, DIRECTION_EAST);
-    SET_NEIGHBOR( 1,  1, DIRECTION_SOUTHEAST);
-    SET_NEIGHBOR( 0,  1, DIRECTION_SOUTH);
-    SET_NEIGHBOR(-1,  1, DIRECTION_SOUTHWEST);
-    SET_NEIGHBOR(-1,  0, DIRECTION_WEST);
-    SET_NEIGHBOR(-1, -1, DIRECTION_NORTHWEST);
-
-#undef SET_NEIGHBOR
 }
 
 void BoardState::apply_move(BoardMove move, BoardPlayer player) {
@@ -530,6 +525,9 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
 
 int BoardState::corner_tiles(BoardTile ** tiles, int count) {
     int idx = 0;
+
+    // TODO: Calculate every time after a tile has moved which tiles are corner-
+    // tiles. Store this to the BoardTile structure. Should speed things by a lot.
 
     for (int i = 0; i < TILE_COUNT; i++) {
         // If the tile has at least 2 disconnected edges it is a corner. 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stdio.h>
+#include <limits>
 
 using namespace std;
 
@@ -23,12 +24,14 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
-	int bestScore = -20000000;
+    int bestScore = numeric_limits<int>::min();
 
+    int alpha = numeric_limits<int>::min();
+    int beta = numeric_limits<int>::max();
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);
-        int newScore = alpha_beta(3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+        int newScore = alpha_beta(3, alpha, beta, OPPONENT(player));
         state_->undo_move(moves[i], player);
 
 		if (newScore > bestScore)
@@ -40,9 +43,10 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	}
 
 	cout << "iterations " << iteration_count << endl;
-	cout << "prunes " << prune_count << endl;
+    cout << "prunes " << prune_count << endl;
+    cout << "bestScore " << bestScore << endl;
 
-    assert(bestScore != -20000000);
+    assert(bestScore != numeric_limits<int>::min());
 
 	return bestMove;
 }
@@ -59,7 +63,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
             assert(evaluate(player) == -evaluate(OPPONENT(player)));
         }
 #endif
-		return evaluate(player);
+        return player == PLAYER_PLAYER1 ? evaluate(player) : evaluate(player);// TODO: Does this look OK?
 	}
 	
 	if (player == PLAYER_PLAYER1)
@@ -151,7 +155,7 @@ int Intelligence::best_score(BoardPiece * piece){
 	int score = 0;
 
     if (!piece->is_face_up) {
-        return 1;
+        return 0;
     }
 
     for (int d = 0; d < DIRECTION_COUNT / 2; d++) {
@@ -170,10 +174,10 @@ int Intelligence::best_score(BoardPiece * piece){
 
         // If it's blocked we decrease the score.
         if (blockedA){
-            score--;
+            score/=2;
         }
         if (blockedB){
-            score--;
+            score/=2;
         }
         if (blockedA && blockedB){
             score = 0;
