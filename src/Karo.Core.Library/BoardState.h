@@ -20,6 +20,7 @@ public:
     BoardPiece * pieces() const;
     bool tile(int x, int y, BoardTile **result);
     bool piece(int x, int y, BoardPiece **result);
+    bool piece_in_direction(BoardPiece * piece, int direction, int length, BoardPiece **result);
     bool is_finished();
     int piece_count();   
     BoardMove create_move(BoardPosition target, BoardPosition piece,
@@ -30,12 +31,12 @@ public:
     bool is_valid_move(BoardMove move);
     int corner_tiles(BoardTile ** tiles, int count);
     BoardPlayer winner();
-    int row_length(int x, int y, int ox, int oy, BoardPlayer player);
+    int row_length(BoardPiece * piece, int direction, BoardPlayer player);
 private:
     BoardTile * tiles_;
     BoardPiece * pieces_;
     void update_neighbors(BoardPosition newPos, BoardTile * tile);
     bool is_valid_tile_placement(int x, int y, int tx, int ty);
-    bool is_row_for_player(int x, int y, BoardPlayer player);
+    bool is_row_for_player(BoardPiece * piece, BoardPlayer player);
     void assert_ok();
 };

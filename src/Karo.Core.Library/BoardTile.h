@@ -16,9 +16,10 @@
 #define DIRECTION_COUNT         (8)
 #define DIRECTION_FLIP(d)       ((d + 4) % DIRECTION_COUNT)
 
-struct BoardTile {
-    bool tagged;
+#define DIRECTION_OFFSET_X(d)   (d > 0 && d < 4 ? 1 : (d > 4 && d < 8 ? -1 : 0))
+#define DIRECTION_OFFSET_Y(d)   (d > 2 && d < 6 ? 1 : (d == 7 || d == 0 || d == 1 ? -1 : 0))
 
+struct BoardTile {
     BoardPosition position;
     BoardPiece * piece;
     BoardTile * neighbors[DIRECTION_COUNT];
@@ -26,14 +27,6 @@ struct BoardTile {
 
     BoardTile(int xx, int yy)
         : position(xx, yy) { }
-
-	void tag(){
-		tagged = true;
-	}
-
-	void untag(){
-		tagged = false;
-	}
 
     int neighbor_count() {
         int count = 0;

@@ -23,12 +23,12 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 
 	BoardMove bestMove;
-	int bestScore = MIN_SCORE - 1;
+	int bestScore = -20000000;
 
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);
-        int newScore = alpha_beta(3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+        int newScore = alpha_beta(4, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
         state_->undo_move(moves[i], player);
 
 		if (newScore > bestScore)
@@ -42,7 +42,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	cout << "iterations " << iteration_count << endl;
 	cout << "prunes " << prune_count << endl;
 
-    assert(bestScore != MIN_SCORE - 1);
+    assert(bestScore != -20000000);
 
 	return bestMove;
 }
@@ -51,6 +51,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 {
 	iteration_count++;
 
+    // TODO: Stop if game is finished!
 	if (depth == 0)
 	{
 #if defined _DEBUG
@@ -137,70 +138,47 @@ int Intelligence::evaluate(BoardPlayer player) {
 		if (!allPieces[i].is_face_up)
 			continue;
 
-	//	bool mypiece = (allPieces[i].player == player);
-
 		if (allPieces[i].player == player)
-		{
-			score += best_score(allPieces[i]);
-		}
+			score += best_score(&allPieces[i]);
 		else
-		{
-			score -= best_score(allPieces[i]);
-		}
+			score -= best_score(&allPieces[i]);
 	}
 
     return score;
 }
 
-int Intelligence::best_score(BoardPiece piece){
+int Intelligence::best_score(BoardPiece * piece){
+	int score = 0;
 
-	int idx = 0;
+    if (!piece->is_face_up) {
+        return 1;
+    }
 
-    BoardTile * tile = piece.tile;
+    for (int d = 0; d < DIRECTION_COUNT / 2; d++) {
+        // Calculate the lenght of the line.
+        int lenA = state_->row_length(piece, d, piece->player);
+        int lenB = state_->row_length(piece, DIRECTION_FLIP(d), piece->player);
 
-	//Array who store all diagonal
-	int diag[2][4];
-	//Diag1
-	diag[0][0] = diag[1][0] = 1;
-	//diag2
-	diag[0][1] = 1;
-	diag[1][1] = 0;
-	//diag3
-	diag[0][2] = 0;
-	diag[1][2] = 1;
-	//diag4
-	diag[0][3] = -1;
-	diag[1][3] = 1;
+        // If row is over 4 long, this piece is worth max score.
+        if ((score += lenA + 1 + lenB) >= 4) {
+            return MAX_SCORE;
+        }
 
-	
-	for (int j=0; j<4; j++){
-		//Calculate the lenght of the line
-        int lenA = state_->row_length(tile->position.x, tile->position.y, diag[0][j], diag[1][j], piece.player);
-		
-        int lenB = state_->row_length(tile->position.x, tile->position.y, -diag[0][j], -diag[1][j], piece.player);
+        // Check if the edge of the line is blocked by an enemy piece or not.
+        bool blockedA = state_->piece_in_direction(piece, d, lenA + 1, NULL);
+        bool blockedB = state_->piece_in_direction(piece, DIRECTION_FLIP(d), lenA + 1, NULL);
 
-		idx += lenA+1+lenB;
-		
-		if (idx >= 4){
-			return MAX_SCORE;
-		}
-		
-		
-		//Check if the edge of the line is blocked by an enemy piece or not
-        bool blockedA = state_->piece((tile->position.x + diag[0][j] + lenA) * diag[0][j], (tile->position.y + diag[1][j] + lenA) * diag[1][j], NULL);
-        bool blockedB = state_->piece((tile->position.x - diag[0][j] - lenB) * diag[0][j], (tile->position.y - diag[1][j] - lenB) * diag[1][j], NULL);
-		
-		//if it's blocked we decrease the score
-		if (blockedA){
-			idx--;
-		}
-		if (blockedB){
-			idx--;
-		}
-		if (blockedA && blockedB){
-			idx = 0;
-		}
-	}
+        // If it's blocked we decrease the score.
+        if (blockedA){
+            score--;
+        }
+        if (blockedB){
+            score--;
+        }
+        if (blockedA && blockedB){
+            score = 0;
+        }
+    }
 
-	return idx;
+    return score;
 }

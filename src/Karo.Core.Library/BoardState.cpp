@@ -85,8 +85,7 @@ bool BoardState::tile(int x, int y, BoardTile ** result) {
     assert(tiles_);
 
     for (int i = 0; i < TILE_COUNT; i++)
-        if (tiles_[i].position.x == x && tiles_[i].position.y == y)
-        {
+        if (tiles_[i].position.x == x && tiles_[i].position.y == y) {
             if (result)
                 *result = &tiles_[i];
             return true;
@@ -112,35 +111,53 @@ bool BoardState::piece(int x, int y, BoardPiece ** result) {
     return false;
 }
 
+bool BoardState::piece_in_direction(BoardPiece * piece, int direction, int offset, BoardPiece **result) {
+    if (!piece) {
+        return false;
+    }
+    if (offset < 0) {
+        offset = -offset;
+        direction = DIRECTION_FLIP(direction);
+    }
+
+    BoardTile * tile = piece->tile;
+
+    while (tile && offset > 0) {
+        tile = tile->neighbors[direction];
+        offset--;
+    }
+
+    if (!tile || !tile->piece) {
+        return false;
+    }
+
+    if (result)
+        *result = tile->piece;
+    return true;
+}
+
 bool BoardState::is_finished() {
     assert(pieces_);
     
-    for (int i = 0; i < PIECE_COUNT;i++){
+    for (int i = 0; i < PIECE_COUNT; i++) {
+        // If the piece has no set player yet, this indicates that the game is
+        // still in the first phase and cannot have finished.
+        if (pieces_[i].player == PLAYER_NONE) {
+            return false;
+        }
 
-    // If the piece has no set player yet, this indicates that the game is
-    // still in the first phase and cannot have finished.
-    if (pieces_[i].player == PLAYER_NONE) {
+        assert(pieces_[i].tile);
+
+        // Look for a row of 4 or more face up pieces of the same player.
+        if (!pieces_[i].is_face_up) {
+            continue;
+        }
+
+        if (is_row_for_player(&pieces_[i], pieces_[i].player))
+            return true;
+    }
+
     return false;
-    }
-
-    // Look for a row of 4 or more face up pieces of the same player.
-    if (!pieces_[i].is_face_up) {
-    continue;
-    }
-
-    int x = pieces_[i].tile->position.x;
-    int y = pieces_[i].tile->position.y;
-
-    // Check for rows in every direction ( |, -, /, \ )
-    return 1 + row_length(x, y, -1, -1, pieces_[i].player) +
-    row_length(x, y, 1, 1, pieces_[i].player) >= 4 ||
-    1 + row_length(x, y, 1, -1, pieces_[i].player) +
-    row_length(x, y, -1, 1, pieces_[i].player) >= 4 ||
-    1 + row_length(x, y, -1, 0, pieces_[i].player) +
-    row_length(x, y, 1, 0, pieces_[i].player) >= 4 ||
-    1 + row_length(x, y, 0, -1, pieces_[i].player) +
-    row_length(x, y, 0, 1, pieces_[i].player) >= 4;
-    }
 }
 
 int BoardState::piece_count() {
@@ -557,8 +574,7 @@ BoardPlayer BoardState::winner() {
     for (int i = 0; i < PIECE_COUNT; i++)
     {
         if (pieces_[i].is_face_up &&
-            is_row_for_player(pieces_[i].tile->position.x,
-            pieces_[i].tile->position.y, pieces_[i].player))
+            is_row_for_player(&pieces_[i], pieces_[i].player))
 
             return pieces_[i].player;
 
@@ -566,27 +582,36 @@ BoardPlayer BoardState::winner() {
     return PLAYER_NONE;
 }
 
-int BoardState::row_length(int x, int y, int ox, int oy, BoardPlayer player) {
-    return 1;
-    x += ox;
-    y += oy;
+int BoardState::row_length(BoardPiece * piece, int direction, BoardPlayer player) {
+    if (!piece || !piece->is_face_up || piece->player != player)
+        return 0;
 
-    BoardPiece * p;
-    if (!piece(x, y, &p)) return 0;
+    assert(piece->tile);
 
-    if (!p->is_face_up || p->player != player) return 0;
+    BoardTile * next = piece->tile->neighbors[direction];
 
-    return 1 + row_length(x, y, ox, oy, player);
+    return !next || !next->piece || !next->piece->is_face_up || 
+        next->piece->player != player 
+        ? 0 
+        : 1 + row_length(next->piece, direction, player);
 
 }
 
-bool BoardState::is_row_for_player(int x, int y, BoardPlayer player) {
-    int a1 = row_length(x, y, -1, -1, player) + 1 + row_length(x, y, 1, 1, player);
-    int a2 = row_length(x, y, -1, 1, player) + 1 + row_length(x, y, 1, -1, player);
-    int a3 = row_length(x, y, 0, -1, player) + 1 + row_length(x, y, 0, 1, player);
-    int a4 = row_length(x, y, -1, 0, player) + 1 + row_length(x, y, 1, 0, player);
+bool BoardState::is_row_for_player(BoardPiece * piece, BoardPlayer player) {
+    if (!piece || !piece->is_face_up || piece->player != player)
+        return false;
 
-    return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
+    for (int d = 0; d < DIRECTION_COUNT / 2; d++) {
+        int la = row_length(piece, d, player);
+        int lb = row_length(piece, DIRECTION_FLIP(d), player);
+        if (la + 1 + lb >= 4) {
+            cout << "row starting at " << piece->tile->position.x << ", " << piece->tile->position.y << " is finished. dir: " << d << "(" << la << "+"<<lb << ")" << endl;
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void BoardState::assert_ok() {
