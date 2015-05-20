@@ -20,13 +20,16 @@ BoardState::BoardState() {
         pieces_[i].player = PLAYER_NONE;
     }
 
-#define SET_CONNECTION(a,b,d) {tiles_[a].neighbors[d] = &tiles_[b]; \
+#define SET_CONNECTION(a,b,d); {tiles_[a].neighbors[d] = &tiles_[b]; \
     tiles_[b].neighbors[DIRECTION_FLIP(d)] = &tiles_[a]; }
 
     // Fill tiles array with initial data
     for (int i = 0; i < TILE_COUNT; i++) {
         tiles_[i].position.x = i % BOARD_INITIAL_WIDTH;
         tiles_[i].position.y = i / BOARD_INITIAL_WIDTH;
+
+        for (int d = 0; d < DIRECTION_COUNT; d++)
+            tiles_[i].neighbors[d] = NULL;
 
         if (tiles_[i].position.x > 0) {
             SET_CONNECTION(i, i - 1, DIRECTION_WEST);
@@ -43,6 +46,8 @@ BoardState::BoardState() {
     }
 
 #undef SET_CONNECTION
+
+    assert_ok();
 }
 
 BoardState::BoardState(const BoardState& other) {
@@ -231,6 +236,11 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
                 for (int corner_idx = 0; corner_idx < corner_count;
                     corner_idx++) {
                     assert(corners[corner_idx]);
+
+                    if (corners[corner_idx]->is_neighbor(BoardPosition(newx, newy))) {
+                        continue;
+                    }
+
                     if (idx < count)
                         moves[idx] = BoardMove(BoardPosition(newx, newy),
                         &pieces_[piece_idx], corners[corner_idx]);
@@ -244,15 +254,12 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
         corners = NULL;
     }
 
-    if (idx > count) {
-        cout << idx << " > " << count << endl;
-    }
     assert(idx <= count);
+
 #if defined _DEBUG
 
     for (int i = 0; i < idx; i++) {
         if (!moves[i].piece) {
-            cout << idx << "moves found. move " << i << ". p/t 0x" << moves[i].piece << "/0x" << moves[i].tile << endl;
             assert(moves[i].piece && "Move generated without origin");
         }
     }
@@ -386,35 +393,30 @@ BoardMove BoardState::create_move(BoardPosition target, BoardPosition piecePos,
     return m;
 }
 
-void BoardState::update_neighbors(BoardPosition oldPos, BoardPosition newPos,
-    BoardTile * t) {
-#define UNSET_NEIGHBOR(xp, yp, d) { BoardTile * tmp; if(tile(xp, yp, &tmp)) \
-                                { tmp->neighbors[DIRECTION_FLIP(d)] = NULL; } }
+void BoardState::update_neighbors(BoardPosition newPos, BoardTile * t) {
 
-#define SET_NEIGHBOR(xp, yp, d, n) { BoardTile * tmp; if(tile(xp, yp, &tmp)) \
-                                { tmp->neighbors[DIRECTION_FLIP(d)] = n; } }
+#define SET_NEIGHBOR(ox, oy, d, n) {  \
+    if(tile(newPos.x + ox, newPos.y + oy, &t->neighbors[d])) {\
+    t->neighbors[d]->neighbors[DIRECTION_FLIP(d)] = t; } }
 
     // Unset neighbors of old tile position.
-    UNSET_NEIGHBOR(oldPos.x + 0, oldPos.y - 1, DIRECTION_NORTH);
-    UNSET_NEIGHBOR(oldPos.x + 1, oldPos.y - 1, DIRECTION_NORTHEAST);
-    UNSET_NEIGHBOR(oldPos.x + 1, oldPos.y + 0, DIRECTION_EAST);
-    UNSET_NEIGHBOR(oldPos.x + 1, oldPos.y + 1, DIRECTION_SOUTHEAST);
-    UNSET_NEIGHBOR(oldPos.x + 0, oldPos.y + 1, DIRECTION_SOUTH);
-    UNSET_NEIGHBOR(oldPos.x - 1, oldPos.y + 1, DIRECTION_SOUTHWEST);
-    UNSET_NEIGHBOR(oldPos.x - 1, oldPos.y + 0, DIRECTION_WEST);
-    UNSET_NEIGHBOR(oldPos.x - 1, oldPos.y - 1, DIRECTION_NORTHWEST);
+    for (int d = 0; d < DIRECTION_COUNT; d++) {
+        if (t->neighbors[d]){
+                t->neighbors[d]->neighbors[DIRECTION_FLIP(d)] = NULL;
+                t->neighbors[d] = NULL;
+        }
+    }
 
     // Set neighbors of new tile position.
-    SET_NEIGHBOR(newPos.x + 0, newPos.y - 1, DIRECTION_NORTH, t);
-    SET_NEIGHBOR(newPos.x + 1, newPos.y - 1, DIRECTION_NORTHEAST, t);
-    SET_NEIGHBOR(newPos.x + 1, newPos.y + 0, DIRECTION_EAST, t);
-    SET_NEIGHBOR(newPos.x + 1, newPos.y + 1, DIRECTION_SOUTHEAST, t);
-    SET_NEIGHBOR(newPos.x + 0, newPos.y + 1, DIRECTION_SOUTH, t);
-    SET_NEIGHBOR(newPos.x - 1, newPos.y + 1, DIRECTION_SOUTHWEST, t);
-    SET_NEIGHBOR(newPos.x - 1, newPos.y + 0, DIRECTION_WEST, t);
-    SET_NEIGHBOR(newPos.x - 1, newPos.y - 1, DIRECTION_NORTHWEST, t);
+    SET_NEIGHBOR( 0, -1, DIRECTION_NORTH);
+    SET_NEIGHBOR( 1, -1, DIRECTION_NORTHEAST);
+    SET_NEIGHBOR( 1,  0, DIRECTION_EAST);
+    SET_NEIGHBOR( 1,  1, DIRECTION_SOUTHEAST);
+    SET_NEIGHBOR( 0,  1, DIRECTION_SOUTH);
+    SET_NEIGHBOR(-1,  1, DIRECTION_SOUTHWEST);
+    SET_NEIGHBOR(-1,  0, DIRECTION_WEST);
+    SET_NEIGHBOR(-1, -1, DIRECTION_NORTHWEST);
 
-#undef UNSET_NEIGHBOR
 #undef SET_NEIGHBOR
 }
 
@@ -456,16 +458,13 @@ void BoardState::apply_move(BoardMove move, BoardPlayer player) {
         assert(move.tile &&
             "no tile specified while no tile at target position");
 
-        if (move.tile->piece) {
-            cout << "ERRRR 0x" << move.tile << "/0x" << move.tile->piece->tile << endl;
-        }
         assert(!move.tile->piece || move.tile->piece->tile == move.tile);
         assert(!move.tile->piece && "moving tile is occupied");
 
         // Update the tile position, update the neighbors
         BoardPosition oldTilePosition = move.tile->position;
         move.tile->position = move.target;
-        update_neighbors(oldTilePosition, move.target, move.tile);
+        update_neighbors(move.target, move.tile);
 
         // Store this tile as the target tile
         newTile = move.tile;
@@ -481,8 +480,11 @@ void BoardState::apply_move(BoardMove move, BoardPlayer player) {
 
     // Move the piece to the specified target.
     move.piece->tile->piece = NULL;
-    tile(move.target.x, move.target.y, &move.piece->tile);
-    move.piece->tile->piece = move.piece;
+    move.piece->tile = newTile;
+    newTile->piece = move.piece;
+
+    //Do some debugging checks
+    assert_ok();
 }
 
 void BoardState::undo_move(BoardMove move, BoardPlayer player) {
@@ -507,7 +509,7 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
     if (move.tile) {
         assert(!tile(move.tile_position.x, move.tile_position.y, NULL));
 
-        update_neighbors(move.tile->position, move.tile_position, move.tile);
+        update_neighbors(move.tile_position, move.tile);
         move.tile->position = move.tile_position;
     }
 
@@ -527,6 +529,8 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
     move.piece->tile->piece = move.piece;
 
     assert(undo_ok);
+
+    assert_ok();
 }
 
 int BoardState::corner_tiles(BoardTile ** tiles, int count) {
@@ -534,15 +538,10 @@ int BoardState::corner_tiles(BoardTile ** tiles, int count) {
 
     for (int i = 0; i < TILE_COUNT; i++) {
         // If the tile has at least 2 adjacent disconnected edges it is a corner.
-        bool top = tile(tiles_[i].position.x, tiles_[i].position.y - 1, NULL);
-        bool bottom = tile(tiles_[i].position.x, tiles_[i].position.y + 1, NULL);
-        bool left = tile(tiles_[i].position.x - 1, tiles_[i].position.y, NULL);
-        bool right = tile(tiles_[i].position.x + 1, tiles_[i].position.y, NULL);
-
-        if (((top == false && left == false) ||
-            (top == false && right == false) ||
-            (bottom == false && left == false) ||
-            (bottom == false && right == false)) &&
+        if (((!tiles_[i].neighbors[DIRECTION_NORTH] && !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_NORTH] && !tiles_[i].neighbors[DIRECTION_EAST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && !tiles_[i].neighbors[DIRECTION_EAST])) &&
             !tiles_[i].piece) {
             if (idx < count)
                 tiles[idx] = &tiles_[i];
@@ -588,4 +587,24 @@ bool BoardState::is_row_for_player(int x, int y, BoardPlayer player) {
     int a4 = row_length(x, y, -1, 0, player) + 1 + row_length(x, y, 1, 0, player);
 
     return a1 >= 4 || a2 >= 4 || a3 >= 4 || a4 >= 4;
+}
+
+void BoardState::assert_ok() {
+#if defined _DEBUG
+#define DEBUG_TILE(xo, yo, dir) { if (tile(tiles_[i].position.x + xo, tiles_[i].position.y + yo, &dbgTile)) { \
+            assert(dbgTile == tiles_[i].neighbors[dir]); } }
+
+    BoardTile *dbgTile = NULL;
+    for (int i = 0; i < TILE_COUNT; i++) {
+        DEBUG_TILE(0, -1, DIRECTION_NORTH);
+        DEBUG_TILE(1, -1, DIRECTION_NORTHEAST);
+        DEBUG_TILE(1, 0, DIRECTION_EAST);
+        DEBUG_TILE(1, 1, DIRECTION_SOUTHEAST);
+        DEBUG_TILE(0, 1, DIRECTION_SOUTH);
+        DEBUG_TILE(-1, 1, DIRECTION_SOUTHWEST);
+        DEBUG_TILE(-1, 0, DIRECTION_WEST);
+        DEBUG_TILE(-1, -1, DIRECTION_NORTHWEST);
+    }
+#undef DEBUG_TILE
+#endif
 }
