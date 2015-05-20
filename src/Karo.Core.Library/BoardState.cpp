@@ -137,40 +137,11 @@ bool BoardState::piece_in_direction(BoardPiece * piece, int direction, int offse
 }
 
 bool BoardState::is_finished() {
-    assert(pieces_);
-    
-    for (int i = 0; i < PIECE_COUNT; i++) {
-        // If the piece has no set player yet, this indicates that the game is
-        // still in the first phase and cannot have finished.
-        if (pieces_[i].player == PLAYER_NONE) {
-            return false;
-        }
-
-        assert(pieces_[i].tile);
-
-        // Look for a row of 4 or more face up pieces of the same player.
-        if (!pieces_[i].is_face_up) {
-            continue;
-        }
-
-        if (is_row_for_player(&pieces_[i], pieces_[i].player))
-            return true;
-    }
-
-    return false;
+    return is_finished_;
 }
 
 int BoardState::piece_count() {
-    int c = 0;
-
-    assert(pieces_);
-
-    // Count the number of pieces with a set player
-    for (int i = 0; i < PIECE_COUNT; i++)
-        if (pieces_[i].player != PLAYER_NONE)
-            c++;
-
-    return c;
+    return piece_count_;
 }
 
 int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count) {
@@ -438,30 +409,32 @@ void BoardState::update_neighbors(BoardPosition newPos, BoardTile * t) {
 }
 
 void BoardState::apply_move(BoardMove move, BoardPlayer player) {
-    int count = piece_count();
     BoardTile * newTile = NULL;
 
     assert(player);
     assert(!piece(move.target.x, move.target.y, NULL));
 
     // If in initial phase, place the piece at the target position.
-    if (count < PIECE_COUNT)
+    if (piece_count_ < PIECE_COUNT)
     {
+        if (piece_count_<0)
+        cout << "place init pc at " << piece_count_ << endl;
         assert(!move.piece);
         assert(!move.tile);
 
         // Set the occupied tile to the piece.
         bool ok_place_pos =
-            tile(move.target.x, move.target.y, &pieces_[count].tile);
+            tile(move.target.x, move.target.y, &pieces_[piece_count_].tile);
 
         assert(ok_place_pos);
 
         // Set the owner of this piece.
-        pieces_[count].player = player;
+        pieces_[piece_count_].player = player;
 
         // Set the piece occupying this tile.
-        pieces_[count].tile->piece = &pieces_[count];
+        pieces_[piece_count_].tile->piece = &pieces_[piece_count_];
 
+        piece_count_++;
         return;
     }
 
@@ -500,6 +473,8 @@ void BoardState::apply_move(BoardMove move, BoardPlayer player) {
     move.piece->tile = newTile;
     newTile->piece = move.piece;
 
+    calc_is_finished();
+
     //Do some debugging checks
     assert_ok();
 }
@@ -519,6 +494,7 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
         removePiece->tile = NULL;
         removePiece->player = PLAYER_NONE;
 
+        piece_count_--;
         return;
     }
 
@@ -547,6 +523,8 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
 
     assert(undo_ok);
 
+    calc_is_finished();
+
     assert_ok();
 }
 
@@ -554,11 +532,16 @@ int BoardState::corner_tiles(BoardTile ** tiles, int count) {
     int idx = 0;
 
     for (int i = 0; i < TILE_COUNT; i++) {
-        // If the tile has at least 2 adjacent disconnected edges it is a corner.
-        if (((!tiles_[i].neighbors[DIRECTION_NORTH] && !tiles_[i].neighbors[DIRECTION_WEST]) ||
-            (!tiles_[i].neighbors[DIRECTION_NORTH] && !tiles_[i].neighbors[DIRECTION_EAST]) ||
-            (!tiles_[i].neighbors[DIRECTION_SOUTH] && !tiles_[i].neighbors[DIRECTION_WEST]) ||
-            (!tiles_[i].neighbors[DIRECTION_SOUTH] && !tiles_[i].neighbors[DIRECTION_EAST])) &&
+        // If the tile has at least 2 disconnected edges it is a corner. 
+        // Must also be unoccupied.
+        if (((!tiles_[i].neighbors[DIRECTION_NORTH] && 
+            !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_NORTH] && 
+            !tiles_[i].neighbors[DIRECTION_EAST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && 
+            !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && 
+            !tiles_[i].neighbors[DIRECTION_EAST])) &&
             !tiles_[i].piece) {
             if (idx < count)
                 tiles[idx] = &tiles_[i];
@@ -601,17 +584,39 @@ bool BoardState::is_row_for_player(BoardPiece * piece, BoardPlayer player) {
     if (!piece || !piece->is_face_up || piece->player != player)
         return false;
 
-    for (int d = 0; d < DIRECTION_COUNT / 2; d++) {
-        int la = row_length(piece, d, player);
-        int lb = row_length(piece, DIRECTION_FLIP(d), player);
-        if (la + 1 + lb >= 4) {
-            cout << "row starting at " << piece->tile->position.x << ", " << piece->tile->position.y << " is finished. dir: " << d << "(" << la << "+"<<lb << ")" << endl;
-
+    for (int d = 0; d < DIRECTION_COUNT / 2; d++)
+        if (row_length(piece, d, player) + 1 + 
+            row_length(piece, DIRECTION_FLIP(d), player) >= 4) {
             return true;
         }
-    }
 
     return false;
+}
+
+void BoardState::calc_is_finished() {
+    assert(pieces_);
+
+    for (int i = 0; i < PIECE_COUNT; i++) {
+        // If the piece has no set player yet, this indicates that the game is
+        // still in the first phase and cannot have finished.
+        if (pieces_[i].player == PLAYER_NONE) {
+            is_finished_ = false;
+            return;
+        }
+
+        assert(pieces_[i].tile);
+
+        // Look for a row of 4 or more face up pieces of the same player.
+        if (!pieces_[i].is_face_up) {
+            continue;
+        }
+
+        if (is_row_for_player(&pieces_[i], pieces_[i].player))
+            is_finished_ = true;
+            return;
+    }
+
+    is_finished_ = false;
 }
 
 void BoardState::assert_ok() {

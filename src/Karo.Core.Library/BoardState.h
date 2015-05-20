@@ -33,10 +33,14 @@ public:
     BoardPlayer winner();
     int row_length(BoardPiece * piece, int direction, BoardPlayer player);
 private:
-    BoardTile * tiles_;
-    BoardPiece * pieces_;
+    BoardTile * tiles_ = NULL;
+    BoardPiece * pieces_ = NULL;
+    int piece_count_ = 0;
+    bool is_finished_ = false;
     void update_neighbors(BoardPosition newPos, BoardTile * tile);
     bool is_valid_tile_placement(int x, int y, int tx, int ty);
     bool is_row_for_player(BoardPiece * piece, BoardPlayer player);
+
+    void calc_is_finished();
     void assert_ok();
 };

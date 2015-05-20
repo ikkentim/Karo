@@ -28,7 +28,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);
-        int newScore = alpha_beta(4, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
+        int newScore = alpha_beta(3, MIN_SCORE - 1, MAX_SCORE + 1, OPPONENT(player));
         state_->undo_move(moves[i], player);
 
 		if (newScore > bestScore)
@@ -51,8 +51,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 {
 	iteration_count++;
 
-    // TODO: Stop if game is finished!
-	if (depth == 0)
+	if (depth == 0 || state_->is_finished())
 	{
 #if defined _DEBUG
         if (evaluate(player) != -evaluate(OPPONENT(player))) {
@@ -120,9 +119,10 @@ int Intelligence::evaluate(BoardPlayer player) {
 
     int score = 0;
 
-	if (state_->piece_count() < PIECE_COUNT)
-	{
-		for (int i = 0; i < PIECE_COUNT; i++) {
+    int pieceCount = state_->piece_count();
+
+    if (pieceCount < PIECE_COUNT) {
+        for (int i = 0; i < pieceCount; i++) {
 			if (allPieces[i].player == player)
 				score += 1;
 			else if (allPieces[i].player == OPPONENT(player))
