@@ -47,7 +47,7 @@ BoardState::BoardState() {
 
 #undef SET_CONNECTION
 
-    assert_ok();
+    assert_state_ok();
 }
 
 BoardState::BoardState(const BoardState& other) {
@@ -175,70 +175,76 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 
         // TODO: Use tile neighbors
         // Iterate every move in every direction ( |, -, /, \ )
-        for (int ox = -1; ox <= 1; ox++)
-            for (int oy = -1; oy <= 1; oy++) {
-                // If both offsets are 0, it's not a move.
-                if (ox == 0 && oy == 0) {
+        for (int d = 0; d < DIRECTION_COUNT; d++) {
+            assert(pieces_[piece_idx].tile);
+
+            BoardTile * dz = pieces_[piece_idx].tile->neighbors[d];
+
+            int ox = DIRECTION_OFFSET_X(d);
+            int oy = DIRECTION_OFFSET_Y(d);
+
+            BoardPosition targetPos = BoardPosition(
+                pieces_[piece_idx].tile->position.x + ox,
+                pieces_[piece_idx].tile->position.y + oy);
+
+            // If the target position is blocked, attempt jumping over it.
+            // If this position is also blocked, skip.
+            if (dz && dz->piece) {
+                targetPos.x += ox;
+                targetPos.y += oy;
+
+                dz = dz->neighbors[d];
+                if (dz && dz->piece)
                     continue;
-                }
+            }
 
-                int newx = pieces_[piece_idx].tile->position.x + ox,
-                    newy = pieces_[piece_idx].tile->position.y + oy;
+            // If there is a tile at the target, add the move.
+            if (dz) {
+                // TODO: If a target_tile was present in BoardMove, it would speed things up by a lot.
+                if (idx < count)
+                    moves[idx] = BoardMove(dz->position, &pieces_[piece_idx]);
+                idx++;
 
-                // If the target position is blocked, attempt jumping over it.
-                // If this position is also blocked, skip.
-                if (piece(newx, newy, NULL)) {
-                    newx += ox;
-                    newy += oy;
+                continue;
+            }
 
-                    if (piece(newx, newy, NULL))
-                        continue;
-                }
+            // To place a tile here, we need at least one connecting tile.
+            bool found_neighbor = false;
 
-                BoardTile * target;
-
-                // If there is a tile at the target, add the move.
-                if (tile(newx, newy, &target)) {
-                    if (idx < count)
-                        moves[idx] = BoardMove(target->position, &pieces_[piece_idx]);
-                    idx++;
-
-                    continue;
-                }
-
-                // TODO: Use tile neighbors
-                // To place a tile here, we need at least one connecting tile.
-                if (!tile(newx - 1, newy, NULL) &&
-                    !tile(newx + 1, newy, NULL) &&
-                    !tile(newx, newy - 1, NULL) &&
-                    !tile(newx, newy + 1, NULL))
-                    continue;
-
-                // We need to move a tile to this position, fill the corners
-                // array if empty.
-                if (!corners) {
-                    corners = new BoardTile *[TILE_COUNT];
-                    corner_count = corner_tiles(corners, TILE_COUNT);
-                }
-
-                // For every corner add a move of moving this corner to the
-                // target position.
-                for (int corner_idx = 0; corner_idx < corner_count;
-                    corner_idx++) {
-                    assert(corners[corner_idx]);
-
-                    if (corners[corner_idx]->is_neighbor(BoardPosition(newx, newy))) {
-                        continue;
-                    }
-
-                    if (idx < count)
-                        moves[idx] = BoardMove(BoardPosition(newx, newy),
-                        &pieces_[piece_idx], corners[corner_idx]);
-                    idx++;
+            for (int tile_idx = 0; tile_idx < TILE_COUNT; tile_idx++) {
+                if (tiles_[tile_idx].is_direct_neighbor(targetPos)) {
+                    found_neighbor = true;
+                    break;
                 }
             }
+            if (!found_neighbor) continue;
+
+            // We need to move a tile to this position, fill the corners
+            // array if empty.
+            if (!corners) {
+                corners = new BoardTile *[TILE_COUNT];
+                corner_count = corner_tiles(corners, TILE_COUNT);
+            }
+
+            // For every corner add a move of moving this corner to the
+            // target position.
+            for (int corner_idx = 0; corner_idx < corner_count;
+                corner_idx++) {
+                assert(corners[corner_idx]);
+
+                if (corners[corner_idx]->is_neighbor(targetPos)) {
+                    continue;
+                }
+
+                if (idx < count)
+                    moves[idx] = BoardMove(targetPos,
+                    &pieces_[piece_idx], corners[corner_idx]);
+                idx++;
+            }
+        }
     }
 
+    // TODO: Move from heap to stack
     if (corners) {
         delete[] corners;
         corners = NULL;
@@ -246,14 +252,6 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 
     assert(idx <= count);
 
-#if defined _DEBUG
-
-    for (int i = 0; i < idx; i++) {
-        if (!moves[i].piece) {
-            assert(moves[i].piece && "Move generated without origin");
-        }
-    }
-#endif
     return idx;
 }
 
@@ -266,7 +264,7 @@ bool BoardState::is_valid_move(BoardMove move) {
     //Make testcases for it
 
     //Check for tileplacement
-    if (!is_valid_tile_placement(move.target.x, move.target.y, move.tile->position.x, move.tile->position.y))
+    if (move.tile && !is_valid_tile_placement(move.target.x, move.target.y, move.tile->position.x, move.tile->position.y))
         return false;
 
     //Move Phase
@@ -336,7 +334,7 @@ bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
     //first check if the move has only 1 neighbor
     int neightbor = 0;
     int tilex, tiley;
-    // TODO: Use tile neighbors
+
     if (tile(x - 1, y, NULL)){
         neightbor++;
         tilex = x - 1;
@@ -475,7 +473,7 @@ void BoardState::apply_move(BoardMove move, BoardPlayer player) {
     calc_is_finished();
 
     //Do some debugging checks
-    assert_ok();
+    assert_state_ok();
 }
 
 void BoardState::undo_move(BoardMove move, BoardPlayer player) {
@@ -524,7 +522,7 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
 
     calc_is_finished();
 
-    assert_ok();
+    assert_state_ok();
 }
 
 int BoardState::corner_tiles(BoardTile ** tiles, int count) {
@@ -621,7 +619,7 @@ void BoardState::calc_is_finished() {
     is_finished_ = false;
 }
 
-void BoardState::assert_ok() {
+void BoardState::assert_state_ok() {
 #if defined _DEBUG
 #define DEBUG_TILE(xo, yo, dir) { if (tile(tiles_[i].position.x + xo, tiles_[i].position.y + yo, &dbgTile)) { \
             assert(dbgTile == tiles_[i].neighbors[dir]); } }

@@ -42,5 +42,5 @@ private:
     bool is_row_for_player(BoardPiece * piece, BoardPlayer player);
 
     void calc_is_finished();
-    void assert_ok();
+    void assert_state_ok();
 };

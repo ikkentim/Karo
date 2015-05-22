@@ -45,7 +45,12 @@ struct BoardTile {
     }
 
     bool is_neighbor(BoardPosition pos) {
-        return abs(position.x - pos.x) <= 1 && abs(position.y - pos.y) <= 1;
+        return position != pos && 
+            abs(position.x - pos.x) <= 1 && abs(position.y - pos.y) <= 1;
+    }
+
+    bool is_direct_neighbor(BoardPosition pos) {
+        return abs(position.x - pos.x) == 1 || abs(position.y - pos.y) == 1;
     }
 
     inline bool operator==(BoardTile o) {
