@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Karo.AI;
 using Karo.Common;
 using Karo.Core;
 using Microsoft.Xna.Framework;
@@ -48,7 +46,6 @@ namespace Karo.TwoDClient
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            IsFixedTimeStep = false;
         }
 
         /// <summary>
@@ -188,7 +185,9 @@ namespace Karo.TwoDClient
         {
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
 
             // 
             if (_awaitingMove)
@@ -198,7 +197,7 @@ namespace Karo.TwoDClient
                 else
                 {
                     _lastMoveTime += gameTime.ElapsedGameTime;
-                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 10))
+                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
                     {
                         _lastMoveTime = TimeSpan.Zero;
                         _awaitingMove = false;
@@ -261,7 +260,6 @@ namespace Karo.TwoDClient
                         }
                         else
                         {
-                            Console.WriteLine("Did not select valid tile");
                             _selectedOldPiece = null;
                             _selectedNewPiece = null;
                         }
@@ -385,9 +383,8 @@ namespace Karo.TwoDClient
             _spriteBatch.Draw(Textures.RedPiece, _camera.Position + new Vector2(200, 25), Color.White);
             _spriteBatch.Draw(Textures.WhitePiece, _camera.Position + new Vector2(250, 25), Color.White);
 
-            if (IsCurrentPlayerHuman)
-                _spriteBatch.Draw(Textures.TurnIndicator,
-                    _camera.Position + new Vector2(CurrentTurn == KaroPlayer.Player1 ? 200 : 250, 75), Color.White);
+            _spriteBatch.Draw(Textures.TurnIndicator,
+                _camera.Position + new Vector2(CurrentTurn == KaroPlayer.Player1 ? 200 : 250, 75), Color.White);
 
             if (_selectedOldPiece != null)
             {
@@ -414,8 +411,8 @@ namespace Karo.TwoDClient
 
             if (_isThinking)
             {
-                _spriteBatch.DrawString(_font, string.Format("{0} is thinking...", CurrentTurn), new Vector2(20),
-                    Color.BlueViolet);
+                _spriteBatch.DrawString(_font, "Thinking...",
+                    _camera.Position + new Vector2(200,5), Color.Bisque, 0, Vector2.Zero, new Vector2(0.4f), SpriteEffects.None, 0);
             }
         }
 
