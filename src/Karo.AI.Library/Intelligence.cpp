@@ -4,6 +4,31 @@
 #include <stdio.h>
 #include <limits>
 
+// MiniMax / AlphaBeta
+// -------------------
+#define MAX_DEPTH                                       (3)
+
+// Evaluation
+// ----------
+#define SCORE_WIN                                       (10000000) // Score given to a winning player.
+
+// Score based on distance between own pieces
+#define SCORE_DISTANCE_SELF                             (4) // Max distance between own pieces to give addtional.
+#define SCORE_DISTANCE_SELF_BASE                        (1) // Score given to pieces less than SCORE_DISTANCE_SELF tiles away.
+#define SCORE_DISTANCE_SELF_MULTIPLIER                  (1) // Multiplier of (SCORE_DISTANCE_SELF-distance) to add to the score.
+#define SCORE_DISTANCE_SELF_FACE_MULTIPLIER             (1) // Multiplier of score if the piece is face-up.
+#define SCORE_DISTANCE_SELF_FACE_OTHER_MULTIPLIER       (1) // Multiplier of score if the other piece is face-up.
+
+// Score based on distance between own and opponents pieces
+#define SCORE_DISTANCE_OPPONENT                         (2) // Max distance between own and opponents pieces to give addtional
+#define SCORE_DISTANCE_OPPONENT_BASE                    (1) // Score given to pieces less than SCORE_DISTANCE_SELF tiles away.
+#define SCORE_DISTANCE_OPPONENT_FACE_MULTIPLIER         (-1) // Multiplier of (SCORE_DISTANCE_SELF-distance) to add to the score.
+#define SCORE_DISTANCE_OPPONENT_FACE_OTHER_MULTIPLIER   (1) // Multiplier of score if the piece is face-up.
+#define SCORE_DISTANCE_OPPONENT_MULTIPLIER              (1) // Multiplier of score if the other piece is face-up.
+
+// Score based on the length of a line of face-up pieces
+#define SCORE_LINE_MULTIPLIER                           (8) // Multiplier of score given to a line of face-up pieces.
+
 using namespace std;
 
 Intelligence::Intelligence() {
@@ -21,32 +46,42 @@ void Intelligence::apply_move(BoardMove move, BoardPlayer player) {
 
 BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	BoardMove moves[MOVE_COUNT];
-	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
-
 	BoardMove bestMove;
-    int bestScore = numeric_limits<int>::min();
-
+    int depth = MAX_DEPTH;
     int alpha = numeric_limits<int>::min();
     int beta = numeric_limits<int>::max();
+
+    // Reset debug counters.
+    iteration_count = 0;
+    prune_count = 0;
+
+    // Calculate depth.
+    int piece_count = state_->piece_count();
+
+    // If in initual phase, do some extra moves.
+    if (piece_count < PIECE_COUNT) {
+        depth = max(PIECE_COUNT - piece_count + MAX_DEPTH / 2, depth);
+    }
+    
+	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);
-        int newScore = alpha_beta(3, alpha, beta, OPPONENT(player));
+        int newScore = alpha_beta(MAX_DEPTH, alpha, beta, OPPONENT(player));
         state_->undo_move(moves[i], player);
 
-		if (newScore > bestScore)
-
+        if (newScore > alpha)
 		{
 			bestMove = moves[i];
-			bestScore = newScore;
+            alpha = newScore;
 		}
 	}
 
-	cout << "iterations " << iteration_count << endl;
-    cout << "prunes " << prune_count << endl;
-    cout << "bestScore " << bestScore << endl;
+    assert(alpha != numeric_limits<int>::min());
 
-    assert(bestScore != numeric_limits<int>::min());
+	cout << "iterations: " << iteration_count << endl;
+    cout << "prunes: " << prune_count << endl;
+    cout << "best score: " << alpha << endl;
 
 	return bestMove;
 }
@@ -65,12 +100,13 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 #endif
 
         // WAS: return evaluate(player);
-        return player == PLAYER_PLAYER1 ? evaluate(player) : -evaluate(player);
+        return evaluate(PLAYER_PLAYER1);
 	}
 	
+    // Maximizer node.
 	if (player == PLAYER_PLAYER1)
 	{
-		int v = MIN_SCORE - 1;
+        int value = numeric_limits<int>::min();
 
 		BoardMove moves[MOVE_COUNT];
 		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
@@ -78,24 +114,25 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 		for (int i = 0; i < move_count; i++)
         {
             state_->apply_move(moves[i], player);
-            v = max(v, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
-
+            value = max(value, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
             state_->undo_move(moves[i], player);
 
-			alpha = max(alpha, v);
+            alpha = max(alpha, value);
 
-			if (beta <= alpha)
+            if (value > beta)
 			{
 				prune_count++;
 				break;
 			}
 		}
 
-		return v;
+		return value;
 	}
+
+    // Minimizer node.
 	else
 	{
-		int v = MAX_SCORE + 1;
+        int value = numeric_limits<int>::max();
 
 		BoardMove moves[MOVE_COUNT];
 		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
@@ -103,63 +140,86 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 		for (int i = 0; i < move_count; i++)
         {
             state_->apply_move(moves[i], player);
-            v = min(v, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
+            value = min(value, alpha_beta(depth - 1, alpha, beta, OPPONENT(player)));
 
             state_->undo_move(moves[i], player);
 
-			beta = min(beta, v);
+            beta = min(beta, value);
 
-			if (beta <= alpha)
+			if (value < alpha)
 			{
 				prune_count++;
 				break;
 			}
 		}
 
-		return v;
+		return value;
 	}
 }
 
 int Intelligence::evaluate(BoardPlayer player) {
     BoardPiece* allPieces = state_->pieces();
-
     int score = 0;
-
     int pieceCount = state_->piece_count();
 
-    if (pieceCount < PIECE_COUNT) {
-        for (int i = 0; i < pieceCount; i++) {
-			if (allPieces[i].player == player)
-				score += 1;
-			else if (allPieces[i].player == OPPONENT(player))
-				score -= 1;
-		}
+    for (int i = 0; i < pieceCount; i++) {
+        // Rate distance to own and opponents pieces.
+        for (int j = 0; j < pieceCount; j++) {
+            // Calculate the distance between the two pieces.
+            int distance = abs(allPieces[i].tile->position.x - allPieces[j].tile->position.x) +
+                abs(allPieces[i].tile->position.y - allPieces[j].tile->position.y);
 
-		return score;
-	}
+            // Other piece is own piece.
+            if (allPieces[i].player == allPieces[j].player) {
+                if (allPieces[i].player == allPieces[j].player &&
+                    distance < SCORE_DISTANCE_SELF) {
+                    // If the other piece is face up, double the score.
+                    score += SCORE_DISTANCE_SELF_BASE +
+                        SCORE_DISTANCE_SELF_MULTIPLIER *
+                        (allPieces[i].is_face_up ? SCORE_DISTANCE_SELF_FACE_MULTIPLIER : 1) * 
+                        (allPieces[j].is_face_up ? SCORE_DISTANCE_SELF_FACE_OTHER_MULTIPLIER : 1) *
+                        (allPieces[i].player == player
+                        ? SCORE_DISTANCE_SELF - distance
+                        : -SCORE_DISTANCE_SELF + distance);
+                }
+            }
+            // Other piece is opponents piece.
+            else {
+                if (allPieces[i].player == allPieces[j].player &&
+                    distance < SCORE_DISTANCE_OPPONENT) {
+                    // If the opponents piece is face up, double the score.
+                    score += SCORE_DISTANCE_OPPONENT_BASE +
+                        SCORE_DISTANCE_OPPONENT_MULTIPLIER *
+                        (allPieces[i].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_MULTIPLIER : 1) *
+                        (allPieces[j].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_OTHER_MULTIPLIER : 1) *
+                        (allPieces[i].player == player
+                        ? SCORE_DISTANCE_OPPONENT - distance
+                        : -SCORE_DISTANCE_OPPONENT + distance);
+                }
+            }
+        }
 
-	for (int i = 0; i < PIECE_COUNT; i++) {
-		//for each piece
-		//is piece flipped
+        // Score face-up pieces with additional points.
 		if (!allPieces[i].is_face_up)
 			continue;
 
 		if (allPieces[i].player == player)
-			score += best_score(&allPieces[i]);
+            score += piece_score(&allPieces[i]) * SCORE_LINE_MULTIPLIER;
 		else
-			score -= best_score(&allPieces[i]);
+            score -= piece_score(&allPieces[i]) * SCORE_LINE_MULTIPLIER;
 	}
 
     return score;
 }
 
-int Intelligence::best_score(BoardPiece * piece){
+int Intelligence::piece_score(BoardPiece * piece){
 	int score = 0;
 
     if (!piece->is_face_up) {
         return 0;
     }
 
+    // Loop trough every direction combination
     for (int d = 0; d < DIRECTION_COUNT / 2; d++) {
         // Calculate the lenght of the line.
         int lenA = state_->row_length(piece, d, piece->player);
@@ -167,7 +227,7 @@ int Intelligence::best_score(BoardPiece * piece){
 
         // If row is over 4 long, this piece is worth max score.
         if ((score += lenA + 1 + lenB) >= 4) {
-            return MAX_SCORE;
+            return SCORE_WIN;
         }
 
         // Check if the edge of the line is blocked by an enemy piece or not.
@@ -175,14 +235,12 @@ int Intelligence::best_score(BoardPiece * piece){
         bool blockedB = state_->piece_in_direction(piece, DIRECTION_FLIP(d), lenA + 1, NULL);
 
         // If it's blocked we decrease the score.
+        int hScore = score / 2;
         if (blockedA){
-            score/=2;
+            score -= hScore;
         }
         if (blockedB){
-            score/=2;
-        }
-        if (blockedA && blockedB){
-            score = 0;
+            score -= hScore;
         }
     }
 
