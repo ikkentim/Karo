@@ -40,6 +40,7 @@ private:
     void update_neighbors(BoardPosition newPos, BoardTile * tile);
     bool is_valid_tile_placement(int x, int y, int tx, int ty);
     bool is_row_for_player(BoardPiece * piece, BoardPlayer player);
+	bool is_valid_boardstate();
 
     void calc_is_finished();
     void assert_state_ok();
