@@ -6,12 +6,12 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (3)
+#define MAX_DEPTH                                       (5)
 
 // Evaluation
 // ----------
 #define SCORE_WIN                                       (10000000) // Score given to a winning player.
-
+#define ZOBRIST_TYPES									(5) //amount of different tile/piece types
 // Score based on distance between own pieces
 #define SCORE_DISTANCE_SELF                             (4) // Max distance between own pieces to give addtional.
 #define SCORE_DISTANCE_SELF_BASE                        (1) // Score given to pieces less than SCORE_DISTANCE_SELF tiles away.
@@ -33,6 +33,12 @@ using namespace std;
 
 Intelligence::Intelligence() {
 	state_ = new BoardState();
+	//currently quite dirty, it can result in doubles, will add checks later
+	for (int x = 0; x < (TILE_COUNT * TILE_COUNT); x++) {
+		for (int y = 0; y < ZOBRIST_TYPES; y++) {
+			zobrist_randoms[x][y] = rand() % 1000000;
+		}
+	}
 }
 
 Intelligence::~Intelligence() {
@@ -99,8 +105,19 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 //        }
 //#endif
 
-        // WAS: return evaluate(player);
-        return evaluate(PLAYER_PLAYER1);
+
+		//make a hash for the board
+		int boardhash = zobrist_hash(PLAYER_PLAYER1);
+
+		//if it's in in the table, get it from the table
+		if (trans_table.find(boardhash) != trans_table.end()) {
+			return trans_table.at(boardhash);
+		}
+
+		//else evaluate, put it in the table, and return the evaluated value
+		int eval = evaluate(PLAYER_PLAYER1);
+		trans_table.emplace(boardhash, eval);
+		return eval;
 	}
 	
     // Maximizer node.
@@ -245,4 +262,45 @@ int Intelligence::piece_score(BoardPiece * piece){
     }
 
     return score;
+}
+
+int Intelligence::zobrist_hash(BoardPlayer player) {
+
+	int minxpos = std::numeric_limits<int>::max();
+	int minypos = std::numeric_limits<int>::max();
+	BoardTile* tiles = state_->tiles();
+	BoardPiece* pieces = state_->pieces();
+
+	//get the lowest x and y from all tiles
+	for (int i = 0; i < TILE_COUNT; i++) {
+		BoardPosition p = tiles[i].position;
+		if (p.x < minxpos)
+			minxpos = p.x;
+		if (p.y < minypos)
+			minypos = p.y;
+	}
+
+	assert(minxpos < std::numeric_limits<int>::max());
+	assert(minypos < std::numeric_limits<int>::max());
+
+	int hash = 0;
+
+	for (int i = 0; i < TILE_COUNT; i++) {
+		BoardTile tile = tiles[i];
+
+		//shift the board based on the minimum x and y
+		int x = tiles[i].position.x - minxpos;
+		int y = tiles[i].position.y - minypos;
+
+		//get the random value from the random numbers
+		int randvalposition = x * TILE_COUNT + y;
+		int randvaltype = tile.piece == NULL ? 4 : (tile.piece->is_face_up ? tile.piece->player - 1 : 2 + tile.piece->player - 1);
+
+		assert(randvalposition < TILE_COUNT * TILE_COUNT && randvalposition >= 0);
+		assert(randvaltype < 5 && randvaltype >= 0);
+
+		// hash the tiles/pieces using XOR
+		hash ^= zobrist_randoms[randvalposition][randvaltype];
+	}
+	return hash;
 }
