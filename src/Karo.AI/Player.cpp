@@ -40,5 +40,9 @@ namespace Karo {
 
             done->Invoke(gcMove);
         }
+
+        int Player::Evaluate() {
+            return intelligence_->evaluate(PLAYER_PLAYER1);
+        }
     }
 }
