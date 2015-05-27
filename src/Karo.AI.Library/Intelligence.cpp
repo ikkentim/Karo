@@ -252,12 +252,11 @@ int Intelligence::piece_score(BoardPiece * piece){
         bool blockedB = state_->piece_in_direction(piece, DIRECTION_FLIP(d), lenA + 1, NULL);
 
         // If it's blocked we decrease the score.
-        int hScore = score / 2;
         if (blockedA){
-            score -= hScore;
+            score -= lenA;
         }
         if (blockedB){
-            score -= hScore;
+            score -= lenB;
         }
     }
 
