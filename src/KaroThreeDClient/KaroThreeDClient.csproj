@@ -102,7 +102,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\Cocktail Table.FBX" />
     <None Include="Content\nyan.fbx" />
     <None Include="Content\red.fbx" />
     <None Include="Content\teat.fbx" />

@@ -13,7 +13,7 @@ namespace KaroThreeDClient.Components
     {
         private readonly Piece _pawn;
 
-        private readonly Game _game;
+        private new readonly Game Game;
 
         private Vector3 _lastPosition;
         private Vector3 _currentPosition;
@@ -23,7 +23,7 @@ namespace KaroThreeDClient.Components
         public Pawn(Game game, Piece pawn)
             : base(game)
         {
-            _game = game;
+            Game = game;
             _pawn = pawn;
 
             _currentPosition = new Vector3(_pawn.X, _pawn.Y, 0);
@@ -35,7 +35,7 @@ namespace KaroThreeDClient.Components
             // are we not there yet?
             if (Math.Abs(_currentPosition.X - _pawn.X) > 0.01f || Math.Abs(_currentPosition.Y - _pawn.Y) > 0.01f)
             {
-                _game.Animating = true;
+                Game.Animating = true;
                 _animating = true;
 
                 // use arrive steeringbehaviour for moving in x and y direction, we'll handle Z later
@@ -48,11 +48,11 @@ namespace KaroThreeDClient.Components
                 _currentPosition.Z = (float)Math.Sin(Math.Min(distTo, distFrom));
             }
             // only complete the animation if we were actually animating
-            else
+            else if (_animating)
             {
                 // we arrived, or still stand on our place
                 _lastPosition = _currentPosition;
-                _game.Animating = false;
+                Game.Animating = false;
                 _animating = false;
             }
 
@@ -71,7 +71,7 @@ namespace KaroThreeDClient.Components
 
                 float speed = distance / ((int)1 * decelerationTweaker);
 
-                speed = Math.Min(speed, 1f);
+                speed = Math.Min(speed, 5f);
 
                 Vector3 desiredVelocity = toTarget * speed / distance;
 
@@ -84,7 +84,7 @@ namespace KaroThreeDClient.Components
 
         public override void Draw(GameTime gameTime)
         {
-            Model m = (_pawn.Player == KaroPlayer.Player1) ? _game.WhitePawnModel : _game.RedPawnModel;
+            Model m = (_pawn.Player == KaroPlayer.Player1) ? Game.WhitePawnModel : Game.RedPawnModel;
 
             foreach (ModelMesh modelMesh in m.Meshes)
             {
@@ -95,11 +95,11 @@ namespace KaroThreeDClient.Components
                     if (_pawn.IsFaceUp)
                         world *= Matrix.CreateRotationX(MathHelper.ToRadians(180));
 
-                    world *= Matrix.CreateTranslation(_currentPosition.X * _game.TileSize, 0.4f + _currentPosition.Z, _currentPosition.Y * _game.TileSize);
+                    world *= Matrix.CreateTranslation(_currentPosition.X * Game.TileSize, 0.4f + _currentPosition.Z, _currentPosition.Y * Game.TileSize);
 
                     effect.World = world;
-                    effect.View = _game.CameraService.View;
-                    effect.Projection = _game.CameraService.Projection;
+                    effect.View = Game.CameraService.View;
+                    effect.Projection = Game.CameraService.Projection;
                     effect.EnableDefaultLighting();
                 }
 
