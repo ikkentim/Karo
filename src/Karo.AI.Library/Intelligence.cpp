@@ -6,11 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-<<<<<<< HEAD
 #define MAX_DEPTH                                       (3)
-=======
-#define MAX_DEPTH                                       (6)
->>>>>>> 118b1b4fa240a9cf252b642cc24e38f1288fb214
 
 // Evaluation
 // ----------
@@ -245,8 +241,9 @@ int Intelligence::piece_score(BoardPiece * piece){
         int lenA = state_->row_length(piece, d, piece->player);
         int lenB = state_->row_length(piece, DIRECTION_FLIP(d), piece->player);
 
+        score += lenA + 1 + lenB;
         // If row is over 4 long, this piece is worth max score.
-        if ((score += lenA + 1 + lenB) >= 4) {
+        if (lenA + 1 + lenB >= 4) {
             return SCORE_WIN;
         }
 
