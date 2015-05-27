@@ -66,8 +66,11 @@ namespace Karo {
             Tile^ GetTile(int x, int y);
             Piece^ GetPiece(int x, int y);
             KaroPlayer GetWinner();
-        private:
+		private:
+			array<Tile^>^ tiles;
+			array<Piece^>^ pieces;
             BoardState *state_ = 0;
+			void UpdateWrapperState();
         };
     }
 }
