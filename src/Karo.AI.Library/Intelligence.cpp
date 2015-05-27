@@ -6,12 +6,11 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (5)
+#define MAX_DEPTH                                       (3)
 
 // Evaluation
 // ----------
 #define SCORE_WIN                                       (10000000) // Score given to a winning player.
-#define ZOBRIST_TYPES									(5) //amount of different tile/piece types
 // Score based on distance between own pieces
 #define SCORE_DISTANCE_SELF                             (4) // Max distance between own pieces to give addtional.
 #define SCORE_DISTANCE_SELF_BASE                        (1) // Score given to pieces less than SCORE_DISTANCE_SELF tiles away.
@@ -36,7 +35,7 @@ Intelligence::Intelligence() {
 	//currently quite dirty, it can result in doubles, will add checks later
 	for (int x = 0; x < (TILE_COUNT * TILE_COUNT); x++) {
 		for (int y = 0; y < ZOBRIST_TYPES; y++) {
-			zobrist_randoms[x][y] = rand() % 1000000;
+			zobrist_randoms[x][y] = rand() % 10000000;
 		}
 	}
 }
@@ -105,7 +104,6 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 //        }
 //#endif
 
-		return evaluate(PLAYER_PLAYER1);
 
 		//make a hash for the board
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
@@ -176,7 +174,6 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 }
 
 int Intelligence::evaluate(BoardPlayer player) {
-	evaluation_count++;
     BoardPiece* allPieces = state_->pieces();
     int score = 0;
     int pieceCount = state_->piece_count();
@@ -244,8 +241,9 @@ int Intelligence::piece_score(BoardPiece * piece){
         int lenA = state_->row_length(piece, d, piece->player);
         int lenB = state_->row_length(piece, DIRECTION_FLIP(d), piece->player);
 
+        score += lenA + 1 + lenB;
         // If row is over 4 long, this piece is worth max score.
-        if ((score += lenA + 1 + lenB) >= 4) {
+        if (lenA + 1 + lenB >= 4) {
             return SCORE_WIN;
         }
 
@@ -254,12 +252,11 @@ int Intelligence::piece_score(BoardPiece * piece){
         bool blockedB = state_->piece_in_direction(piece, DIRECTION_FLIP(d), lenA + 1, NULL);
 
         // If it's blocked we decrease the score.
-        int hScore = score / 2;
         if (blockedA){
-            score -= hScore;
+            score -= lenA;
         }
         if (blockedB){
-            score -= hScore;
+            score -= lenB;
         }
     }
 
