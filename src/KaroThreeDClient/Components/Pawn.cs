@@ -32,7 +32,7 @@ namespace KaroThreeDClient.Components
         
         public override void Update(GameTime gameTime)
         {
-            // are we there yet?
+            // are we not there yet?
             if (Math.Abs(_currentPosition.X - _pawn.X) > 0.01f || Math.Abs(_currentPosition.Y - _pawn.Y) > 0.01f)
             {
                 _game.Animating = true;
