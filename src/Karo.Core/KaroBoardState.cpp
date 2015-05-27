@@ -8,6 +8,11 @@ namespace Karo {
         KaroBoardState::KaroBoardState() {
             Console::WriteLine("KaroBoardState::KaroBoardState");
             state_ = new BoardState();
+
+			pieces = gcnew array<Piece^>(PIECE_COUNT);
+			tiles = gcnew array<Tile^>(TILE_COUNT);
+
+			UpdateWrapperState();
         }
         KaroBoardState::KaroBoardState(array<Tile^>^ tiles, 
             array<Piece^>^ pieces) {
@@ -35,7 +40,41 @@ namespace Karo {
                 }
 
             state_ = new BoardState(pTiles, pPieces);
+
+			pieces = gcnew array<Piece^>(PIECE_COUNT);
+			tiles = gcnew array<Tile^>(TILE_COUNT);
+
+			UpdateWrapperState();
         }
+
+		void KaroBoardState::UpdateWrapperState() {
+			BoardPiece * p = state_->pieces();
+			BoardTile * t = state_->tiles();
+
+			for (int i = 0; i < TILE_COUNT;i++) {
+				if (tiles[i] == nullptr) {
+					tiles[i] = gcnew Tile(t[i].position.x, t[i].position.y);
+				}
+				else {
+					tiles[i]->X = t[i].position.x;
+					tiles[i]->Y = t[i].position.y;
+				}
+			}
+
+			for (int i = 0; i < PIECE_COUNT; i++) {
+				if (p[i].player == PLAYER_NONE) continue;
+
+				if (pieces[i] == nullptr) {
+					pieces[i] = gcnew Piece(p[i].tile->position.x, p[i].tile->position.y, (KaroPlayer)p[i].player, p[i].is_face_up);
+				}
+				else {
+					pieces[i]->X = p[i].tile->position.x;
+					pieces[i]->Y = p[i].tile->position.y;
+					pieces[i]->Player = (KaroPlayer)p[i].player;
+					pieces[i]->IsFaceUp = p[i].is_face_up;
+				}
+			}
+		}
 
         KaroBoardState::~KaroBoardState() {
             delete state_;
@@ -43,24 +82,11 @@ namespace Karo {
         }
 
         IEnumerable<Tile^>^ KaroBoardState::Tiles::get() {
-            auto result = gcnew List<Tile^>();
-            auto tiles = state_->tiles();
-
-            for (int i = 0; i < TILE_COUNT; i++)
-                result->Add(gcnew Tile(tiles[i].position.x, tiles[i].position.y));
-
-            return result;
+			return tiles;
         }
 
         IEnumerable<Piece^>^ KaroBoardState::Pieces::get() {
-            auto result = gcnew List<Piece^>();
-            auto pieces = state_->pieces();
-
-            for (int i = 0; i < state_->piece_count(); i++)
-                result->Add(gcnew Piece(pieces[i].tile->position.x, pieces[i].tile->position.y, 
-                (KaroPlayer)pieces[i].player, pieces[i].is_face_up));
-            
-            return result;
+			return pieces;
         }
 
         IEnumerable<Tile^>^ KaroBoardState::CornerTiles::get() {
@@ -69,7 +95,7 @@ namespace Karo {
             int count = state_->corner_tiles(tiles, TILE_COUNT);
 
             for (int i = 0; i < count; i++)
-                result->Add(gcnew Tile(tiles[i]->position.x, tiles[i]->position.y));
+                result->Add(GetTile(tiles[i]->position.x, tiles[i]->position.y));
 
             delete[] tiles;
             return result;
@@ -111,29 +137,30 @@ namespace Karo {
                 BoardPosition(move->NewPieceX, move->NewPieceY), 
                 BoardPosition(move->OldPieceX, move->OldPieceY), 
                 BoardPosition(move->OldTileX, move->OldTileY)), (BoardPlayer)player);
+
+			UpdateWrapperState();
         }
 
         Tile^ KaroBoardState::GetTile(int x, int y) {
-            BoardTile * result;
-            int tmp = state_->piece_count();
-            if (state_->tile(x, y, &result))
-            {
-                auto t = gcnew Tile(result->position.x, result->position.y);
-                return t;
-            }
-            else
-            {
-                return nullptr;
-            }
+			for (int i = 0; i < TILE_COUNT; i++) {
+				if (tiles[i]->X == x && tiles[i]->Y == y) {
+					return tiles[i];
+				}
+			}
+
+			return nullptr;
         }
+
         Piece^ KaroBoardState::GetPiece(int x, int y) {
-            BoardPiece * result;
-            return state_->piece(x, y, &result) 
-                ? gcnew Piece(result->tile->position.x, result->tile->position.y,
-                (KaroPlayer)result->player, result->is_face_up) 
-                : nullptr;
-         
+			for (int i = 0; i < PIECE_COUNT; i++) {
+				if (pieces[i] != nullptr && pieces[i]->X == x && pieces[i]->Y == y) {
+					return pieces[i];
+				}
+			}
+
+			return nullptr;
         }
+
         KaroPlayer KaroBoardState::GetWinner() {
             int w = static_cast<int> (state_->winner());
             assert(w <= 2 && w >= 0);
