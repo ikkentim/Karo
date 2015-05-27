@@ -6,12 +6,11 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (5)
+#define MAX_DEPTH                                       (3)
 
 // Evaluation
 // ----------
 #define SCORE_WIN                                       (10000000) // Score given to a winning player.
-#define ZOBRIST_TYPES									(5) //amount of different tile/piece types
 // Score based on distance between own pieces
 #define SCORE_DISTANCE_SELF                             (4) // Max distance between own pieces to give addtional.
 #define SCORE_DISTANCE_SELF_BASE                        (1) // Score given to pieces less than SCORE_DISTANCE_SELF tiles away.
@@ -36,7 +35,7 @@ Intelligence::Intelligence() {
 	//currently quite dirty, it can result in doubles, will add checks later
 	for (int x = 0; x < (TILE_COUNT * TILE_COUNT); x++) {
 		for (int y = 0; y < ZOBRIST_TYPES; y++) {
-			zobrist_randoms[x][y] = rand() % 1000000;
+			zobrist_randoms[x][y] = rand() % 10000000;
 		}
 	}
 }
