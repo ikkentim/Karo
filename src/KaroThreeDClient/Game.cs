@@ -184,7 +184,7 @@ namespace KaroThreeDClient
 
         private int? EvaluateCurrentPlayer()
         {
-            if (_currentPlayer == null) return null;
+            if (_currentPlayer == null || _currentPlayer is HumanPlayer) return null;
 
             var evaluate = _currentPlayer.GetType().GetMethod("Evaluate");
             if (evaluate.GetParameters().Length != 0 || evaluate.ReturnType != typeof (int))
