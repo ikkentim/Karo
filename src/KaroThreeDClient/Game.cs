@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows.Forms;
 using System.Xml.Schema;
 using Karo.Common;
 using Karo.Core;
@@ -12,6 +13,8 @@ using KaroThreeDClient.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
 using Tile = Karo.Core.Tile;
 
 namespace KaroThreeDClient
@@ -74,6 +77,13 @@ namespace KaroThreeDClient
             _player2 = player2;
 
             _graphics = new GraphicsDeviceManager(this);
+
+            _graphics.PreferredBackBufferWidth = (int)(1680 * 1.3f);
+            _graphics.PreferredBackBufferHeight = (int)(1050 * 1.3f);
+
+            //_graphics.IsFullScreen = true;
+
+            _graphics.ApplyChanges();
 
             //_graphics.PreferMultiSampling = true;
         }
