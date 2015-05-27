@@ -36,7 +36,7 @@ namespace KaroThreeDClient
         public Model WhitePawnModel;
         public Model NyanCat;
 
-        private bool _awaitingMove = true;
+        private bool _awaitingMove = false;
         private bool _isThinking;
         private readonly Camera3D _camera = new Camera3D(-200, -200);
 
@@ -132,10 +132,6 @@ namespace KaroThreeDClient
 
             Components.Add(new NyanCat(this));
             Components.Add(new Turn(this));
-
-            _currentPlayer = _player1;
-            _moveTime.Restart();
-            _currentPlayer.DoMove(null, 0, Done);
 
             base.Initialize();
         }
@@ -316,6 +312,19 @@ namespace KaroThreeDClient
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            if (_currentPlayer == null)
+            {
+
+                _currentPlayer = _player1;
+                _moveTime.Restart();
+
+                new Thread(() =>
+                {
+                    _isThinking = true;
+                    _moveTime.Restart();
+                    _currentPlayer.DoMove(null, 0, Done);
+                }).Start();
+            }
             if (_awaitingMove)
             {
                 if (IsCurrentPlayerHuman)
