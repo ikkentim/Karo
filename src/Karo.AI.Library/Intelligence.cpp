@@ -92,12 +92,12 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 
 	if (depth == 0 || state_->is_finished())
 	{
-#if defined _DEBUG
-        if (evaluate(player) != -evaluate(OPPONENT(player))) {
-            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
-            assert(evaluate(player) == -evaluate(OPPONENT(player)));
-        }
-#endif
+//#if defined _DEBUG
+//        if (evaluate(player) != -evaluate(OPPONENT(player))) {
+//            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
+//            assert(evaluate(player) == -evaluate(OPPONENT(player)));
+//        }
+//#endif
 
         // WAS: return evaluate(player);
         return evaluate(PLAYER_PLAYER1);

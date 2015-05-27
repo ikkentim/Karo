@@ -559,29 +559,29 @@ void BoardState::undo_move(BoardMove move, BoardPlayer player) {
 }
 
 int BoardState::corner_tiles(BoardTile ** tiles, int count) {
-	int idx = 0;
+    int idx = 0;
 
-	// TODO: Calculate every time after a tile has moved which tiles are corner-
-	// tiles. Store this to the BoardTile structure. Should speed things by a lot.
+    // TODO: Calculate every time after a tile has moved which tiles are corner-
+    // tiles. Store this to the BoardTile structure. Should speed things by a lot.
 
-	for (int i = 0; i < TILE_COUNT; i++) {
-		// If the tile has at least 2 disconnected edges it is a corner. 
-		// Must also be unoccupied.
-		if (((!tiles_[i].neighbors[DIRECTION_NORTH] &&
-			!tiles_[i].neighbors[DIRECTION_WEST]) ||
-			(!tiles_[i].neighbors[DIRECTION_NORTH] &&
-			!tiles_[i].neighbors[DIRECTION_EAST]) ||
-			(!tiles_[i].neighbors[DIRECTION_SOUTH] &&
-			!tiles_[i].neighbors[DIRECTION_WEST]) ||
-			(!tiles_[i].neighbors[DIRECTION_SOUTH] &&
-			!tiles_[i].neighbors[DIRECTION_EAST])) &&
-			!tiles_[i].piece) {
-			if (idx < count)
-				tiles[idx] = &tiles_[i];
-			idx++;
-		}
-	}
-	return idx;
+    for (int i = 0; i < TILE_COUNT; i++) {
+        // If the tile has at least 2 disconnected edges it is a corner. 
+        // Must also be unoccupied.
+        if (((!tiles_[i].neighbors[DIRECTION_NORTH] && 
+            !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_NORTH] && 
+            !tiles_[i].neighbors[DIRECTION_EAST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && 
+            !tiles_[i].neighbors[DIRECTION_WEST]) ||
+            (!tiles_[i].neighbors[DIRECTION_SOUTH] && 
+            !tiles_[i].neighbors[DIRECTION_EAST])) &&
+            !tiles_[i].piece) {
+            if (tiles && idx < count)
+                tiles[idx] = &tiles_[i];
+            idx++;
+        }
+    }
+    return idx;
 }
 
 BoardPlayer BoardState::winner() {
