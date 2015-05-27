@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Xml.Schema;
 using Karo.Common;
 using Karo.Core;
 using Karo.ThreeDClient;
 using Karo.ThreeDDClient;
+using KaroThreeDClient.Components;
 using KaroThreeDClient.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Tile = Karo.Core.Tile;
 
 namespace KaroThreeDClient
 {
@@ -24,14 +28,11 @@ namespace KaroThreeDClient
         private IPlayer _player2;
         private IPlayer _currentPlayer;
         private KaroBoardState _karo = new KaroBoardState();
-        private BasicEffect _effect;
-        private Matrix _world;
-        private Matrix _view;
-        private Matrix _projection;
 
-        private Model _tile;
-        private Model _redPawn;
-        private Model _whitePawn;
+        public Model TileModel;
+        public Model RedPawnModel;
+        public Model WhitePawnModel;
+        public Model NyanCat;
 
         private bool _awaitingMove = true;
         private bool _isThinking;
@@ -44,10 +45,10 @@ namespace KaroThreeDClient
         private Position _selectedOldPiece;
         private SpriteBatch _spriteBatch;
         private Vector2 _tilePosition;
-        private float TileSize = 2.1f;
+        public float TileSize = 1.05f;
         private bool _isLeftMouseButtonDown;
 
-        private CameraService _cameraService;
+        public CameraService CameraService;
         private MouseState _lastMouseState;
         private int _lastScroll;
         private float _unprocessedScrollDelta;
@@ -56,8 +57,12 @@ namespace KaroThreeDClient
         private const float ScrollMultiplier = 0.01f;
         private const float ScrollMinDelta = 0.05f;
         private const float ScrollModifier = 2.5f;
-        private const float MouseRotationModifier = 0.005f;
         private float _scrollVelocity;
+
+        public bool Animating;
+
+        public bool IsSelectingCornerTile;
+        public bool IsSelectingGhostTile;
 
         public Game(IPlayer player1, IPlayer player2)
         {
@@ -66,10 +71,10 @@ namespace KaroThreeDClient
 
             _player1 = player1;
             _player2 = player2;
-            
+
             _graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+
+            //_graphics.PreferMultiSampling = true;
         }
 
         /// <summary>
@@ -110,27 +115,21 @@ namespace KaroThreeDClient
         /// </summary>
         protected override void Initialize()
         {
-            _effect = new BasicEffect(GraphicsDevice);
-
-            _world = Matrix.Identity;
-            _view = Matrix.CreateLookAt(
-                new Vector3(5, 5, 5),
-                new Vector3(0, .5f, 0),
-                Vector3.Up
-            );
-
-            _projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.ToRadians(70),
-                1.3f,
-                .1f,
-                10f
-            );
+            foreach (Tile tile in _karo.Tiles)
+                Components.Add(new Plate(this, tile));
 
             _currentPlayer = _player1;
             _currentPlayer.DoMove(null, 0, Done);
 
-            Services.AddService(typeof(CameraService), _cameraService = new CameraService(this));
-            Components.Add(_cameraService);
+            Services.AddService(typeof(CameraService), CameraService = new CameraService(this));
+            Components.Add(CameraService);
+
+            Components.Add(new NyanCat(this));
+
+            Components.Add(new Turn(this));
+
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
 
             base.Initialize();
         }
@@ -179,10 +178,20 @@ namespace KaroThreeDClient
         {
             _isThinking = false;
 
-            //_history.Add(move);
-            _lastMove = move;
-            _karo.ApplyMove(move, CurrentTurn);
+            if (IsInFirstPhase)
+            {
+                _karo.ApplyMove(move, CurrentTurn);
+                Components.Add(new Pawn(this, _karo.Pieces.Last(p =>p != null)));
+            }
+            else
+            {
+                _karo.ApplyMove(move, CurrentTurn);
+            }
 
+            UpdateTileData();
+
+            _lastMove = move;
+            
             var winner = _karo.GetWinner();
             if (winner == KaroPlayer.None)
             {
@@ -200,6 +209,41 @@ namespace KaroThreeDClient
             }
         }
 
+        private void UpdateTileData()
+        {
+            GhostPlate[] plates = Components.OfType<GhostPlate>().ToArray();
+            
+            foreach (GhostPlate plate in plates)
+                Components.Remove(plate);
+
+            List<Tile> ghostTiles = new List<Tile>();
+
+            foreach (Tile tile in _karo.Tiles)
+            {
+                Components.OfType<Plate>().First(p => p.Tile == tile).IsCornerTile = _karo.IsCornerTile(tile.X, tile.Y);
+
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        if(Math.Abs(x) == Math.Abs(y))
+                            continue;
+
+                        Tile ghostTile = new Tile(tile.X + x, tile.Y + y);
+
+                        if (!ghostTiles.Any(t => t.X == ghostTile.X && t.Y == ghostTile.Y) && !_karo.Tiles.Any(t => t.X == ghostTile.X && t.Y == ghostTile.Y))
+                            ghostTiles.Add(ghostTile);
+                    }
+                    
+                }
+            }
+
+            foreach (Tile ghostTile in ghostTiles)
+            {
+                Components.Add(new GhostPlate(this, ghostTile));
+            }
+        }
+
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -210,9 +254,10 @@ namespace KaroThreeDClient
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            _tile = Content.Load<Model>("tile");
-            _redPawn = Content.Load<Model>("red");
-            _whitePawn = Content.Load<Model>("white");
+            TileModel = Content.Load<Model>("tile");
+            RedPawnModel = Content.Load<Model>("red");
+            WhitePawnModel = Content.Load<Model>("white");
+            NyanCat = Content.Load<Model>("nyan");
         }
 
         /// <summary>
@@ -221,7 +266,10 @@ namespace KaroThreeDClient
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            TileModel = null;
+            RedPawnModel = null;
+            WhitePawnModel = null;
+            NyanCat = null;
         }
 
         /// <summary>
@@ -231,10 +279,9 @@ namespace KaroThreeDClient
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            // 
+            
             if (_awaitingMove)
             {
                 if (IsCurrentPlayerHuman)
@@ -242,7 +289,7 @@ namespace KaroThreeDClient
                 else
                 {
                     _lastMoveTime += gameTime.ElapsedGameTime;
-                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500))
+                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500) && !Animating)
                     {
                         _lastMoveTime = TimeSpan.Zero;
                         _awaitingMove = false;
@@ -254,136 +301,108 @@ namespace KaroThreeDClient
                     }
                 }
             }
-
-            //get the current mouse state			
+	
             var mouseState = Mouse.GetState();
-            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
-
-            //update the camera's position based on how far the right mouse button has been dragged since last update
-            var move = _oldMousePos - new Vector2(mouseState.X, mouseState.Y);
-            if (mouseState.RightButton == ButtonState.Pressed)
-                _camera.Move(move);
-
-            _oldMousePos = mousePosition;
-
-
-            //since the mouse click location is relative to the camera we need to get the absolute position in the playing field
-            var absolutePosition = mousePosition + _camera.Position;
-            _tilePosition = new Vector2((int)Math.Floor(absolutePosition.X / TileSize),
-                (int)Math.Floor(absolutePosition.Y / TileSize));
 
             var human = _currentPlayer as HumanPlayer;
 
+            #region Choosing Moves
+            // cancel move on right click
             if (IsActive && mouseState.RightButton == ButtonState.Pressed)
-            {
-                _selectedNewPiece = null;
-                _selectedOldPiece = null;
-            }
-            if (IsActive && mouseState.LeftButton == ButtonState.Pressed && !_isLeftMouseButtonDown && human != null)
-            {
-                _isLeftMouseButtonDown = true;
+                CancelMove();
 
-                //get the tile at the mouse location
-                var tile = _karo.GetTile((int)_tilePosition.X, (int)_tilePosition.Y);
+            if (IsActive && mouseState.LeftButton == ButtonState.Pressed && human != null && !Animating)
+            {
+                Vector3 near = _graphics.GraphicsDevice.Viewport.Unproject(new Vector3(mouseState.X, mouseState.Y, 0), CameraService.Projection, CameraService.View, Matrix.Identity);
+                Vector3 far = _graphics.GraphicsDevice.Viewport.Unproject(new Vector3(mouseState.X, mouseState.Y, 1), CameraService.Projection, CameraService.View, Matrix.Identity);
 
-                //if the clicked tile is not empty
-                if (_selectedOldPiece == null)
+                Ray ray = new Ray(near, Vector3.Normalize(far - near));
+
+                float dist = float.MaxValue;
+                Plate selected = null;
+
+                foreach (var component in Components)
                 {
+                    if (component is Plate)
+                    {
+                        Plate plate = component as Plate;
+
+                        float? newDist = ray.Intersects(plate.BoundingBox);
+
+                        Piece piece = _karo.GetPiece(plate.Tile.X, plate.Tile.Y);
+
+                        if (newDist != null && newDist < dist && (piece == null || piece.Player == CurrentTurn))
+                        {
+                            dist = newDist.Value;
+                            selected = plate;
+                        }
+                    }
+                }
+
+                foreach (Plate component in Components.OfType<Plate>())
+                {
+                    component.IsSelected = component == selected;
+                }
+
+
+                if (selected != null)
+                {
+                    // if the game is in the first phase, just place a new piece on the selected tile
                     if (IsInFirstPhase)
                     {
-                        if (tile != null)
-                            human.PrepareMove(new Move(tile.X, tile.Y, 0, 0, 0, 0));
-                    }
-                    else
-                    {
-                        if (tile != null)
-                        {
-                            var piece = _karo.GetPiece(tile.X, tile.Y);
+                        human.PrepareMove(new Move(selected.Tile.X, selected.Tile.Y, 0, 0, 0, 0));
 
-                            if (piece != null && piece.Player == CurrentTurn)
-                                _selectedOldPiece = new Position(tile.X, tile.Y);
+                        selected.IsSelected = false;
+                    }
+                    // if we're not in the first phase, we need to move pieces, check if we have not select a piece to be moved
+                    else if (_selectedOldPiece == null)
+                    {
+                        // see if the selected tile has a piece, abort otherwise
+                        if (_karo.GetPiece(selected.Tile.X, selected.Tile.Y) != null)
+                        {
+                            // set piece to be moved
+                            _selectedOldPiece = new Position(selected.Tile.X, selected.Tile.Y);
+
+                            IsSelectingGhostTile = true;
                         }
                         else
                         {
-                            _selectedOldPiece = null;
-                            _selectedNewPiece = null;
+                            // MISSION ABORT!!!
+                            CancelMove();
                         }
                     }
-                }
-                else
-                {
-                    if (_selectedNewPiece != null)
+                    else if (_selectedNewPiece != null)
                     {
-                        var corner = new Position((int)_tilePosition.X, (int)_tilePosition.Y);
-
-                        if (_karo.GetPiece(corner.X, corner.Y) == null &&
-                            _karo.IsCornerTile(corner.X, corner.Y))
+                        if (_karo.CornerTiles.Any(t => t == selected.Tile))
                         {
-                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
-                                _selectedOldPiece.Y, corner.X, corner.Y));
+                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X, _selectedOldPiece.Y, selected.Tile.X, selected.Tile.Y));
 
-                            _selectedOldPiece = null;
-                            _selectedNewPiece = null;
+                            CancelMove();
                         }
                     }
+                    // we are not in the first phase and we chose a piece to be moved, select the tile to be moved to
                     else
                     {
-                        _selectedNewPiece = new Position((int)_tilePosition.X, (int)_tilePosition.Y);
-
-                        if (_karo.GetTile(_selectedNewPiece.X, _selectedNewPiece.Y) != null)
+                        if (selected is GhostPlate)
                         {
-                            human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
-                                _selectedOldPiece.Y, 0, 0));
+                            _selectedNewPiece = new Position(selected.Tile.X, selected.Tile.Y);
 
-                            _selectedOldPiece = null;
-                            _selectedNewPiece = null;
+                            IsSelectingCornerTile = true;
+                        }
+                        else if (_karo.GetPiece(selected.Tile.X, selected.Tile.Y) == null && _selectedNewPiece == null)
+                        {
+                            human.PrepareMove(new Move(selected.Tile.X, selected.Tile.Y, _selectedOldPiece.X, _selectedOldPiece.Y, 0, 0));
+
+                            CancelMove();
                         }
                     }
                 }
             }
-            if (mouseState.LeftButton == ButtonState.Released)
-            {
-                _isLeftMouseButtonDown = false;
-            }
-            
-            #region Process camera manipulation input
+#endregion
 
-            float deltaCameraRotation = 0;
+            #region Scrolling
+
             float deltaCameraZoom = 0;
-
-            // If middle or right button is pressed, hide the mouse button and track the x-axis (rotation) movements
-            if (mouseState.MiddleButton == ButtonState.Pressed || mouseState.RightButton == ButtonState.Pressed)
-            {
-                // If this is the first update in which the button is pressed, recenter the mouse and
-                // wait for the next update, in which we actually update the mouse rotation
-                if (_lastMouseState.MiddleButton == ButtonState.Pressed ||
-                    _lastMouseState.RightButton == ButtonState.Pressed)
-                {
-                    // Add rotation delta based on mouse movement
-                    deltaCameraRotation += ((float)mouseState.X - Window.ClientBounds.Width / 2) * MouseRotationModifier;
-
-                    // Recenter mouse.
-                    Mouse.SetPosition(
-                        Window.ClientBounds.Width / 2,
-                        Window.ClientBounds.Height / 2);
-                }
-                else
-                {
-                    // Hide and center mouse.
-                    IsMouseVisible = false;
-                    Mouse.SetPosition(
-                        Window.ClientBounds.Width / 2,
-                        Window.ClientBounds.Height / 2);
-
-                    // TODO: It might be better only to recenter the mouse when you start dragging and when you stop relocate the mouse to were you started.
-                }
-            }
-            else if (_lastMouseState.MiddleButton == ButtonState.Pressed ||
-                     _lastMouseState.RightButton == ButtonState.Pressed)
-            {
-                // Button is released; show mouse again.
-                IsMouseVisible = true;
-            }
 
             // Calculate the delta scroll value.
             var scroll = mouseState.ScrollWheelValue;
@@ -401,25 +420,42 @@ namespace KaroThreeDClient
 
                 _unprocessedScrollDelta -= _scrollVelocity / ScrollMultiplier;
 
-                deltaCameraZoom += (_scrollVelocity * _cameraService.Zoom /
+                deltaCameraZoom += (_scrollVelocity * CameraService.Zoom /
                                    (CameraService.MaxZoom - CameraService.MinZoom + 1)) * ScrollModifier;
             }
 
+            #endregion
+
+            #region Movement
             Vector3 acceleration = Vector3.Zero;
+            float deltaCameraRotation = 0;
             if (Keyboard.GetState().IsKeyDown(Keys.A)) acceleration += Vector3.Backward;
             if (Keyboard.GetState().IsKeyDown(Keys.D)) acceleration += Vector3.Forward;
             if (Keyboard.GetState().IsKeyDown(Keys.W)) acceleration += Vector3.Left;
             if (Keyboard.GetState().IsKeyDown(Keys.S)) acceleration += Vector3.Right;
 
-            _cameraService.AddVelocity(acceleration * (float)gameTime.ElapsedGameTime.TotalSeconds);
-            _cameraService.Move(deltaCameraRotation, deltaCameraZoom);
+            if (Keyboard.GetState().IsKeyDown(Keys.Q)) deltaCameraRotation += 2.5f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (Keyboard.GetState().IsKeyDown(Keys.E)) deltaCameraRotation -= 2.5f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            #endregion 
 
-            #endregion
+            CameraService.AddVelocity(acceleration * (float)gameTime.ElapsedGameTime.TotalSeconds);
+            CameraService.Move(deltaCameraRotation, deltaCameraZoom);
 
             base.Update(gameTime);
         }
 
-        #region Drawing
+        private void CancelMove()
+        {
+            _selectedNewPiece = null;
+            _selectedOldPiece = null;
+            IsSelectingGhostTile = false;
+            IsSelectingCornerTile = false;
+            
+            foreach (Plate tile in Components.OfType<Plate>())
+            {
+                tile.IsSelected = false;
+            }
+        }
 
         /// <summary>
         ///     This is called when the game should draw itself.
@@ -429,49 +465,7 @@ namespace KaroThreeDClient
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            foreach (Tile tile in _karo.Tiles)
-            {
-                foreach (ModelMesh modelMesh in _tile.Meshes)
-                {
-                    foreach (BasicEffect effect in modelMesh.Effects)
-                    {
-                        effect.World = _world + Matrix.CreateTranslation(tile.X * TileSize, 0, tile.Y * TileSize);
-                        effect.View = _cameraService.View;
-                        effect.Projection = _cameraService.Projection;
-                        effect.EnableDefaultLighting();
-                    }
-
-                    modelMesh.Draw();
-                }
-            }
-
-            foreach (Piece piece in _karo.Pieces)
-            {
-                Model m = (piece.Player == KaroPlayer.Player1) ? _whitePawn : _redPawn;
-
-                foreach (ModelMesh modelMesh in m.Meshes)
-                {
-                    foreach (BasicEffect effect in modelMesh.Effects)
-                    {
-                        Matrix world = _world;
-
-                        if (piece.IsFaceUp)
-                            world *= Matrix.CreateRotationX(MathHelper.ToRadians(180));
-
-                        world *= Matrix.CreateTranslation(piece.X*TileSize/2, 0.4f, piece.Y*TileSize/2);
-
-                        effect.World = world;
-                        effect.View = _cameraService.View;
-                        effect.Projection = _cameraService.Projection;
-                        effect.EnableDefaultLighting();
-                    }
-
-                    modelMesh.Draw();
-                }
-            }
-            
             base.Draw(gameTime);
         }
-        #endregion
     }
 }

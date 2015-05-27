@@ -13,9 +13,9 @@ namespace KaroThreeDClient.Services
         public const float CameraSpeed = 5.0f;
         public const float DefaultZoom = 3;
         public const float MinZoom = 1;
-        public const float MaxZoom = 15;
+        public const float MaxZoom = 5;
         public const float CameraTargetOffset = 0.2f;
-        public const float CameraHeightOffset = 0.75f;
+        public const float CameraHeightOffset = 2f;
         private float _aspectRatio;
         private Vector3 _velocity;
         private Vector3 _undirectedVelocity;
@@ -104,7 +104,6 @@ namespace KaroThreeDClient.Services
 
         public void Move(float deltaRotation, float deltaZoom)
         {
-            _zoom += deltaZoom;
             Rotation += deltaRotation;
 
             _zoom = MathHelper.Clamp(_zoom + deltaZoom, MinZoom, MaxZoom);
@@ -115,7 +114,7 @@ namespace KaroThreeDClient.Services
             var realCameraTarget = Position + new Vector3(0, CameraTargetOffset, 0);
             var cameraPosition = realCameraTarget +
                                  new Vector3((float)Math.Cos(Rotation) * 1.8f,
-                                     _zoom / 3 - MinZoom + CameraTargetOffset + CameraHeightOffset,
+                                     _zoom / 3 + CameraTargetOffset + CameraHeightOffset,
                                      (float)Math.Sin(Rotation) * 1.8f) * _zoom;
 
             // Also update listener data

@@ -39,6 +39,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Camera3D.cs" />
+    <Compile Include="Components\GhostPlate.cs" />
+    <Compile Include="Components\NyanCat.cs" />
+    <Compile Include="Components\Pawn.cs" />
+    <Compile Include="Components\Plate.cs" />
+    <Compile Include="Components\Turn.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="HumanPlayer.cs" />
     <Compile Include="Menu.cs">
@@ -97,9 +102,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\Cocktail Table.FBX" />
+    <None Include="Content\nyan.fbx" />
     <None Include="Content\red.fbx" />
     <None Include="Content\teat.fbx" />
-    <None Include="Content\ti.fbx" />
+    <None Include="Content\tile.fbx" />
     <None Include="Content\white.fbx" />
   </ItemGroup>
   <!-- Specify the search path explicitly so the ResolveAssemblyReferences task picks the right ones -->
