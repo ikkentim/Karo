@@ -4,6 +4,18 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+#define GENERATE_TILES(a) BoardTile a[20]; \
+    for (int i = 0; i < 20; i++) { \
+        a[i] = BoardTile(i % 5, i / 5); }
+
+#define PICK_PIECE(pa, ta, _i, _x, _y, _p) for(int i=0;i<20;i++){ \
+    if(ta[i].position.x == _x && ta[i].position.y == _y){ \
+    pa[_i] =BoardPiece(&ta[i], _p, false); } }
+
+#define PICK_PIECE_UP(pa, ta, _i, _x, _y, _p) for(int i=0;i<20;i++){ \
+    if(ta[i].position.x == _x && ta[i].position.y == _y){ \
+    pa[_i] =BoardPiece(&ta[i], _p, true); } }
+
 namespace KaroCoreCppTest
 {
 	TEST_CLASS(CoreTest)
@@ -12,411 +24,315 @@ namespace KaroCoreCppTest
 
 		TEST_METHOD(GetAvailableMovesTestFreshBoard)
 		{
+			BoardState board = BoardState();
+			BoardMove moves[MOVE_COUNT];
 
-			BoardState* board = new BoardState();
-			BoardMove* moves = new BoardMove[MOVE_COUNT];
-
-			int moveCount = board->available_moves(PLAYER_PLAYER2, moves, MOVE_COUNT);
-
-			int count = 0;
-
-			for (int i = 0; i < moveCount; i++) {
-				if (&moves[i] != nullptr)
-					count++;
-			}
-			Assert::AreEqual(20, count);
-
+            Assert::AreEqual(20, board.available_moves(PLAYER_PLAYER2, moves, MOVE_COUNT));
 		}
 
 		TEST_METHOD(GetCornerTilesTest0CornersAvailable) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[1] = *new BoardPiece(tiles[3 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[2] = *new BoardPiece(tiles[0 * 5 + 4], PLAYER_PLAYER1, false);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 4], PLAYER_PLAYER1, false);
+            BoardPiece pieces[12];
+            PICK_PIECE(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 1, 0, 3, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 2, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 3, 4, 3, PLAYER_PLAYER1);
 
+			BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			BoardTile* corners = new BoardTile[8];
-			int i = 8;
-			i = karo->corner_tiles(corners, i);
-
-			Assert::AreEqual(0, i);
+            Assert::AreEqual(0, karo.corner_tiles(NULL, 0));
 		}
 
 		TEST_METHOD(GetCornerTilesTest2CornersAvailable) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[1] = *new BoardPiece(tiles[2 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[2] = *new BoardPiece(tiles[0 * 5 + 3], PLAYER_PLAYER1, false);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 4], PLAYER_PLAYER1, false);
+            BoardPiece pieces[12];
+            PICK_PIECE(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 1, 0, 2, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 2, 3, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 3, 4, 3, PLAYER_PLAYER1);
 
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			BoardTile* corners = new BoardTile[8];
-			int i = 8;
-			i = karo->corner_tiles(corners, i);
-
-			Assert::AreEqual(2, i);
+            Assert::AreEqual(2, karo.corner_tiles(NULL, 0));
 		}
+
 		TEST_METHOD(GetCornerTilesTest1CornersAvailable) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[1] = *new BoardPiece(tiles[2 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[2] = *new BoardPiece(tiles[0 * 5 + 4], PLAYER_PLAYER1, false);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 4], PLAYER_PLAYER1, false);
+            BoardPiece pieces[12];
+            PICK_PIECE(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 1, 0, 2, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 2, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 3, 4, 3, PLAYER_PLAYER1);
 
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			BoardTile* corners = new BoardTile[8];
-			int i = 8;
-			i = karo->corner_tiles(corners, i);
-
-			Assert::AreEqual(1, i);
+            Assert::AreEqual(1, karo.corner_tiles(NULL, 0));
 		}
 
 		TEST_METHOD(GetAvailableMovesTest1CornerAvailable) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 1, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 2, 3, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 3, 4, 3, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 4, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 5, 2, 0, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 0], PLAYER_PLAYER1, false);
-			pieces[1] = *new BoardPiece(tiles[0 * 5 + 4], PLAYER_PLAYER1, false);
-			pieces[2] = *new BoardPiece(tiles[0 * 5 + 3], PLAYER_PLAYER1, false);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 4], PLAYER_PLAYER1, false);
-			pieces[4] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, false);
-			pieces[5] = *new BoardPiece(tiles[0 * 5 + 2], PLAYER_PLAYER1, false);
+            PICK_PIECE(pieces, tiles, 6, 0, 1, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 7, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 8, 3, 1, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 9, 4, 1, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 10, 5, 1, PLAYER_PLAYER1);
+            PICK_PIECE(pieces, tiles, 11, 5, 2, PLAYER_PLAYER1);
 
-			pieces[6] = *new BoardPiece(tiles[1 * 5 + 0], PLAYER_PLAYER2, false);
-			pieces[7] = *new BoardPiece(tiles[1 * 5 + 1], PLAYER_PLAYER2, false);
-			pieces[8] = *new BoardPiece(tiles[1 * 5 + 2], PLAYER_PLAYER2, false);
-			pieces[9] = *new BoardPiece(tiles[1 * 5 + 3], PLAYER_PLAYER2, false);
-			pieces[10] = *new BoardPiece(tiles[1 * 5 + 4], PLAYER_PLAYER2, false);
-			pieces[11] = *new BoardPiece(tiles[2 * 5 + 4], PLAYER_PLAYER2, false);
-
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
 			BoardMove* moves = new BoardMove[MOVE_COUNT];
-			int moveCount = karo->available_moves(PLAYER_PLAYER2, moves, MOVE_COUNT);
+			int count = karo.available_moves(PLAYER_PLAYER2, moves, MOVE_COUNT);
 
-			int count = 0;
-
-			for (int i = 0; i < moveCount; i++) {
-				if (&moves[i] != nullptr)
-					count++;
-			}
 			Assert::AreEqual(37, count);
 		}
 		TEST_METHOD(IsFinishedTestFreshBoard) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(false, karo->is_finished());
+			Assert::AreEqual(false, karo.is_finished());
 		}
 
 		TEST_METHOD(IsFinishedTestHorizontalLine4) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 1, 2, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 1, 3, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[1 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[2 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 1], PLAYER_PLAYER1, true);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(true, karo->is_finished());
+			Assert::AreEqual(true, karo.is_finished());
 		}
 		TEST_METHOD(IsFinishedTestHorizontalLine3) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 1, 2, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[1 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[2 * 5 + 1], PLAYER_PLAYER1, true);
-			//pieces[3] = *new BoardPiece(tiles[3 * 5 + 1], PLAYER_PLAYER1, true);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(false, karo->is_finished());
+			Assert::AreEqual(false, karo.is_finished());
 		}
 
 		TEST_METHOD(IsFinishedTestHorizontalLine3WithOpponent) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 1, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 3, 1, 3, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[1 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[2 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 1], PLAYER_PLAYER2, true);
-
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(false, karo->is_finished());
+            BoardState karo = BoardState(tiles, pieces);
+ 
+			Assert::AreEqual(false, karo.is_finished());
 		}
 
 		TEST_METHOD(IsFinishedTestHorizontalLine3WithUnmarked) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 1, 2, PLAYER_PLAYER1);
+            PICK_PIECE(   pieces, tiles, 3, 1, 3, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[1 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[2 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 1], PLAYER_PLAYER2, false);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(false, karo->is_finished());
+			Assert::AreEqual(false, karo.is_finished());
 		}
 
 		TEST_METHOD(IsFinishedTestDiagonalLine4) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 2, 2, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 3, 3, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[0 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[1 * 5 + 2], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[2 * 5 + 3], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[3 * 5 + 4], PLAYER_PLAYER1, true);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(true, karo->is_finished());
+			Assert::AreEqual(true, karo.is_finished());
 		}
 
 		TEST_METHOD(IsFinishedTestDiagonalLeftLine4) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 3, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 2, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 3, 0, PLAYER_PLAYER1);
 
-			pieces[0] = *new BoardPiece(tiles[3 * 5 + 0], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[2 * 5 + 1], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[1 * 5 + 2], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[0 * 5 + 3], PLAYER_PLAYER1, true);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardState* karo = new BoardState(tiles, pieces);
-
-			Assert::AreEqual(true, karo->is_finished());
+			Assert::AreEqual(true, karo.is_finished());
 		}
 
 		TEST_METHOD(IsValidMoveTestFreeTile) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[2], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[4], PLAYER_PLAYER2, true);
-			pieces[2] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[6], PLAYER_PLAYER2, true);
-			pieces[4] = *new BoardPiece(tiles[8], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[10], PLAYER_PLAYER2, true);
-			pieces[6] = *new BoardPiece(tiles[11], PLAYER_PLAYER1, true);
-			pieces[7] = *new BoardPiece(tiles[12], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[14], PLAYER_PLAYER1, true);
-			pieces[9] = *new BoardPiece(tiles[16], PLAYER_PLAYER2, true);
-			pieces[10] = *new BoardPiece(tiles[17], PLAYER_PLAYER1, true);
-			pieces[11] = *new BoardPiece(tiles[19], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 2, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 0, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 4, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 2, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
-			BoardMove* move = new BoardMove(tiles[3], pieces[0]);
-			Assert::AreEqual(true, karo->is_valid_move(*move));
-
-
+            BoardMove move = karo.create_move(BoardPosition(1,0), BoardPosition(0,0), BoardPosition());
+			Assert::AreEqual(true, karo.is_valid_move(move));
 		}
+
 		TEST_METHOD(IsValidMoveJumping) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[2], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[4], PLAYER_PLAYER2, true);
-			pieces[2] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[6], PLAYER_PLAYER2, true);
-			pieces[4] = *new BoardPiece(tiles[8], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[10], PLAYER_PLAYER2, true);
-			pieces[6] = *new BoardPiece(tiles[11], PLAYER_PLAYER1, true);
-			pieces[7] = *new BoardPiece(tiles[12], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[14], PLAYER_PLAYER1, true);
-			pieces[9] = *new BoardPiece(tiles[16], PLAYER_PLAYER2, true);
-			pieces[10] = *new BoardPiece(tiles[17], PLAYER_PLAYER1, true);
-			pieces[11] = *new BoardPiece(tiles[19], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 2, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 0, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 4, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 2, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
 			// horizontal right
-			BoardMove* move = new BoardMove(tiles[7], pieces[2]);
-			Assert::AreEqual(true, karo->is_valid_move(*move));
+            BoardMove move = karo.create_move(tiles[7].position, pieces[2].tile->position, BoardPosition());
+			Assert::AreEqual(true, karo.is_valid_move(move));
 
 			//horizontal left
-			move = new BoardMove(tiles[15], pieces[10]);
-			Assert::AreEqual(true, karo->is_valid_move(*move));
+            move = karo.create_move(tiles[15].position, pieces[10].tile->position, BoardPosition());
+			Assert::AreEqual(true, karo.is_valid_move(move));
 
 			//vertical down
-			move = new BoardMove(tiles[15], pieces[2]);
-			Assert::AreEqual(true, karo->is_valid_move(*move));
+            move = karo.create_move(tiles[15].position, pieces[2].tile->position, BoardPosition());
+			Assert::AreEqual(true, karo.is_valid_move(move));
 
 			//vertical up
-			move = new BoardMove(tiles[1], pieces[6]);
-			Assert::AreEqual(true, karo->is_valid_move(*move));
-
-			//diag up-left
-			//move = new BoardMove(*new BoardTile(4,-1), pieces[3], tiles[20]);
-			//Assert::AreEqual(true, karo->is_valid_move(*move));
-
+            move = karo.create_move(tiles[1].position, pieces[6].tile->position, BoardPosition());
+			Assert::AreEqual(true, karo.is_valid_move(move));
 		}
 
 		TEST_METHOD(GetWinnerHorizontal) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[2], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[4], PLAYER_PLAYER2, true);
-			pieces[2] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[6], PLAYER_PLAYER1, true);
-			pieces[4] = *new BoardPiece(tiles[7], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[8], PLAYER_PLAYER1, true);
-			pieces[6] = *new BoardPiece(tiles[9], PLAYER_PLAYER1, true);
-			pieces[7] = *new BoardPiece(tiles[12], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[14], PLAYER_PLAYER1, true);
-			pieces[9] = *new BoardPiece(tiles[16], PLAYER_PLAYER2, true);
-			pieces[10] = *new BoardPiece(tiles[17], PLAYER_PLAYER1, true);
-			pieces[11] = *new BoardPiece(tiles[19], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 2, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 0, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 3, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 2, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
-			Assert::AreEqual(PLAYER_PLAYER1, karo->winner());
+			Assert::AreEqual(PLAYER_PLAYER1, karo.winner());
 		}
 
 		TEST_METHOD(GetWinnerVertical) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[10], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[15], PLAYER_PLAYER1, true);
-			pieces[4] = *new BoardPiece(tiles[4], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[12], PLAYER_PLAYER1, true);
-			pieces[6] = *new BoardPiece(tiles[6], PLAYER_PLAYER2, true);
-			pieces[7] = *new BoardPiece(tiles[7], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[8], PLAYER_PLAYER2, true);
-			pieces[9] = *new BoardPiece(tiles[9], PLAYER_PLAYER2, true);
-			pieces[10] = *new BoardPiece(tiles[13], PLAYER_PLAYER2, true);
-			pieces[11] = *new BoardPiece(tiles[11], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 2, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 1, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 1, 2, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 1, 3, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 2, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
-			Assert::AreEqual(PLAYER_PLAYER1, karo->winner());
+			Assert::AreEqual(PLAYER_PLAYER1, karo.winner());
 
 		}
 		TEST_METHOD(GetWinnerDiagonal) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[6], PLAYER_PLAYER1, true);
-			pieces[2] = *new BoardPiece(tiles[12], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[18], PLAYER_PLAYER1, true);
-			pieces[4] = *new BoardPiece(tiles[4], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[6] = *new BoardPiece(tiles[13], PLAYER_PLAYER2, true);
-			pieces[7] = *new BoardPiece(tiles[7], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[8], PLAYER_PLAYER2, true);
-			pieces[9] = *new BoardPiece(tiles[14], PLAYER_PLAYER2, true);
-			pieces[10] = *new BoardPiece(tiles[10], PLAYER_PLAYER2, true);
-			pieces[11] = *new BoardPiece(tiles[11], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 1, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 2, 2, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 3, 3, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 4, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 3, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
-			Assert::AreEqual(PLAYER_PLAYER1, karo->winner());
+			Assert::AreEqual(PLAYER_PLAYER1, karo.winner());
 		}
 
 		TEST_METHOD(GetWinnerDiagonalNoWinner) {
-			BoardTile* tiles = new BoardTile[20];
-			for (int i = 0; i < 20; i++) {
-				tiles[i] = *new BoardTile(i % 5, i / 5);
-			}
+            GENERATE_TILES(tiles);
 
-			BoardPiece* pieces = new BoardPiece[12];
-			pieces[0] = *new BoardPiece(tiles[0], PLAYER_PLAYER1, true);
-			pieces[1] = *new BoardPiece(tiles[6], PLAYER_PLAYER2, true);
-			pieces[2] = *new BoardPiece(tiles[12], PLAYER_PLAYER1, true);
-			pieces[3] = *new BoardPiece(tiles[18], PLAYER_PLAYER1, true);
-			pieces[4] = *new BoardPiece(tiles[4], PLAYER_PLAYER1, true);
-			pieces[5] = *new BoardPiece(tiles[5], PLAYER_PLAYER1, true);
-			pieces[6] = *new BoardPiece(tiles[13], PLAYER_PLAYER2, true);
-			pieces[7] = *new BoardPiece(tiles[7], PLAYER_PLAYER2, true);
-			pieces[8] = *new BoardPiece(tiles[8], PLAYER_PLAYER2, true);
-			pieces[9] = *new BoardPiece(tiles[9], PLAYER_PLAYER1, true);
-			pieces[10] = *new BoardPiece(tiles[10], PLAYER_PLAYER2, true);
-			pieces[11] = *new BoardPiece(tiles[11], PLAYER_PLAYER2, true);
+            BoardPiece pieces[12];
+            PICK_PIECE_UP(pieces, tiles, 0, 0, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 1, 2, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 2, 4, 0, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 3, 0, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 4, 2, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 5, 4, 1, PLAYER_PLAYER1);
+            PICK_PIECE_UP(pieces, tiles, 6, 0, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 7, 2, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 8, 4, 2, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 9, 0, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 10, 2, 3, PLAYER_PLAYER2);
+            PICK_PIECE_UP(pieces, tiles, 11, 4, 3, PLAYER_PLAYER2);
 
-			BoardState* karo = new BoardState(tiles, pieces);
+            BoardState karo = BoardState(tiles, pieces);
 
-			Assert::AreEqual(PLAYER_NONE, karo->winner());
+			Assert::AreEqual(PLAYER_NONE, karo.winner());
 		}
 	};
 }

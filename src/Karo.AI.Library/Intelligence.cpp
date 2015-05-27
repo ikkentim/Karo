@@ -185,33 +185,26 @@ int Intelligence::evaluate(BoardPlayer player) {
                 abs(allPieces[i].tile->position.y - allPieces[j].tile->position.y);
 
             // Other piece is own piece.
-            if (allPieces[i].player == allPieces[j].player) {
-                if (allPieces[i].player == allPieces[j].player &&
-                    distance < SCORE_DISTANCE_SELF) {
-                    // If the other piece is face up, double the score.
-                    score += SCORE_DISTANCE_SELF_BASE +
-                        SCORE_DISTANCE_SELF_MULTIPLIER *
-                        (allPieces[i].is_face_up ? SCORE_DISTANCE_SELF_FACE_MULTIPLIER : 1) * 
-                        (allPieces[j].is_face_up ? SCORE_DISTANCE_SELF_FACE_OTHER_MULTIPLIER : 1) *
-                        (allPieces[i].player == player
-                        ? SCORE_DISTANCE_SELF - distance
-                        : -SCORE_DISTANCE_SELF + distance);
-                }
+            int piece_score = 0;
+            if (allPieces[i].player == allPieces[j].player && distance < SCORE_DISTANCE_SELF) {
+                // If the other piece is face up, double the score.
+                piece_score = SCORE_DISTANCE_SELF_BASE +
+                    SCORE_DISTANCE_SELF_MULTIPLIER *
+                    (allPieces[i].is_face_up ? SCORE_DISTANCE_SELF_FACE_MULTIPLIER : 1) * 
+                    (allPieces[j].is_face_up ? SCORE_DISTANCE_SELF_FACE_OTHER_MULTIPLIER : 1) *
+                    (SCORE_DISTANCE_SELF - distance);
             }
             // Other piece is opponents piece.
-            else {
-                if (allPieces[i].player == allPieces[j].player &&
-                    distance < SCORE_DISTANCE_OPPONENT) {
-                    // If the opponents piece is face up, double the score.
-                    score += SCORE_DISTANCE_OPPONENT_BASE +
-                        SCORE_DISTANCE_OPPONENT_MULTIPLIER *
-                        (allPieces[i].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_MULTIPLIER : 1) *
-                        (allPieces[j].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_OTHER_MULTIPLIER : 1) *
-                        (allPieces[i].player == player
-                        ? SCORE_DISTANCE_OPPONENT - distance
-                        : -SCORE_DISTANCE_OPPONENT + distance);
-                }
+            else if (allPieces[i].player == allPieces[j].player && distance < SCORE_DISTANCE_OPPONENT) {
+                // If the opponents piece is face up, double the score.
+                piece_score = SCORE_DISTANCE_OPPONENT_BASE +
+                    SCORE_DISTANCE_OPPONENT_MULTIPLIER *
+                    (allPieces[i].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_MULTIPLIER : 1) *
+                    (allPieces[j].is_face_up ? SCORE_DISTANCE_OPPONENT_FACE_OTHER_MULTIPLIER : 1) *
+                    (SCORE_DISTANCE_OPPONENT - distance);
             }
+
+            score += allPieces[i].player == player ? piece_score : -piece_score;
         }
 
         // Score face-up pieces with additional points.
