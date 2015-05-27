@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -37,7 +39,7 @@ namespace KaroThreeDClient
         public Model WhitePawnModel;
         public Model NyanCat;
 
-        private bool _awaitingMove = true;
+        private bool _awaitingMove = false;
         private bool _isThinking;
         private readonly Camera3D _camera = new Camera3D(-200, -200);
 
@@ -50,7 +52,8 @@ namespace KaroThreeDClient
         private Vector2 _tilePosition;
         public float TileSize = 1.05f;
         private bool _isLeftMouseButtonDown;
-
+        private int _beforeEvaluationScore;
+        private Stopwatch _moveTime = new Stopwatch();
         public CameraService CameraService;
         public ConsoleService ConsoleService;
         private MouseState _lastMouseState;
@@ -140,9 +143,6 @@ namespace KaroThreeDClient
             Components.Add(new NyanCat(this));
             Components.Add(new Turn(this));
 
-            _currentPlayer = _player1;
-            _currentPlayer.DoMove(null, 0, Done);
-
             base.Initialize();
         }
 
@@ -181,7 +181,17 @@ namespace KaroThreeDClient
                     return KaroPlayer.None;
             }
         }
-        
+
+        private int? EvaluateCurrentPlayer()
+        {
+            if (_currentPlayer == null) return null;
+
+            var evaluate = _currentPlayer.GetType().GetMethod("Evaluate");
+            if (evaluate.GetParameters().Length != 0 || evaluate.ReturnType != typeof (int))
+                return null;
+
+            return (int) evaluate.Invoke(_currentPlayer, null);
+        }
         /// <summary>
         ///     Completes the move of the current player.
         /// </summary>
@@ -195,15 +205,22 @@ namespace KaroThreeDClient
                 _karo.ApplyMove(move, CurrentTurn);
                 Components.Add(new Pawn(this, _karo.Pieces.Last(p =>p != null)));
 
-                ConsoleService.WriteChatLine(Color.White, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
+                ConsoleService.WriteChatLine(Color.Wheat, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
             }
             else
             {
                 _karo.ApplyMove(move, CurrentTurn);
 
-                ConsoleService.WriteChatLine(Color.White, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
+                ConsoleService.WriteChatLine(Color.Wheat, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
             }
 
+            ConsoleService.WriteLine(Color.White, "Move took {0}", _moveTime.Elapsed);
+            int? evaluation = EvaluateCurrentPlayer();
+            if (evaluation != null)
+            {
+                ConsoleService.WriteLine(Color.White, "Move changed score from {0} to {1}",
+                    _beforeEvaluationScore, evaluation);
+            }
 
             UpdateTileData();
 
@@ -215,9 +232,15 @@ namespace KaroThreeDClient
                 _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
 
                 if (IsCurrentPlayerHuman)
+                {
+                    _moveTime.Restart();
                     _currentPlayer.DoMove(_lastMove, 0, Done);
+                }
                 else
                     _awaitingMove = true;
+
+                // Calculate evaluated score for debugging
+                _beforeEvaluationScore = EvaluateCurrentPlayer() ?? 0;
             }
             else
             {
@@ -298,7 +321,20 @@ namespace KaroThreeDClient
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
+            if (_currentPlayer == null)
+            {
+
+                _currentPlayer = _player1;
+                _moveTime.Restart();
+
+                new Thread(() =>
+                {
+                    _isThinking = true;
+                    _moveTime.Restart();
+                    _currentPlayer.DoMove(null, 0, Done);
+                }).Start();
+            }
             if (_awaitingMove)
             {
                 if (IsCurrentPlayerHuman)
@@ -313,6 +349,7 @@ namespace KaroThreeDClient
                         new Thread(() =>
                         {
                             _isThinking = true;
+                            _moveTime.Restart();
                             _currentPlayer.DoMove(_lastMove, 0, Done);
                         }).Start();
                     }

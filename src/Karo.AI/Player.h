@@ -12,7 +12,7 @@ namespace Karo {
             Player();
             ~Player();
             void DoMove(Karo::Common::Move^ previousMove, int timeLimit, Action<Karo::Common::Move^>^ done) override;
-
+            int Evaluate();
         private:
             Intelligence * intelligence_;
         };

@@ -17,9 +17,9 @@ public:
 	~Intelligence();
     BoardState * state() const { return state_; }
 	void apply_move(BoardMove move, BoardPlayer player);
-	BoardMove choose_best_move(int depth, BoardPlayer player);
+    BoardMove choose_best_move(int depth, BoardPlayer player);
+    int evaluate(BoardPlayer player);
 private:
-	int evaluate(BoardPlayer player);
 	int alpha_beta(int depth, int alpha, int beta, BoardPlayer player);
 	int zobrist_hash(BoardPlayer player);
 	int piece_score(BoardPiece * piece);
