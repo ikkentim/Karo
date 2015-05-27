@@ -71,6 +71,9 @@ namespace KaroThreeDClient
         public bool IsSelectingCornerTile;
         public bool IsSelectingGhostTile;
 
+        private Thread _aiThread;
+        private bool _exiting;
+
         public Game(IPlayer player1, IPlayer player2)
         {
             if (player1 == null) throw new ArgumentNullException("player1");
@@ -81,8 +84,8 @@ namespace KaroThreeDClient
 
             _graphics = new GraphicsDeviceManager(this);
 
-            _graphics.PreferredBackBufferWidth = (int)(1680 * 1.3f);
-            _graphics.PreferredBackBufferHeight = (int)(1050 * 1.3f);
+            _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 50;
+            _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
 
             //_graphics.IsFullScreen = true;
 
@@ -198,8 +201,13 @@ namespace KaroThreeDClient
         /// <param name="move">The move.</param>
         private void Done(Move move)
         {
-            _isThinking = false;
+            if (_exiting)
+            {
+                return;
+            }
 
+            _isThinking = false;
+            
             if (IsInFirstPhase)
             {
                 _karo.ApplyMove(move, CurrentTurn);
@@ -220,6 +228,11 @@ namespace KaroThreeDClient
             {
                 ConsoleService.WriteLine(Color.White, "Move changed score from {0} to {1}",
                     _beforeEvaluationScore, evaluation);
+
+                var evaluation_count = _currentPlayer.GetType().GetProperty("evaluation_count");
+
+                if(evaluation_count != null)
+                    ConsoleService.WriteLine(Color.White, "Evaluation count {0}", evaluation_count.GetValue(_currentPlayer, null));
             }
 
             UpdateTileData();
@@ -320,7 +333,17 @@ namespace KaroThreeDClient
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                _exiting = true;
+
+                if (_aiThread != null)
+                {
+                    _aiThread.Interrupt();
+                    _aiThread.Abort();
+                }
+
                 Exit();
+            }
 
             if (_currentPlayer == null)
             {
@@ -328,12 +351,14 @@ namespace KaroThreeDClient
                 _currentPlayer = _player1;
                 _moveTime.Restart();
 
-                new Thread(() =>
+                _aiThread = new Thread(() =>
                 {
                     _isThinking = true;
                     _moveTime.Restart();
                     _currentPlayer.DoMove(null, 0, Done);
-                }).Start();
+                });
+
+                _aiThread.Start();
             }
             if (_awaitingMove)
             {

@@ -6,7 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (6)
+#define MAX_DEPTH                                       (5)
 
 // Evaluation
 // ----------
@@ -105,6 +105,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 //        }
 //#endif
 
+		return evaluate(PLAYER_PLAYER1);
 
 		//make a hash for the board
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
@@ -175,6 +176,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 }
 
 int Intelligence::evaluate(BoardPlayer player) {
+	evaluation_count++;
     BoardPiece* allPieces = state_->pieces();
     int score = 0;
     int pieceCount = state_->piece_count();
