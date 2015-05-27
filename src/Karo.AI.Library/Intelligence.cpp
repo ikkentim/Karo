@@ -100,7 +100,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 	{
 #if defined _DEBUG
         if (evaluate(player) != -evaluate(OPPONENT(player))) {
-            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
+            //cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
             //assert(evaluate(player) == -evaluate(OPPONENT(player)));
         }
 #endif
@@ -109,12 +109,12 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
 
-		if (&trans_table->at(boardhash) != nullptr) {
-			return trans_table->at(boardhash);
+		if (trans_table.find(boardhash) != trans_table.end()) {
+			return trans_table.at(boardhash);
 		}
 
 		int eval = evaluate(PLAYER_PLAYER1);
-		trans_table->emplace(boardhash, eval);
+		trans_table.emplace(boardhash, eval);
 		return eval;
 	}
 	
@@ -221,13 +221,10 @@ int Intelligence::evaluate(BoardPlayer player) {
 }
 
 int Intelligence::zobrist_hash(BoardPlayer player) {
-	int minxpos = 99;
-	int minypos = 99;
+	int minxpos = std::numeric_limits<int>::max();
+	int minypos = std::numeric_limits<int>::max();
 	BoardTile* tiles = state_->tiles();
 	BoardPiece* pieces = state_->pieces();
-
-	BoardTile newtiles[TILE_COUNT];
-	BoardPiece newpieces[PIECE_COUNT];
 
 	for (int i = 0; i < TILE_COUNT; i++) {
 		BoardPosition p = tiles[i].position;
@@ -237,41 +234,23 @@ int Intelligence::zobrist_hash(BoardPlayer player) {
 			minypos = p.y;
 	}
 	
-	for (int i = 0; i < TILE_COUNT; i++) {
-		newtiles[i] = tiles[i];
-
-		newtiles[i].position.x = newtiles[i].position.x + minxpos;
-		newtiles[i].position.y = newtiles[i].position.y + minypos;
-	}
-
-	for (int i = 0; i < PIECE_COUNT; i++) {
-		newpieces[i] = pieces[i];
-
-		newpieces[i].tile->position.x = newpieces[i].tile->position.x + minxpos;
-		newpieces[i].tile->position.y = newpieces[i].tile->position.y + minypos;
-	}
+	assert(minxpos < std::numeric_limits<int>::max());
+	assert(minypos < std::numeric_limits<int>::max());
 
 	int hash = 0;
-
+	
 	for (int i = 0; i < TILE_COUNT; i++) {
-		int randvalposition = (newtiles[i].position.x * TILE_COUNT) + newtiles[i].position.y;
-		int randvaltype = 4;
-		hash ^= zobrist_randoms[randvalposition][randvaltype];
-	}
-	for (int i = 0; i < PIECE_COUNT; i++) {
-		int randvalposition = (newpieces[i].tile->position.x * TILE_COUNT) 
-			+ newpieces[i].tile->position.y;
-		int randvaltype = 0;
-		if (newpieces[i].player == PLAYER_PLAYER1) {
+		BoardTile tile = tiles[i];
 
-			if (newpieces[1].is_face_up) { randvaltype = 0; }
-			else { randvaltype = 1;}
-		}
-		else {
+		int x = tiles[i].position.x - minxpos;
+		int y = tiles[i].position.y - minypos;
 
-			if (newpieces[i].is_face_up) { randvaltype = 2;}
-			else { randvaltype = 3; }
-		}
+		int randvalposition = x * TILE_COUNT + y;
+		int randvaltype = tile.piece == NULL ? 4 : (tile.piece->is_face_up ? tile.piece->player-1 : 2+tile.piece->player-1);
+		
+		assert(randvalposition < TILE_COUNT * TILE_COUNT && randvalposition >= 0);
+		assert(randvaltype < 5 && randvaltype >= 0);
+
 		hash ^= zobrist_randoms[randvalposition][randvaltype];
 	}
 	return hash;

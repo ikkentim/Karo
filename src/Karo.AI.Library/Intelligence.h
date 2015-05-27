@@ -10,7 +10,7 @@ private:
 	int prune_count = 0;
 	int iteration_count = 0;
 	int zobrist_randoms[400][5];
-	map<int, int>* trans_table = new map<int, int>();
+	map<int, int> trans_table;
 public:
 	Intelligence();
 	Intelligence(BoardState*);
