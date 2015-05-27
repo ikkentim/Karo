@@ -271,9 +271,13 @@ namespace Karo.TwoDClient
                     {
                         var corner = new Position((int) _tilePosition.X, (int) _tilePosition.Y);
 
+                        Console.WriteLine("selected tile: " + corner.X + " | " + corner.Y);
+
                         if (_karo.GetPiece(corner.X, corner.Y) == null &&
                             _karo.IsCornerTile(corner.X, corner.Y))
                         {
+                            Console.WriteLine("corner tile found");
+
                             human.PrepareMove(new Move(_selectedNewPiece.X, _selectedNewPiece.Y, _selectedOldPiece.X,
                                 _selectedOldPiece.Y, corner.X, corner.Y));
 

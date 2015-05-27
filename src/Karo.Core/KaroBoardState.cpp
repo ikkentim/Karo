@@ -141,6 +141,19 @@ namespace Karo {
         }
 
         bool KaroBoardState::IsCornerTile(int x, int y){
+			//if there are 3 free spaces, its a corner aswell*
+			int freeSpots = 0;
+			if (GetTile(x - 1, y) == nullptr)
+				freeSpots++;
+			if (GetTile(x + 1, y) == nullptr)
+				freeSpots++;
+			if (GetTile(x, y-1) == nullptr)
+				freeSpots++;
+			if (GetTile(x, y+1) == nullptr)
+				freeSpots++;
+			if (freeSpots > 2)
+				return true;
+
 			if (GetTile(x - 1, y) == nullptr && GetTile(x, y - 1) == nullptr && (
 				(GetTile(x - 1, y - 1)) != nullptr ||
 				(GetTile(x - 1, y + 1)) != nullptr ||

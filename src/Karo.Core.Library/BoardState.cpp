@@ -256,32 +256,39 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 }
 
 bool BoardState::is_valid_move(BoardMove move) {
+
+	cout << "enter valid move" << endl;
+
+
     //Step0: Initphase //Place piece on current location, just check if there is a piece already
     if (piece_count() < PIECE_COUNT)
         return !piece(move.target.x, move.target.y, NULL);
 
-    //Todo:: Check for tiles, clean code (make more functions oid)
-    //Make testcases for it
-
     //Check for tileplacement
-    if (move.tile && !is_valid_tile_placement(move.target.x, move.target.y, move.tile->position.x, move.tile->position.y))
-        return false;
+	if (move.tile && !is_valid_tile_placement(move.target.x, move.target.y, move.tile->position.x, move.tile->position.y)){
+		cout << "false tileplacement" << endl;
+		return false;
+	}
 
-    //Move Phase
     //Step1: Check if new location is different from the current one
-    if (move.target.x == move.piece->tile->position.x && move.target.y == move.piece->tile->position.y)
-        return false;
+	if (move.target.x == move.piece->tile->position.x && move.target.y == move.piece->tile->position.y){
+		cout << "select new location" << endl;
+		return false;
+	}
 
-    // TODO: Use tile neighbors
     //Check if new location has any neighbors (otherwise you get invalid boardstate)
-    if (!(tile(move.target.x + 1, move.target.y, NULL) || tile(move.target.x - 1, move.target.y, NULL) ||
-        tile(move.target.x, move.target.y + 1, NULL) || tile(move.target.x, move.target.y - 1, NULL)))
-        return false;
+	if (!(tile(move.target.x + 1, move.target.y, NULL) || tile(move.target.x - 1, move.target.y, NULL) ||
+		tile(move.target.x, move.target.y + 1, NULL) || tile(move.target.x, move.target.y - 1, NULL))){
+		cout << "location must have neighbors" << endl;
+		return false;
+	}
 
     //Step2: Check if there already is a piece on the tile your trying to move to
-    for (int i = 0; i < TILE_COUNT; i++) { //for each (RefTile^ tile in Tiles){
-        if (piece(move.target.x, move.target.y, NULL))
-            return false;
+    for (int i = 0; i < TILE_COUNT; i++) {
+		if (piece(move.target.x, move.target.y, NULL)){
+			cout << "there is a piece already" << endl;
+			return false;
+		}
 
         //Step3: Check if there is a piece between your current location, and the new one
         int pieceLocationX, pieceLocationY, distancex = 0, distancey = 0;
@@ -301,19 +308,9 @@ bool BoardState::is_valid_move(BoardMove move) {
             distancey = abs(distancey);
         }
 
-        //I have no information about the tile you want to move here -_-;
-        //Cant take certain tiles when jumping 
-        //int tileX = move.target.x;
-        //int tileY = move.target.y;
-
-        //if (tile(tileX + 1, tileY,NULL))
-        //	tileX + 1;
-        //if (tile(tileX - 1, tileY, NULL))
-        //	tileX - 1;
-        //if (tile(tileX, tileY + 1, NULL))
-        //	tileY + 1;
-        //if (tile(tileX, tileY -1, NULL))
-        //	tileY - 1;
+		//Check if boardstate is still valid after moving tile
+		//if (!is_valid_boardstate())
+		//	return false;
 
         //Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
         BoardPiece * jumped_piece;
@@ -322,8 +319,11 @@ bool BoardState::is_valid_move(BoardMove move) {
             distancex < 3 && distancey < 3 && distancex + distancey != 3)
             return true;
 
-        if (distancex > 1 || distancey > 1)
-            return false;
+		if (distancex > 1 || distancey > 1){
+			cout << "distance too big" << endl;
+
+			return false;
+		}
     }
 
     return true;
@@ -356,8 +356,10 @@ bool BoardState::is_valid_tile_placement(int x, int y, int tx, int ty) {
         tiley = y + 1;
     }
     //Check if the tile used to move, is not the only neighbor
-    if (neightbor == 1 && tilex == tx && tiley == ty || neightbor == 0)
-        return false;
+	if (neightbor == 1 && tilex == tx && tiley == ty || neightbor == 0){
+		cout << "no valid tile placement" << endl;
+		return false;
+	}
     
     return true;
 }
@@ -617,6 +619,20 @@ void BoardState::calc_is_finished() {
     }
 
     is_finished_ = false;
+}
+
+bool BoardState::is_valid_boardstate()
+{
+	//return boardstate after certain tile has been moved
+	bool valid = true;
+
+	for (int i = 0; i < TILE_COUNT; i++)
+	{
+		if (tiles_[i].neighbor_count() == 0)
+			valid = false;
+	}
+
+	return valid;
 }
 
 void BoardState::assert_state_ok() {
