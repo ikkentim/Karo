@@ -6,11 +6,8 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-<<<<<<< HEAD
-#define MAX_DEPTH                                       (3)
-=======
-#define MAX_DEPTH                                       (6)
->>>>>>> 118b1b4fa240a9cf252b642cc24e38f1288fb214
+#define MAX_DEPTH                                       (5)
+
 
 // Evaluation
 // ----------
@@ -91,6 +88,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 	cout << "iterations: " << iteration_count << endl;
     cout << "prunes: " << prune_count << endl;
     cout << "best score: " << alpha << endl;
+	cout << "trans size: " << transsize << endl;
 
 	return bestMove;
 }
@@ -113,13 +111,14 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
 
 		//if it's in in the table, get it from the table
-		if (trans_table.find(boardhash) != trans_table.end()) {
+		if (trans_table.count(boardhash) > 0) {
 			return trans_table.at(boardhash);
 		}
 
 		//else evaluate, put it in the table, and return the evaluated value
 		int eval = evaluate(PLAYER_PLAYER1);
 		trans_table.emplace(boardhash, eval);
+		transsize++;
 		return eval;
 	}
 	

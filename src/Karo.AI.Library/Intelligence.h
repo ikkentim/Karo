@@ -15,6 +15,7 @@ private:
 	int iteration_count = 0;
 	int zobrist_randoms[TILE_COUNT * TILE_COUNT][ZOBRIST_TYPES];
 	map<int, int> trans_table;
+	int transsize = 0;
 public:
 	Intelligence();
 	Intelligence(BoardState*);
