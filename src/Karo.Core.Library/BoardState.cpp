@@ -545,7 +545,7 @@ int BoardState::corner_tiles(BoardTile ** tiles, int count) {
             (!tiles_[i].neighbors[DIRECTION_SOUTH] && 
             !tiles_[i].neighbors[DIRECTION_EAST])) &&
             !tiles_[i].piece) {
-            if (idx < count)
+            if (tiles && idx < count)
                 tiles[idx] = &tiles_[i];
             idx++;
         }
