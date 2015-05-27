@@ -29,7 +29,7 @@ namespace Karo {
 
             // Choose the best move.
             BoardMove newMove = intelligence_->choose_best_move(timeLimit, PLAYER_PLAYER1);
-
+            
             // Convert unmanaged move to GC'd move.
             Karo::Common::Move^ gcMove = gcnew Move(newMove.target.x, newMove.target.y,
                 newMove.piece ? newMove.piece->tile->position.x : 0, newMove.piece ? newMove.piece->tile->position.y : 0,
@@ -39,6 +39,10 @@ namespace Karo {
             intelligence_->apply_move(newMove, PLAYER_PLAYER1);
 
             done->Invoke(gcMove);
+        }
+
+        int Player::Evaluate() {
+            return intelligence_->evaluate(PLAYER_PLAYER1);
         }
     }
 }

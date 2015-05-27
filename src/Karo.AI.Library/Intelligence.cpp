@@ -6,7 +6,11 @@
 
 // MiniMax / AlphaBeta
 // -------------------
+<<<<<<< HEAD
 #define MAX_DEPTH                                       (3)
+=======
+#define MAX_DEPTH                                       (6)
+>>>>>>> 118b1b4fa240a9cf252b642cc24e38f1288fb214
 
 // Evaluation
 // ----------
