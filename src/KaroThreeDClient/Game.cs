@@ -49,6 +49,7 @@ namespace KaroThreeDClient
         private bool _isLeftMouseButtonDown;
 
         public CameraService CameraService;
+        public ConsoleService ConsoleService;
         private MouseState _lastMouseState;
         private int _lastScroll;
         private float _unprocessedScrollDelta;
@@ -115,21 +116,22 @@ namespace KaroThreeDClient
         /// </summary>
         protected override void Initialize()
         {
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+
             foreach (Tile tile in _karo.Tiles)
                 Components.Add(new Plate(this, tile));
 
-            _currentPlayer = _player1;
-            _currentPlayer.DoMove(null, 0, Done);
-
             Services.AddService(typeof(CameraService), CameraService = new CameraService(this));
+            Services.AddService(typeof(ConsoleService), ConsoleService = new ConsoleService(this));
             Components.Add(CameraService);
+            Components.Add(ConsoleService);
 
             Components.Add(new NyanCat(this));
-
             Components.Add(new Turn(this));
 
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            _currentPlayer = _player1;
+            _currentPlayer.DoMove(null, 0, Done);
 
             base.Initialize();
         }
@@ -182,11 +184,16 @@ namespace KaroThreeDClient
             {
                 _karo.ApplyMove(move, CurrentTurn);
                 Components.Add(new Pawn(this, _karo.Pieces.Last(p =>p != null)));
+
+                ConsoleService.WriteChatLine(Color.White, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
             }
             else
             {
                 _karo.ApplyMove(move, CurrentTurn);
+
+                ConsoleService.WriteChatLine(Color.White, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
             }
+
 
             UpdateTileData();
 
@@ -205,7 +212,7 @@ namespace KaroThreeDClient
             else
             {
                 _currentPlayer = null;
-                Console.WriteLine("There is a winner!!");
+                ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
             }
         }
 

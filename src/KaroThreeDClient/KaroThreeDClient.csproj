@@ -56,6 +56,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CameraService.cs" />
+    <Compile Include="Services\ConsoleService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -92,9 +93,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\consolas.spritefont" />
     <None Include="Content\nyan.fbx" />
     <None Include="Content\red.fbx" />
-    <None Include="Content\teat.fbx" />
     <None Include="Content\tile.fbx" />
     <None Include="Content\white.fbx" />
   </ItemGroup>

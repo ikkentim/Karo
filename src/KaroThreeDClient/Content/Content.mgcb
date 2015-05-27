@@ -127,3 +127,9 @@
 /processorParam:TextureFormat=DxtCompressed
 /build:nyan.fbx
 
+#begin consolas.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:consolas.spritefont
+
