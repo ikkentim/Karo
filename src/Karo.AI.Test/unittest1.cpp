@@ -15,7 +15,7 @@ namespace KaroAITest
 		{
 			Intelligence * intelligence = new Intelligence();
 
-			BoardMove move = intelligence->choose_best_move(10, PLAYER_PLAYER1);
+			BoardMove move = intelligence->choose_best_move(4, PLAYER_PLAYER1);
 
 			Assert::AreEqual(move.target.x, 0);
 		}
