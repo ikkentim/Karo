@@ -226,6 +226,17 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 				corner_count = corner_tiles(corners, TILE_COUNT);
 			}
 
+			//Untag all tiles
+			for (int i = 0; i < TILE_COUNT; i++){
+				tiles_[i].untag();
+			}
+
+			//Check for valid boardstate
+			int connectedTiles = is_valid_boardstate(tiles_[idx].position.x, tiles_[idx].position.y);
+			cout << "Connected tiles: " << connectedTiles << endl;
+			if (connectedTiles < TILE_COUNT - 1)
+				return false;
+
 			// For every corner add a move of moving this corner to the
 			// target position.
 			for (int corner_idx = 0; corner_idx < corner_count;
@@ -309,41 +320,36 @@ bool BoardState::is_valid_move(BoardMove move) {
 	}
 
 	cout << "Tile: " << move.tile->position.x << "." << move.tile->position.y << endl;
-
+	cout << "Tilepos :" << move.tile->position.x << "." << move.tile->position.y << endl;
 	//save tile position if != null
-	if (move.tile->position.x != 0 && move.tile->position.y != 0){
-		cout << move.tile->position.x << "." << move.tile->position.y << endl;
+	if ((move.tile->position.x != 0) && (move.tile->position.y != 0)){
+	//if (move.tile){
+		cout << "Move tile" << endl;
 
 		int tx = move.tile->position.x;
 		int ty = move.tile->position.y;
-		bool valid;
+		int connectedTiles;
+
+		//Untag all tiles
+		for (int i = 0; i < TILE_COUNT; i++){
+			tiles_[i].untag();
+		}
 
 		//pick up the tile, remove it from the board for a while (-100,-100 is off the board)
-		//move.tile->position.x = -100;
-		//move.tile->position.y = -100;
+		move.tile->position.x = -100;
+		move.tile->position.y = -100;
 
 		//update neighbors of tile
 		update_neighbors(BoardPosition(move.target.x, move.target.y), move.tile);
 		//check if boardstate is valid with new tile placement
-		valid = is_valid_boardstate(move.piece_position.x,move.piece_position.y);
-
-		//return original values
-		//move.tile->position.x = tx;
-		//move.tile->position.y = ty;
-
-		if (!valid)
+		connectedTiles = is_valid_boardstate(move.piece_position.x,move.piece_position.y);
+		cout << "Connected tiles: " << connectedTiles << endl;
+		if (connectedTiles < TILE_COUNT - 1)
 			return false;
 
-		//Untag all tiles
-		//for (int i = 0; i < TILE_COUNT; i++)
-		//	tiles_[i].untag();
-
-		//if (is_valid_boardstate(move.piece_position.x, move.piece_position.y) > 18)
-		//{
-		//	move.tile->position.x = tx;
-		//	move.tile->position.y = ty;
-		//	return false;
-		//}
+		//return original values
+		move.tile->position.x = tx;
+		move.tile->position.y = ty;
 	}
 
 	//Can't jump further then 2 spaces | can't jump (2,1) (like the chess horse :P) | can only jump over enemy
@@ -506,7 +512,7 @@ void BoardState::apply_move(BoardMove move, BoardPlayer player) {
 	calc_is_finished();
 
 	//Do some debugging checks
-	//assert_state_ok();
+	assert_state_ok();
 }
 
 void BoardState::undo_move(BoardMove move, BoardPlayer player) {
@@ -652,68 +658,37 @@ void BoardState::calc_is_finished() {
 	is_finished_ = false;
 }
 
-bool BoardState::is_valid_boardstate(int tileX, int tileY)
-{
+int BoardState::is_valid_boardstate(int x, int y){
 	//return boardstate after certain tile has been moved
-	//int connectedTiles = 0;
+	int currentNeighbors = 1;
+	get_tile(x, y)->tag();
 
-	//Start with your current tile were the piece is located
-	//BoardTile currentTile;
-	////See if there is a piece next to it
-	//if (tile(tileX+1,tileY,NULL)){
-	//	//Tag the piece if it isnt tagged yet
-	//	currentTile = get_tile(tileX + 1, tileY);
-	//	if (!currentTile.tagged){
-	//		currentTile.tag();
-	//		return connectedTiles += 1 + is_valid_boardstate(tileX + 1, tileY);
-	//	}
-	//}
-	//if (tile(tileX - 1, tileY, NULL)){
-	//	//Tag the piece if it isnt tagged yet
-	//	currentTile = get_tile(tileX - 1, tileY);
-	//	if (!currentTile.tagged){
-	//		currentTile.tag();
-	//		return connectedTiles += 1 + is_valid_boardstate(tileX - 1, tileY);
-	//	}
-	//}
-	//if (tile(tileX, tileY + 1, NULL)){
-	//	//Tag the piece if it isnt tagged yet
-	//	currentTile = get_tile(tileX, tileY+1);
-	//	if (!currentTile.tagged){
-	//		currentTile.tag();
-	//		return connectedTiles += 1 + is_valid_boardstate(tileX, tileY+1);
-	//	}
-	//}
-	//if (tile(tileX, tileY - 1, NULL)){
-	//	//Tag the piece if it isnt tagged yet
-	//	currentTile = get_tile(tileX, tileY-1);
-	//	if (!currentTile.tagged){
-	//		currentTile.tag();
-	//		return connectedTiles += 1 + is_valid_boardstate(tileX, tileY-1);
-	//	}
-	//}
-	//cout << "Connected tiles: " << connectedTiles << endl;
-	//return connectedTiles;
-
-	bool valid = true;
-
-	for (int i = 0; i < TILE_COUNT; i++)
-	{
-		if (tiles_[i].direct_neighbor_count() < 1){
-			cout << "invalid boardstate" << endl;
-			valid = false;
-		}
+	if (tile(x + 1, y, NULL) && !get_tile(x + 1, y)->tagged){
+		currentNeighbors += is_valid_boardstate(x + 1, y);
 	}
-	return valid;
+	if (tile(x - 1, y, NULL) && !get_tile(x - 1, y)->tagged){
+		currentNeighbors += is_valid_boardstate(x - 1, y);
+	}
+	if (tile(x, y + 1, NULL) && !get_tile(x, y + 1)->tagged){
+		currentNeighbors += is_valid_boardstate(x, y + 1);
+	}
+	if (tile(x, y - 1, NULL) && !get_tile(x, y - 1)->tagged){
+		currentNeighbors += is_valid_boardstate(x, y - 1);
+	}
+
+	//Return number of connected tiles (19 should be valid)
+	return currentNeighbors;
 }
 
-BoardTile BoardState::get_tile(int x, int y){
+BoardTile* BoardState::get_tile(int x, int y){
 
 	assert(tiles_);
+	BoardTile * tile;
 
 	for (int i = 0; i < TILE_COUNT; i++)
 		if (tiles_[i].position.x == x && tiles_[i].position.y == y) {
-			return tiles_[i];
+			tile = &tiles_[i];
+			return tile;
 		}
 }
 
