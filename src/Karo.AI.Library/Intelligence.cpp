@@ -70,6 +70,41 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
     }
     
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
+	
+	int scores[MOVE_COUNT];
+
+	for (int i = 0; i < move_count; i++)
+	{
+		state_->apply_move(moves[i], player);
+		scores[i] = evaluate(player);
+		state_->undo_move(moves[i], player);
+	}
+
+	int n = move_count;
+	do
+	{
+		int newn = 0;
+		for (int i = 1; i <= n - 1; i++)
+		{
+			int score1 = scores[i - 1];
+			int score2 = scores[i - 2];
+			
+			if (score1 < score2)
+			{
+				BoardMove tmp = moves[i - 1];
+				moves[i - 1] = moves[i];
+				moves[i] = tmp;
+
+				int tmpScore = scores[i - 1];
+				scores[i - 1] = scores[i];
+				scores[i] = tmpScore;
+
+				newn = i;
+			}
+		}
+		n = newn;
+	} while (n != 0);
+
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);
