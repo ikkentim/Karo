@@ -113,9 +113,9 @@ namespace KaroThreeDClient.Services
         {
             var realCameraTarget = Position + new Vector3(0, CameraTargetOffset, 0);
             var cameraPosition = realCameraTarget +
-                                 new Vector3((float)Math.Cos(Rotation) * 1.8f,
+                                 new Vector3((float)Math.Cos(Rotation) * 1.8f * 2,
                                      _zoom / 3 + CameraTargetOffset + CameraHeightOffset,
-                                     (float)Math.Sin(Rotation) * 1.8f) * _zoom;
+                                     (float)Math.Sin(Rotation) * 1.8f * 2) * _zoom;
 
             // Also update listener data
             _audioListener.Position = cameraPosition;

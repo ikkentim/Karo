@@ -34,7 +34,7 @@ namespace KaroThreeDClient
         private IPlayer _player1;
         private IPlayer _player2;
         private IPlayer _currentPlayer;
-        private KaroBoardState _karo = new KaroBoardState();
+        public KaroBoardState _karo = new KaroBoardState();
 
         public Model TileModel;
         public Model RedPawnModel;

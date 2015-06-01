@@ -110,7 +110,7 @@ namespace KaroThreeDClient.Services
 
             if (size.X > maxWidth)
             {
-                var tmpLength = (int)(maxWidth / (AverageCharWidth * ConsoleFontScale));
+                var tmpLength = Math.Max(0, (int)(maxWidth / (AverageCharWidth * ConsoleFontScale)));
                 // Asuming the average character is at maximum 10 pixels wide. This improved performance.
 
                 while (tmpLength != -1 && tmpLength < message.Length)
