@@ -6,7 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (1)
+#define MAX_DEPTH                                       (4)
 
 
 // Evaluation

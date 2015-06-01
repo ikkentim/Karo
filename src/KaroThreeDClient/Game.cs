@@ -28,7 +28,13 @@ namespace KaroThreeDClient
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager _graphics;
+        List<int> prunedMovesFirstPhaseList = new List<int>();
+        List<TimeSpan> doMoveFirstPhaseTime = new List<TimeSpan>();
+        List<TimeSpan> evaluateFirstPhaseTime = new List<TimeSpan>();
+        List<int> prunesMovesSecondPhaseList = new List<int>();
+        List<TimeSpan> doMoveSecondPhaseTime = new List<TimeSpan>();
+        List<TimeSpan> evaluateSecondPhaseTime = new List<TimeSpan>();
+            GraphicsDeviceManager _graphics;
         SpriteBatch spriteBatch;
 
         private bool _isStarting = true;
@@ -199,6 +205,7 @@ namespace KaroThreeDClient
 
             return (int) evaluate.Invoke(_currentPlayer, null);
         }
+
         /// <summary>
         ///     Completes the move of the current player.
         /// </summary>
@@ -210,37 +217,59 @@ namespace KaroThreeDClient
                 return;
             }
 
+            var isInFirstPhase = IsInFirstPhase;
             if (IsInFirstPhase)
             {
                 _karo.ApplyMove(move, CurrentTurn);
-                Components.Add(new Pawn(this, _karo.Pieces.Last(p =>p != null)));
+                Components.Add(new Pawn(this, _karo.Pieces.Last(p => p != null)));
 
-                ConsoleService.WriteChatLine(Color.Wheat, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
+                ConsoleService.WriteChatLine(Color.Wheat, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX,
+                    move.NewPieceY);
+
+                doMoveFirstPhaseTime.Add(_moveTime.Elapsed);
             }
             else
             {
                 _karo.ApplyMove(move, CurrentTurn);
 
-                ConsoleService.WriteChatLine(Color.Wheat, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
+                ConsoleService.WriteChatLine(Color.Wheat, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn,
+                    move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
+
+                doMoveSecondPhaseTime.Add(_moveTime.Elapsed);
             }
 
             ConsoleService.WriteLine(Color.White, "Move took {0}", _moveTime.Elapsed);
+
+            var sw = new Stopwatch();
+            sw.Start();
             int? evaluation = EvaluateCurrentPlayer();
+            sw.Stop();
+
+            if (isInFirstPhase) evaluateFirstPhaseTime.Add(sw.Elapsed);
+            else evaluateSecondPhaseTime.Add(sw.Elapsed);
+
             if (evaluation != null)
             {
                 ConsoleService.WriteLine(Color.White, "Move changed score from {0} to {1}",
                     _beforeEvaluationScore, evaluation);
 
-                var evaluation_count = _currentPlayer.GetType().GetProperty("evaluation_count");
+                var prune_count = _currentPlayer.GetType().GetProperty("prune_count");
 
-                if(evaluation_count != null)
-                    ConsoleService.WriteLine(Color.White, "Evaluation count {0}", evaluation_count.GetValue(_currentPlayer, null));
+                if (prune_count != null)
+                {
+                    var eval = (int)prune_count.GetValue(_currentPlayer, null);
+
+                    if (isInFirstPhase) prunedMovesFirstPhaseList.Add(eval);
+                    else prunesMovesSecondPhaseList.Add(eval);
+
+                    ConsoleService.WriteLine(Color.White, "Prune count {0}", eval);
+                }
             }
 
             UpdateTileData();
 
             _lastMove = move;
-            
+
             var winner = _karo.GetWinner();
             if (winner == KaroPlayer.None)
             {
@@ -269,6 +298,34 @@ namespace KaroThreeDClient
             effect.Play();
 
             _aiThread = null;
+
+            ConsoleService.WriteLine(Color.White, "ANALYSIS (first phase):");
+            if (doMoveFirstPhaseTime.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Do move time: {0} ({1})",
+                    TimeSpan.FromSeconds(doMoveFirstPhaseTime.Aggregate(TimeSpan.Zero, (p, v) => p + v).TotalSeconds/
+                                         doMoveFirstPhaseTime.Count), doMoveFirstPhaseTime.Count);
+            if (evaluateFirstPhaseTime.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Evaluate time: {0} ({1})",
+                    TimeSpan.FromSeconds(evaluateFirstPhaseTime.Aggregate(TimeSpan.Zero, (p, v) => p + v).TotalSeconds/
+                                         evaluateFirstPhaseTime.Count), evaluateFirstPhaseTime.Count);
+            if (prunedMovesFirstPhaseList.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Pruned moves: {0} ({1})",
+                    (float)prunedMovesFirstPhaseList.Sum() / prunedMovesFirstPhaseList.Count, prunedMovesFirstPhaseList.Count);
+
+            ConsoleService.WriteLine(Color.White, "ANALYSIS (second phase):");
+            if (doMoveSecondPhaseTime.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Do move time: {0} ({1})",
+                    TimeSpan.FromSeconds(doMoveSecondPhaseTime.Aggregate(TimeSpan.Zero, (p, v) => p + v).TotalSeconds/
+                                         doMoveSecondPhaseTime.Count), doMoveSecondPhaseTime.Count);
+            if (evaluateSecondPhaseTime.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Evaluate time: {0} ({1})",
+                    TimeSpan.FromSeconds(evaluateSecondPhaseTime.Aggregate(TimeSpan.Zero, (p, v) => p + v).TotalSeconds/
+                                         evaluateSecondPhaseTime.Count), evaluateSecondPhaseTime.Count);
+            if (prunesMovesSecondPhaseList.Count > 0)
+                ConsoleService.WriteLine(Color.White, ">Pruned moves: {0} ({1})",
+                    (float)prunesMovesSecondPhaseList.Sum() / prunesMovesSecondPhaseList.Count, prunesMovesSecondPhaseList.Count);
+
+            ConsoleService.WriteLine(Color.White, "---");
         }
 
         private void UpdateTileData()
@@ -560,8 +617,7 @@ namespace KaroThreeDClient
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
-            base.Draw(gameTime);
+                base.Draw(gameTime);
         }
     }
 }
