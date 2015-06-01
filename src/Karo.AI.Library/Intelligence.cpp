@@ -6,7 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (3)
+#define MAX_DEPTH                                       (1)
 
 
 // Evaluation
@@ -36,7 +36,7 @@ Intelligence::Intelligence() {
 	//currently quite dirty, it can result in doubles, will add checks later
 	for (int x = 0; x < (TILE_COUNT * TILE_COUNT); x++) {
 		for (int y = 0; y < ZOBRIST_TYPES; y++) {
-			zobrist_randoms[x][y] = rand() % SHRT_MAX;
+			zobrist_randoms[x][y] = rand() % 10000000;
 		}
 	}
 }
@@ -134,29 +134,29 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 
 	if (depth == 0 || state_->is_finished())
 	{
-		//#if defined _DEBUG
-		//        if (evaluate(player) != -evaluate(OPPONENT(player))) {
-		//            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
-		//            assert(evaluate(player) == -evaluate(OPPONENT(player)));
-		//        }
-		//#endif
+//#if defined _DEBUG
+//        if (evaluate(player) != -evaluate(OPPONENT(player))) {
+//            cout << "Evalulate " << player << ": " << evaluate(player) << ", evaluate " << OPPONENT(player) << ": " << evaluate(OPPONENT(player)) << endl;
+//            assert(evaluate(player) == -evaluate(OPPONENT(player)));
+//        }
+//#endif
 
-	
+		/*
 		//make a hash for the board
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
 
 		//if it's in in the table, get it from the table
-		if (trans_table[boardhash] > 0) {
-			return trans_table[boardhash];
+		if (trans_table.count(boardhash) > 0) {
+			return trans_table.at(boardhash);
 		}
 
 		//else evaluate, put it in the table, and return the evaluated value
 		int eval = evaluate(PLAYER_PLAYER1);
-		trans_table[boardhash] = eval;
+		trans_table.emplace(boardhash, eval);
 		transsize++;
 		return eval;
-		
-		//return evaluate(PLAYER_PLAYER1);
+		*/
+		return evaluate(PLAYER_PLAYER1);
 	}
 	
     // Maximizer node.
