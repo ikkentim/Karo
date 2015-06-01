@@ -263,6 +263,8 @@ namespace KaroThreeDClient
             {
                 _currentPlayer = null;
                 ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
+                music = Content.Load<SoundEffect>("victory");
+                music.Play();
             }
 
             effect = Content.Load<SoundEffect>("Jump1");

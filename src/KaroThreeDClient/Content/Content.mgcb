@@ -133,12 +133,6 @@
 /processorParam:TextureFormat=Compressed
 /build:consolas.spritefont
 
-#begin ../../../../../../Downloads/song.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:../../../../../../Downloads/song.wav
-
 #begin song.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -150,4 +144,10 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Jump1.wav
+
+#begin victory.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:victory.wav
 

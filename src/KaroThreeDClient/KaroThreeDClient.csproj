@@ -70,6 +70,7 @@
   <ItemGroup>
     <Content Include="Content\Jump1.wav" />
     <Content Include="Content\song.wav" />
+    <Content Include="Content\victory.wav" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
