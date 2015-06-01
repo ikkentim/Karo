@@ -87,7 +87,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
 		for (int i = 1; i <= n - 1; i++)
 		{
 			int score1 = scores[i - 1];
-			int score2 = scores[i - 2];
+			int score2 = scores[i];
 			
 			if (score1 < score2)
 			{
