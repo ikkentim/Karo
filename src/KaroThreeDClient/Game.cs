@@ -31,6 +31,7 @@ namespace KaroThreeDClient
         GraphicsDeviceManager _graphics;
         SpriteBatch spriteBatch;
 
+        private bool _isStarting = true;
         private IPlayer _player1;
         private IPlayer _player2;
         private IPlayer _currentPlayer;
@@ -43,8 +44,7 @@ namespace KaroThreeDClient
         public SoundEffect music;
         public SoundEffect effect;
 
-        private bool _awaitingMove = false;
-        private bool _isThinking;
+        private bool _awaitingMove;
         private readonly Camera3D _camera = new Camera3D(-200, -200);
 
         private Move _lastMove;
@@ -210,8 +210,6 @@ namespace KaroThreeDClient
                 return;
             }
 
-            _isThinking = false;
-            
             if (IsInFirstPhase)
             {
                 _karo.ApplyMove(move, CurrentTurn);
@@ -269,6 +267,8 @@ namespace KaroThreeDClient
 
             effect = Content.Load<SoundEffect>("Jump1");
             effect.Play();
+
+            _aiThread = null;
         }
 
         private void UpdateTileData()
@@ -357,20 +357,22 @@ namespace KaroThreeDClient
                 Exit();
             }
 
-            if (_currentPlayer == null)
+            if (_currentPlayer == null && _isStarting)
             {
-
+                _isStarting = false;
                 _currentPlayer = _player1;
                 _moveTime.Restart();
 
-                _aiThread = new Thread(() =>
+                if (_aiThread == null)
                 {
-                    _isThinking = true;
-                    _moveTime.Restart();
-                    _currentPlayer.DoMove(null, 0, Done);
-                });
+                    _aiThread = new Thread(() =>
+                    {
+                        _moveTime.Restart();
+                        _currentPlayer.DoMove(null, 0, Done);
+                    });
 
-                _aiThread.Start();
+                    _aiThread.Start();
+                }
             }
             if (_awaitingMove)
             {
@@ -383,12 +385,15 @@ namespace KaroThreeDClient
                     {
                         _lastMoveTime = TimeSpan.Zero;
                         _awaitingMove = false;
-                        new Thread(() =>
+                        if (_aiThread == null)
                         {
-                            _isThinking = true;
-                            _moveTime.Restart();
-                            _currentPlayer.DoMove(_lastMove, 0, Done);
-                        }).Start();
+                            _aiThread = new Thread(() =>
+                            {
+                                _moveTime.Restart();
+                                _currentPlayer.DoMove(_lastMove, 0, Done);
+                            });
+                            _aiThread.Start();
+                        }
                     }
                 }
             }
