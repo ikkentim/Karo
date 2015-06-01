@@ -321,9 +321,9 @@ bool BoardState::is_valid_move(BoardMove move) {
 
 	cout << "Tile: " << move.tile->position.x << "." << move.tile->position.y << endl;
 	cout << "Tilepos :" << move.tile->position.x << "." << move.tile->position.y << endl;
-	//save tile position if != null
-	if ((move.tile->position.x != 0) && (move.tile->position.y != 0)){
-	//if (move.tile){
+
+	//if there is no tile on target location
+	if (!tile(move.target.x, move.target.y,NULL)){
 		cout << "Move tile" << endl;
 
 		int tx = move.tile->position.x;
