@@ -282,7 +282,8 @@ int Intelligence::piece_score(BoardPiece * piece){
         int lenB = state_->row_length(piece, DIRECTION_FLIP(d), piece->player);
 
         // If row is over 4 long, this piece is worth max score.
-        if ((score += lenA + 1 + lenB) >= 4) {
+        score += lenA + 1 + lenB;
+        if (lenA + 1 + lenB >= 4) {
             return SCORE_WIN;
         }
 
