@@ -24,6 +24,7 @@ struct BoardTile {
     BoardPiece * piece;
     BoardTile * neighbors[DIRECTION_COUNT];
     BoardTile() { }
+	bool tagged;
 
     BoardTile(int xx, int yy)
         : position(xx, yy) { }
@@ -52,6 +53,14 @@ struct BoardTile {
     bool is_direct_neighbor(BoardPosition pos) {
         return abs(position.x - pos.x) == 1 || abs(position.y - pos.y) == 1;
     }
+
+	void tag(){
+		tagged = true;
+	}
+
+	void untag(){
+		tagged = false;
+	}
 
     inline bool operator==(BoardTile o) {
         return position == o.position;

@@ -32,6 +32,7 @@ public:
     int corner_tiles(BoardTile ** tiles, int count);
     BoardPlayer winner();
     int row_length(BoardPiece * piece, int direction, BoardPlayer player);
+	BoardTile * get_tile(int x, int y);
 private:
     BoardTile * tiles_ = NULL;
     BoardPiece * pieces_ = NULL;
@@ -40,7 +41,7 @@ private:
     void update_neighbors(BoardPosition newPos, BoardTile * tile);
     bool is_valid_tile_placement(int x, int y, int tx, int ty);
     bool is_row_for_player(BoardPiece * piece, BoardPlayer player);
-	bool is_valid_boardstate();
+	int is_valid_boardstate(int x, int y);
 
     void calc_is_finished();
     void assert_state_ok();

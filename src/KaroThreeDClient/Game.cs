@@ -18,6 +18,8 @@ using Microsoft.Xna.Framework.Input;
 using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 using Tile = Karo.Core.Tile;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace KaroThreeDClient
 {
@@ -38,6 +40,8 @@ namespace KaroThreeDClient
         public Model RedPawnModel;
         public Model WhitePawnModel;
         public Model NyanCat;
+        public SoundEffect music;
+        public SoundEffect effect;
 
         private bool _awaitingMove = false;
         private bool _isThinking;
@@ -260,6 +264,9 @@ namespace KaroThreeDClient
                 _currentPlayer = null;
                 ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
             }
+
+            effect = Content.Load<SoundEffect>("Jump1");
+            effect.Play();
         }
 
         private void UpdateTileData()
@@ -311,6 +318,9 @@ namespace KaroThreeDClient
             RedPawnModel = Content.Load<Model>("red");
             WhitePawnModel = Content.Load<Model>("white");
             NyanCat = Content.Load<Model>("nyan");
+
+            music = Content.Load<SoundEffect>("song");
+            music.Play();
         }
 
         /// <summary>
