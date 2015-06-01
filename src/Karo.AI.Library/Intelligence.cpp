@@ -106,7 +106,7 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 //        }
 //#endif
 
-
+		/*
 		//make a hash for the board
 		int boardhash = zobrist_hash(PLAYER_PLAYER1);
 
@@ -120,6 +120,8 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 		trans_table.emplace(boardhash, eval);
 		transsize++;
 		return eval;
+		*/
+		return evaluate(PLAYER_PLAYER1);
 	}
 	
     // Maximizer node.
