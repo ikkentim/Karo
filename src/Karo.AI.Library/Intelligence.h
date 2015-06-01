@@ -4,16 +4,14 @@
 #include <map>
 
 #define ZOBRIST_TYPES	(5) //amount of different tile/piece types
-
-
 using namespace std;
 class Intelligence
 {
 private:
 	BoardState * state_ = 0;
 	int iteration_count = 0;
-	int zobrist_randoms[TILE_COUNT * TILE_COUNT][ZOBRIST_TYPES];
-	map<int, int> trans_table;
+	short zobrist_randoms[TILE_COUNT * TILE_COUNT][ZOBRIST_TYPES];
+	short trans_table[SHRT_MAX];
 	int transsize = 0;
 public:
 	Intelligence();
