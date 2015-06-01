@@ -6,7 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (5)
+#define MAX_DEPTH                                       (4)
 
 
 // Evaluation
@@ -70,6 +70,7 @@ BoardMove Intelligence::choose_best_move(int time, BoardPlayer player) {
     }
     
 	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
+    assert(move_count < MOVE_COUNT);
 	for (int i = 0; i < move_count; i++)
     {
         state_->apply_move(moves[i], player);

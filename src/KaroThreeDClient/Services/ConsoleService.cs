@@ -253,31 +253,32 @@ namespace KaroThreeDClient.Services
             if (_isConsoleVisible)
             {
 
-                var messagesTotalHeight = (ConsoleMaxMessages - _consoleMessages.Count) * ConsoleDefaultLineHeight +
+                var messagesTotalHeight = (ConsoleMaxMessages - _consoleMessages.Count)*ConsoleDefaultLineHeight +
                                           _consoleMessages.Sum(m => m.Size.Y);
                 var screenHeight = Game.Window.ClientBounds.Height;
                 _scrollableHeight = messagesTotalHeight - screenHeight;
-                var pageSize = screenHeight / _scrollableHeight;
+                var pageSize = screenHeight/_scrollableHeight;
 
-                var scrollPercentageOnScreen = 1 - (_scrollPosition / _scrollableHeight);
+                var scrollPercentageOnScreen = 1 - (_scrollPosition/_scrollableHeight);
 
-                var scrollBarHeight = (screenHeight - ConsoleScrollMargin * 2) * pageSize;
-                var scrollBarScrollableHeight = screenHeight - ConsoleScrollMargin * 2 - scrollBarHeight;
-                var scrollBarY = ConsoleScrollMargin + scrollBarScrollableHeight * scrollPercentageOnScreen;
+                var scrollBarHeight = (screenHeight - ConsoleScrollMargin*2)*pageSize;
+                var scrollBarScrollableHeight = screenHeight - ConsoleScrollMargin*2 - scrollBarHeight;
+                var scrollBarY = ConsoleScrollMargin + scrollBarScrollableHeight*scrollPercentageOnScreen;
 
-                _scrollBarPosition = new Vector2(Game.Window.ClientBounds.Width - ConsoleScrollWidth - ConsoleScrollMargin, scrollBarY);
-                _scrollBarSize = new Rectangle(0, 0, (int)ConsoleScrollWidth, (int)scrollBarHeight);
+                _scrollBarPosition =
+                    new Vector2(Game.Window.ClientBounds.Width - ConsoleScrollWidth - ConsoleScrollMargin, scrollBarY);
+                _scrollBarSize = new Rectangle(0, 0, (int) ConsoleScrollWidth, (int) scrollBarHeight);
 
                 if (keyboardState.IsKeyDown(Keys.PageUp))
-                    _scrollPosition += (float)(gameTime.ElapsedGameTime.TotalSeconds * screenHeight) * 5;
+                    _scrollPosition += (float) (gameTime.ElapsedGameTime.TotalSeconds*screenHeight)*5;
 
                 if (keyboardState.IsKeyDown(Keys.PageDown))
-                    _scrollPosition -= (float)(gameTime.ElapsedGameTime.TotalSeconds * screenHeight) * 5;
+                    _scrollPosition -= (float) (gameTime.ElapsedGameTime.TotalSeconds*screenHeight)*5;
 
                 var deltascroll = mouseState.ScrollWheelValue - _scrollWheel;
 
                 if (deltascroll != 0)
-                    _scrollPosition += (float)(gameTime.ElapsedGameTime.TotalSeconds * screenHeight) * deltascroll / 25;
+                    _scrollPosition += (float) (gameTime.ElapsedGameTime.TotalSeconds*screenHeight)*deltascroll/25;
 
                 if (_scrollPosition < 0) _scrollPosition = 0;
                 if (_scrollPosition > _scrollableHeight) _scrollPosition = _scrollableHeight;
@@ -289,9 +290,9 @@ namespace KaroThreeDClient.Services
 
             if (_chatMessages.Count > 0)
             {
-                var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+                var deltaTime = (float) gameTime.ElapsedGameTime.TotalSeconds;
 
-                var isOutOfDate = _chatMessages.Aggregate(false,
+                var isOutOfDate = _chatMessages.ToArray().Aggregate(false,
                     (current, message) => current || (message.TimeAlive += deltaTime) > ChatVisibleTime);
 
                 if (isOutOfDate)

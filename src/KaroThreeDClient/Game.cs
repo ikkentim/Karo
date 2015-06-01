@@ -47,6 +47,7 @@ namespace KaroThreeDClient
         private bool _isThinking;
         private readonly Camera3D _camera = new Camera3D(-200, -200);
 
+        private bool _isStarting = true;
         private Move _lastMove;
         private TimeSpan _lastMoveTime;
         private Vector2 _oldMousePos = new Vector2(0, 0);
@@ -63,7 +64,7 @@ namespace KaroThreeDClient
         private MouseState _lastMouseState;
         private int _lastScroll;
         private float _unprocessedScrollDelta;
-
+        private Move _queuedCompletedMove;
         private const float ScrollMaxSpeed = 0.3f;
         private const float ScrollMultiplier = 0.01f;
         private const float ScrollMinDelta = 0.05f;
@@ -88,8 +89,8 @@ namespace KaroThreeDClient
 
             _graphics = new GraphicsDeviceManager(this);
 
-            _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 50;
-            _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
+//            _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 50;
+//            _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
 
             //_graphics.IsFullScreen = true;
 
@@ -205,70 +206,13 @@ namespace KaroThreeDClient
         /// <param name="move">The move.</param>
         private void Done(Move move)
         {
+            _aiThread = null;
             if (_exiting)
             {
                 return;
             }
 
-            _isThinking = false;
-            
-            if (IsInFirstPhase)
-            {
-                _karo.ApplyMove(move, CurrentTurn);
-                Components.Add(new Pawn(this, _karo.Pieces.Last(p =>p != null)));
-
-                ConsoleService.WriteChatLine(Color.Wheat, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
-            }
-            else
-            {
-                _karo.ApplyMove(move, CurrentTurn);
-
-                ConsoleService.WriteChatLine(Color.Wheat, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
-            }
-
-            ConsoleService.WriteLine(Color.White, "Move took {0}", _moveTime.Elapsed);
-            int? evaluation = EvaluateCurrentPlayer();
-            if (evaluation != null)
-            {
-                ConsoleService.WriteLine(Color.White, "Move changed score from {0} to {1}",
-                    _beforeEvaluationScore, evaluation);
-
-                var evaluation_count = _currentPlayer.GetType().GetProperty("evaluation_count");
-
-                if(evaluation_count != null)
-                    ConsoleService.WriteLine(Color.White, "Evaluation count {0}", evaluation_count.GetValue(_currentPlayer, null));
-            }
-
-            UpdateTileData();
-
-            _lastMove = move;
-            
-            var winner = _karo.GetWinner();
-            if (winner == KaroPlayer.None)
-            {
-                _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
-
-                if (IsCurrentPlayerHuman)
-                {
-                    _moveTime.Restart();
-                    _currentPlayer.DoMove(_lastMove, 0, Done);
-                }
-                else
-                    _awaitingMove = true;
-
-                // Calculate evaluated score for debugging
-                _beforeEvaluationScore = EvaluateCurrentPlayer() ?? 0;
-            }
-            else
-            {
-                _currentPlayer = null;
-                ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
-                music = Content.Load<SoundEffect>("victory");
-                music.Play();
-            }
-
-            effect = Content.Load<SoundEffect>("Jump1");
-            effect.Play();
+            _queuedCompletedMove = move;
         }
 
         private void UpdateTileData()
@@ -357,20 +301,92 @@ namespace KaroThreeDClient
                 Exit();
             }
 
-            if (_currentPlayer == null)
+            if (_queuedCompletedMove != null)
             {
+                var move = _queuedCompletedMove;
+                _isThinking = false;
 
+                if (IsInFirstPhase)
+                {
+                    _karo.ApplyMove(move, CurrentTurn);
+                    Components.Add(new Pawn(this, _karo.Pieces.Last(p => p != null)));
+
+                    ConsoleService.WriteChatLine(Color.Wheat, "{0} placed ({1}, {2})", CurrentTurn, move.NewPieceX, move.NewPieceY);
+                }
+                else
+                {
+                    Debug.WriteLine("Applying move to game board ({0}, {1}) -> ({2}, {3}), ({4}, {5}) by {6}",
+                    move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY, move.OldTileX, move.OldTileY, CurrentTurn);
+                    _karo.ApplyMove(move, CurrentTurn);
+
+                    ConsoleService.WriteChatLine(Color.Wheat, "{0} moved ({1}, {2}) to ({3}, {4})", CurrentTurn, move.OldPieceX, move.OldPieceY, move.NewPieceX, move.NewPieceY);
+                }
+
+                ConsoleService.WriteLine(Color.White, "Move took {0}", _moveTime.Elapsed);
+                int? evaluation = EvaluateCurrentPlayer();
+                if (evaluation != null)
+                {
+                    ConsoleService.WriteLine(Color.White, "Move changed score from {0} to {1}",
+                        _beforeEvaluationScore, evaluation);
+
+                    var evaluation_count = _currentPlayer.GetType().GetProperty("evaluation_count");
+
+                    if (evaluation_count != null)
+                        ConsoleService.WriteLine(Color.White, "Evaluation count {0}", evaluation_count.GetValue(_currentPlayer, null));
+                }
+
+                UpdateTileData();
+
+                _lastMove = move;
+
+                var winner = _karo.GetWinner();
+                if (winner == KaroPlayer.None)
+                {
+                    _currentPlayer = GetPlayer(GetOpponent(CurrentTurn));
+
+                    if (IsCurrentPlayerHuman)
+                    {
+                        _moveTime.Restart();
+                        _currentPlayer.DoMove(_lastMove, 0, Done);
+                    }
+                    else
+                        _awaitingMove = true;
+
+                    // Calculate evaluated score for debugging
+                    _beforeEvaluationScore = EvaluateCurrentPlayer() ?? 0;
+                }
+                else
+                {
+                    _awaitingMove = false;
+                    _currentPlayer = null;
+                    ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
+                    music = Content.Load<SoundEffect>("victory");
+                    music.Play();
+                }
+
+                effect = Content.Load<SoundEffect>("Jump1");
+                effect.Play();
+
+                _queuedCompletedMove = null;
+            }
+
+            if (_currentPlayer == null && _isStarting)
+            {
+                _isStarting = false;
                 _currentPlayer = _player1;
                 _moveTime.Restart();
-
-                _aiThread = new Thread(() =>
+                Debug.WriteLine("Start first move");
+                if (_aiThread == null)
                 {
                     _isThinking = true;
-                    _moveTime.Restart();
-                    _currentPlayer.DoMove(null, 0, Done);
-                });
+                    _aiThread = new Thread(() =>
+                    {
+                        _moveTime.Restart();
+                        _currentPlayer.DoMove(null, 0, Done);
+                    });
 
-                _aiThread.Start();
+                    _aiThread.Start();
+                }
             }
             if (_awaitingMove)
             {
@@ -379,16 +395,21 @@ namespace KaroThreeDClient
                 else
                 {
                     _lastMoveTime += gameTime.ElapsedGameTime;
-                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 500) && !Animating)
+                    if (_lastMoveTime > new TimeSpan(0, 0, 0, 0, 1000) && !Animating)
                     {
                         _lastMoveTime = TimeSpan.Zero;
                         _awaitingMove = false;
-                        new Thread(() =>
+                        Debug.WriteLine("start a move");
+                        if (_aiThread == null)
                         {
                             _isThinking = true;
-                            _moveTime.Restart();
-                            _currentPlayer.DoMove(_lastMove, 0, Done);
-                        }).Start();
+                            _aiThread = new Thread(() =>
+                            {
+                                _moveTime.Restart();
+                                _currentPlayer.DoMove(_lastMove, 0, Done);
+                            });
+                            _aiThread.Start();
+                        }
                     }
                 }
             }
