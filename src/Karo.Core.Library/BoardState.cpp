@@ -173,7 +173,6 @@ int BoardState::available_moves(BoardPlayer player, BoardMove * moves, int count
 		if (pieces_[piece_idx].player != player)
 			continue;
 
-		// TODO: Use tile neighbors
 		// Iterate every move in every direction ( |, -, /, \ )
 		for (int d = 0; d < DIRECTION_COUNT; d++) {
 			assert(pieces_[piece_idx].tile);

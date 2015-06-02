@@ -48,14 +48,16 @@ namespace KaroThreeDClient
         public Model WhitePawnModel;
         public Model NyanCat;
         public SoundEffect music;
+        public SoundEffect victory;
         public SoundEffect effect;
+        public SoundEffectInstance musicInstance;
+        public SoundEffectInstance victoryInstance;
+        public SoundEffectInstance effectInstance;
 
         private bool _awaitingMove;
-        private readonly Camera3D _camera = new Camera3D(-200, -200);
 
         private Move _lastMove;
         private TimeSpan _lastMoveTime;
-        private Vector2 _oldMousePos = new Vector2(0, 0);
         private Position _selectedNewPiece;
         private Position _selectedOldPiece;
         private SpriteBatch _spriteBatch;
@@ -290,12 +292,15 @@ namespace KaroThreeDClient
             {
                 _currentPlayer = null;
                 ConsoleService.WriteChatLine(Color.White, "There is a Winner!");
-                music = Content.Load<SoundEffect>("victory");
-                music.Play();
+                if (victoryInstance == null)
+                    victoryInstance = victory.CreateInstance();
+                victoryInstance.Play();
             }
 
-            effect = Content.Load<SoundEffect>("Jump1");
-            effect.Play();
+            if (effectInstance == null)
+                effectInstance = effect.CreateInstance();
+
+            effectInstance.Play();
 
             _aiThread = null;
 
@@ -379,7 +384,12 @@ namespace KaroThreeDClient
             NyanCat = Content.Load<Model>("nyan");
 
             music = Content.Load<SoundEffect>("song");
-            music.Play();
+            victory = Content.Load<SoundEffect>("victory");
+            effect = Content.Load<SoundEffect>("Jump1");
+
+            musicInstance = music.CreateInstance();
+            musicInstance.IsLooped = true;
+            musicInstance.Play();
         }
 
         /// <summary>
@@ -392,6 +402,23 @@ namespace KaroThreeDClient
             RedPawnModel = null;
             WhitePawnModel = null;
             NyanCat = null;
+
+
+            if (musicInstance != null)
+            {
+                musicInstance.Stop();
+                musicInstance.Dispose();
+            }
+            if (effectInstance != null)
+            {
+                effectInstance.Stop();
+                effectInstance.Dispose();
+            }
+            if (victoryInstance != null)
+            {
+                victoryInstance.Stop();
+                victoryInstance.Dispose();
+            }
         }
 
         /// <summary>
