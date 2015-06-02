@@ -6,7 +6,7 @@
 
 // MiniMax / AlphaBeta
 // -------------------
-#define MAX_DEPTH                                       (1)
+#define MAX_DEPTH                                      (4)
 
 
 // Evaluation
@@ -158,15 +158,49 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 		*/
 		return evaluate(PLAYER_PLAYER1);
 	}
+
+	BoardMove moves[MOVE_COUNT];
+	int move_count = state_->available_moves(player, moves, MOVE_COUNT);
+
+	int scores[MOVE_COUNT];
+
+	for (int i = 0; i < move_count; i++)
+	{
+		state_->apply_move(moves[i], player);
+		scores[i] = evaluate(player);
+		state_->undo_move(moves[i], player);
+	}
+
+	int n = move_count;
+	do
+	{
+		int newn = 0;
+		for (int i = 1; i <= n - 1; i++)
+		{
+			int score1 = scores[i - 1];
+			int score2 = scores[i];
+
+			if (score1 < score2)
+			{
+				BoardMove tmp = moves[i - 1];
+				moves[i - 1] = moves[i];
+				moves[i] = tmp;
+
+				int tmpScore = scores[i - 1];
+				scores[i - 1] = scores[i];
+				scores[i] = tmpScore;
+
+				newn = i;
+			}
+		}
+		n = newn;
+	} while (n != 0);
 	
     // Maximizer node.
 	if (player == PLAYER_PLAYER1)
 	{
         int value = numeric_limits<int>::min();
-
-		BoardMove moves[MOVE_COUNT];
-		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
-		
+				
 		for (int i = 0; i < move_count; i++)
         {
             state_->apply_move(moves[i], player);
@@ -189,9 +223,6 @@ int Intelligence::alpha_beta(int depth, int alpha, int beta, BoardPlayer player)
 	else
 	{
         int value = numeric_limits<int>::max();
-
-		BoardMove moves[MOVE_COUNT];
-		int move_count = state_->available_moves(player, moves, MOVE_COUNT);
 
 		for (int i = 0; i < move_count; i++)
         {
